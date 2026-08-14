@@ -1,6 +1,7 @@
-import { useState } from 'react'
-import { tripDays, useApp } from '../state'
+import { useMemo, useState } from 'react'
+import { tripDays, useApp, useBalances } from '../state'
 import type { Task } from '../types'
+import { suggestForDay, type Suggestion } from '../lib/suggest'
 import { TaskRow } from '../components/TaskRow'
 import { TaskSheet } from '../components/TaskSheet'
 import { NewTaskSheet } from '../components/NewTaskSheet'
@@ -8,10 +9,18 @@ import { formatDay } from '../lib/i18n'
 
 export function Planning() {
   const { state, lang, t, activeDate } = useApp()
+  const rows = useBalances()
   const [openTask, setOpenTask] = useState<Task | null>(null)
   const [creating, setCreating] = useState(false)
 
   const days = tripDays(state.trip)
+  const suggestions = useMemo(() => {
+    const map = new Map<string, Suggestion[]>()
+    for (const day of days) {
+      for (const [taskId, list] of suggestForDay(state, rows, day)) map.set(taskId, list)
+    }
+    return map
+  }, [state, rows, days])
 
   return (
     <>
@@ -25,7 +34,7 @@ export function Planning() {
 
       {days.map((day) => {
         const dayTasks = state.tasks
-          .filter((task) => task.date === day)
+          .filter((task) => task.date === day && !task.isClosing)
           .sort((a, b) => a.time.localeCompare(b.time))
         return (
           <div key={day}>
@@ -34,9 +43,17 @@ export function Planning() {
               {day === activeDate && <span className="pill pill-accent">{t('today')}</span>}
             </div>
             <div className="stack">
-              {dayTasks.length === 0 && <div className="empty">{t('noTaskToday')}</div>}
+              {dayTasks.length === 0 && <div className="empty">{t('noTaskDay')}</div>}
               {dayTasks.map((task) => (
-                <TaskRow key={task.id} task={task} state={state} lang={lang} t={t} onClick={() => setOpenTask(task)} />
+                <TaskRow
+                  key={task.id}
+                  task={task}
+                  state={state}
+                  lang={lang}
+                  t={t}
+                  suggestions={suggestions.get(task.id)}
+                  onClick={() => setOpenTask(task)}
+                />
               ))}
             </div>
           </div>

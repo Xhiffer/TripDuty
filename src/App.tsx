@@ -1,29 +1,31 @@
 import { useState } from 'react'
-import { useApp, useStandings } from './state'
+import { useApp, useBalances } from './state'
 import { Join } from './screens/Join'
 import { Home } from './screens/Home'
 import { Ranking } from './screens/Ranking'
 import { Planning } from './screens/Planning'
+import { Closing } from './screens/Closing'
 import { Me } from './screens/Me'
 import { Avatar } from './components/ui'
 import { formatDay } from './lib/i18n'
 
-type Tab = 'home' | 'ranking' | 'planning' | 'me'
+type Tab = 'home' | 'ranking' | 'planning' | 'closing' | 'me'
 
 export function App() {
   const { state, me, lang, t } = useApp()
-  const rows = useStandings()
+  const rows = useBalances()
   const [tab, setTab] = useState<Tab>('home')
 
   if (!me) return <Join />
 
-  const last = rows.length > 1 ? rows[rows.length - 1] : null
-  const iAmLast = last?.member.id === me.id
+  const mine = rows.find((r) => r.member.id === me.id)
+  const owes = !!mine && mine.centi < 0
 
   const tabs: Array<{ id: Tab; icon: string; label: string; dot?: boolean }> = [
-    { id: 'home', icon: '🏠', label: t('navHome'), dot: iAmLast },
+    { id: 'home', icon: '🏠', label: t('navHome'), dot: owes },
     { id: 'ranking', icon: '🏆', label: t('navRanking') },
     { id: 'planning', icon: '📅', label: t('navPlanning') },
+    { id: 'closing', icon: '🏁', label: t('navClosing'), dot: state.trip.closingOpen },
     { id: 'me', icon: '👤', label: t('navMe') },
   ]
 
@@ -47,6 +49,7 @@ export function App() {
       {tab === 'home' && <Home goRanking={() => setTab('ranking')} />}
       {tab === 'ranking' && <Ranking />}
       {tab === 'planning' && <Planning />}
+      {tab === 'closing' && <Closing />}
       {tab === 'me' && <Me />}
 
       <nav className="nav">

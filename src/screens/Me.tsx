@@ -1,4 +1,5 @@
 import { useApp } from '../state'
+import { formatBalance } from '../lib/ledger'
 import { Avatar, Segmented } from '../components/ui'
 import { taskTitle } from '../components/TaskRow'
 
@@ -150,45 +151,35 @@ export function Me() {
 
       <div className="section-title">{t('history')}</div>
       <div className="stack">
-        {state.completions.length === 0 && <div className="empty">{t('noHistory')}</div>}
-        {[...state.completions]
+        {state.entries.length === 0 && <div className="empty">{t('noHistory')}</div>}
+        {[...state.entries]
           .sort((a, b) => b.at.localeCompare(a.at))
-          .slice(0, 12)
-          .map((c) => {
-            const task = state.tasks.find((x) => x.id === c.taskId)
-            const names = c.participantIds
-              .map((id) => state.members.find((m) => m.id === id)?.name)
-              .filter(Boolean)
-              .join(', ')
+          .slice(0, 15)
+          .map((entry) => {
+            const task = state.tasks.find((x) => x.id === entry.taskId)
+            const amount = entry.amounts[me.id] ?? 0
+            const who =
+              entry.kind === 'penalty'
+                ? state.members.find((m) => (entry.amounts[m.id] ?? 0) < 0)?.name
+                : entry.doerIds
+                    .map((id) => state.members.find((m) => m.id === id)?.name)
+                    .filter(Boolean)
+                    .join(', ')
             return (
-              <div key={c.id} className="rank-row">
-                <span className="task-emoji">{task?.emoji ?? '✅'}</span>
+              <div key={entry.id} className="rank-row">
+                <span className="task-emoji">{entry.kind === 'penalty' ? '⚠️' : (task?.emoji ?? '✅')}</span>
                 <span style={{ flex: 1, minWidth: 0 }}>
                   <span className="rank-name" style={{ fontSize: 14 }}>
-                    {names}
+                    {who}
                   </span>
                   <span className="rank-sub">{task ? taskTitle(task, lang) : ''}</span>
                 </span>
-                <span className="pill pill-good">+{c.pointsEach}</span>
+                {amount !== 0 && (
+                  <span className={`pill ${amount > 0 ? 'pill-good' : 'pill-danger'}`}>{formatBalance(amount)}</span>
+                )}
               </div>
             )
           })}
-        {state.penalties.map((p) => {
-          const task = state.tasks.find((x) => x.id === p.taskId)
-          const member = state.members.find((m) => m.id === p.memberId)
-          return (
-            <div key={p.id} className="rank-row">
-              <span className="task-emoji">⚠️</span>
-              <span style={{ flex: 1, minWidth: 0 }}>
-                <span className="rank-name" style={{ fontSize: 14 }}>
-                  {member?.name}
-                </span>
-                <span className="rank-sub">{task ? taskTitle(task, lang) : ''}</span>
-              </span>
-              <span className="pill pill-danger">{p.points}</span>
-            </div>
-          )
-        })}
       </div>
 
       <button type="button" className="btn btn-block" style={{ marginTop: 20 }} onClick={() => setMe(null)}>

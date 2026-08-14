@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import type { ReactNode } from 'react'
 import type { Lang, Member, Role, Task, Theme, Trip, TripState } from './types'
 import { store } from './data/store'
-import { lastPlace, pointsEachFor, standings } from './lib/scoring'
+import { balances, beneficiariesOf, completionAmounts, penaltyAmounts } from './lib/ledger'
 import { translator } from './lib/i18n'
 
 const ME_KEY = 'tripduty:me'
@@ -42,7 +42,6 @@ export function tripDays(trip: Trip): string[] {
 }
 
 interface Ctx {
-  ready: boolean
   state: TripState
   me: Member | null
   isChef: boolean
@@ -54,11 +53,11 @@ interface Ctx {
   setTheme: (th: Theme) => void
   setMe: (id: string | null) => void
   addMember: (name: string, photo: string | null, hasLicense: boolean) => Member
-  addTask: (task: Omit<Task, 'id' | 'status' | 'autoAssigned'>) => void
-  assignTask: (taskId: string, memberId: string | null) => void
-  validateTask: (taskId: string, participantIds: string[]) => void
+  addTask: (task: Omit<Task, 'id' | 'status'>) => void
+  takeTask: (taskId: string, memberId: string | null) => void
+  validateTask: (taskId: string, doerIds: string[], beneficiaryIds: string[]) => void
   markMissed: (taskId: string) => void
-  cancelCompletion: (taskId: string) => void
+  reopenTask: (taskId: string) => void
   deleteTask: (taskId: string) => void
   updateTrip: (patch: Partial<Trip>) => void
   setRole: (memberId: string, role: Role) => void
@@ -82,22 +81,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
     document.documentElement.lang = lang
   }, [theme, lang])
 
-  const persist = useCallback((next: TripState) => {
-    setState(next)
-    void store.save(next)
+  const update = useCallback((fn: (draft: TripState) => TripState) => {
+    setState((current) => {
+      if (!current) return current
+      const next = fn(current)
+      void store.save(next)
+      return next
+    })
   }, [])
-
-  const update = useCallback(
-    (fn: (draft: TripState) => TripState) => {
-      setState((current) => {
-        if (!current) return current
-        const next = fn(current)
-        void store.save(next)
-        return next
-      })
-    },
-    [],
-  )
 
   const t = useMemo(() => translator(lang), [lang])
 
@@ -108,7 +99,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const isChef = !!me && (me.role === 'owner' || me.role === 'chef')
 
     return {
-      ready: true,
       state,
       me,
       isChef,
@@ -138,81 +128,79 @@ export function AppProvider({ children }: { children: ReactNode }) {
           role: state.members.length === 0 ? 'owner' : 'member',
           joinedAt: new Date().toISOString(),
         }
-        persist({ ...state, members: [...state.members, member] })
+        update((d) => ({ ...d, members: [...d.members, member] }))
         return member
       },
       addTask: (task) => {
-        const full: Task = { ...task, id: uid('t'), status: 'todo', autoAssigned: false }
-        update((d) => ({ ...d, tasks: [...d.tasks, full] }))
+        update((d) => ({ ...d, tasks: [...d.tasks, { ...task, id: uid('t'), status: 'todo' }] }))
       },
-      assignTask: (taskId, memberId) => {
+      takeTask: (taskId, memberId) => {
         update((d) => ({
           ...d,
-          tasks: d.tasks.map((task) =>
-            task.id === taskId ? { ...task, assignedTo: memberId, autoAssigned: false } : task,
-          ),
+          tasks: d.tasks.map((task) => (task.id === taskId ? { ...task, assignedTo: memberId } : task)),
         }))
       },
-      validateTask: (taskId, participantIds) => {
-        if (participantIds.length === 0) return
+      validateTask: (taskId, doerIds, beneficiaryIds) => {
+        if (doerIds.length === 0 || beneficiaryIds.length === 0) return
         update((d) => {
           const task = d.tasks.find((x) => x.id === taskId)
           if (!task || !me) return d
-          const completion = {
-            id: uid('c'),
-            taskId,
-            participantIds,
-            pointsEach: pointsEachFor(task.points, participantIds.length),
-            validatedBy: me.id,
-            at: new Date().toISOString(),
-          }
           return {
             ...d,
             tasks: d.tasks.map((x) => (x.id === taskId ? { ...x, status: 'done' as const } : x)),
-            completions: [...d.completions.filter((c) => c.taskId !== taskId), completion],
-            penalties: d.penalties.filter((p) => p.taskId !== taskId),
+            entries: [
+              ...d.entries.filter((e) => e.taskId !== taskId),
+              {
+                id: uid('e'),
+                taskId,
+                kind: 'completion' as const,
+                doerIds,
+                beneficiaryIds,
+                amounts: completionAmounts(task.points, doerIds, beneficiaryIds),
+                validatedBy: me.id,
+                at: new Date().toISOString(),
+              },
+            ],
           }
         })
       },
+      // Le malus ne s'applique que si quelqu'un s'etait engage sur la tache.
       markMissed: (taskId) => {
         update((d) => {
           const task = d.tasks.find((x) => x.id === taskId)
-          if (!task) return d
-          const target = task.assignedTo
-          const penalties = target
-            ? [
-                ...d.penalties.filter((p) => p.taskId !== taskId),
-                {
-                  id: uid('p'),
-                  taskId,
-                  memberId: target,
-                  points: -Math.abs(d.trip.penalty),
-                  at: new Date().toISOString(),
-                },
-              ]
-            : d.penalties
+          if (!task || !task.assignedTo || !me) return d
+          const beneficiaryIds = beneficiariesOf(task, d.members)
           return {
             ...d,
             tasks: d.tasks.map((x) => (x.id === taskId ? { ...x, status: 'missed' as const } : x)),
-            completions: d.completions.filter((c) => c.taskId !== taskId),
-            penalties,
+            entries: [
+              ...d.entries.filter((e) => e.taskId !== taskId),
+              {
+                id: uid('e'),
+                taskId,
+                kind: 'penalty' as const,
+                doerIds: [],
+                beneficiaryIds,
+                amounts: penaltyAmounts(d.trip.penalty, task.assignedTo, beneficiaryIds),
+                validatedBy: me.id,
+                at: new Date().toISOString(),
+              },
+            ],
           }
         })
       },
-      cancelCompletion: (taskId) => {
+      reopenTask: (taskId) => {
         update((d) => ({
           ...d,
           tasks: d.tasks.map((x) => (x.id === taskId ? { ...x, status: 'todo' as const } : x)),
-          completions: d.completions.filter((c) => c.taskId !== taskId),
-          penalties: d.penalties.filter((p) => p.taskId !== taskId),
+          entries: d.entries.filter((e) => e.taskId !== taskId),
         }))
       },
       deleteTask: (taskId) => {
         update((d) => ({
           ...d,
           tasks: d.tasks.filter((x) => x.id !== taskId),
-          completions: d.completions.filter((c) => c.taskId !== taskId),
-          penalties: d.penalties.filter((p) => p.taskId !== taskId),
+          entries: d.entries.filter((e) => e.taskId !== taskId),
         }))
       },
       updateTrip: (patch) => {
@@ -231,33 +219,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         }))
       },
     }
-  }, [state, meId, lang, theme, t, persist, update])
-
-  // Attribution automatique : le dernier du classement recupere la prochaine
-  // tache planifiee que personne n'a prise.
-  useEffect(() => {
-    if (!state) return
-    const last = lastPlace(state)
-    if (!last) return
-    const alreadyHasOne = state.tasks.some(
-      (task) => task.status === 'todo' && task.assignedTo === last.member.id && task.autoAssigned,
-    )
-    if (alreadyHasOne) return
-
-    const candidate = state.tasks
-      .filter((task) => task.status === 'todo' && !task.assignedTo)
-      .filter((task) => !task.needsLicense || last.member.hasLicense)
-      .sort((a, b) => `${a.date}${a.time}`.localeCompare(`${b.date}${b.time}`))[0]
-    if (!candidate) return
-
-    const next: TripState = {
-      ...state,
-      tasks: state.tasks.map((task) =>
-        task.id === candidate.id ? { ...task, assignedTo: last.member.id, autoAssigned: true } : task,
-      ),
-    }
-    persist(next)
-  }, [state, persist])
+  }, [state, meId, lang, theme, t, update])
 
   if (!value) return null
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>
@@ -269,7 +231,7 @@ export function useApp() {
   return ctx
 }
 
-export function useStandings() {
+export function useBalances() {
   const { state } = useApp()
-  return useMemo(() => standings(state), [state])
+  return useMemo(() => balances(state), [state])
 }

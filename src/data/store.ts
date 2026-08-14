@@ -12,7 +12,7 @@ export interface Store {
   save(state: TripState): Promise<void>
 }
 
-const KEY = 'tripduty:state:v1'
+const KEY = 'tripduty:state:v2'
 
 export const localStore: Store = {
   async load() {

@@ -1,11 +1,14 @@
-import type { TaskStatus, TripState } from '../types'
+import type { Entry, Task, TaskStatus, TripState } from '../types'
 import { CATALOG } from '../lib/catalog'
+import { CLOSING_CATALOG } from '../lib/closing'
+import { completionAmounts, penaltyAmounts } from '../lib/ledger'
 
 // Donnees de demonstration, remplacees par les vraies donnees partagees
 // quand la base en ligne sera branchee.
 
 const TRIP_START = '2026-08-22'
 const TRIP_END = '2026-08-29'
+const PENALTY = 30
 
 const PEOPLE: Array<[string, boolean, 'owner' | 'chef' | 'member']> = [
   ['Ismaël', true, 'owner'],
@@ -37,82 +40,124 @@ export function seedState(): TripState {
 
   const byName = (n: string) => members.find((m) => m.name === n)!.id
 
-  // Le sejour a deja commence sur la demo, pour que le classement soit vivant.
-  const planned: Array<[string, string, string, string | null]> = [
-    // cle, jour, heure, attribuee a
-    ['breakfast', TRIP_START, '08:30', byName('Lola')],
-    ['big_groceries', TRIP_START, '10:00', byName('Ismaël')],
-    ['cook_meal', TRIP_START, '19:00', byName('Camille')],
-    ['dishes_dinner', TRIP_START, '21:00', byName('Martin')],
-    ['bins', TRIP_START, '21:30', byName('Hugo')],
-    ['breakfast', '2026-08-23', '08:30', byName('Sarah')],
-    ['drive_long', '2026-08-23', '10:00', byName('Cajun')],
-    ['plan_outing', '2026-08-23', '11:00', byName('Théo')],
-    ['cook_meal', '2026-08-23', '19:00', byName('Lola')],
-    ['dishes_dinner', '2026-08-23', '21:00', null],
-    ['bread', '2026-08-24', '08:00', null],
-    ['tidy_kitchen', '2026-08-24', '14:00', null],
-    ['deep_clean', '2026-08-24', '16:00', null],
-    ['host_game', '2026-08-24', '21:00', null],
-    ['suggest_activity', '2026-08-24', '22:00', null],
+  interface Plan {
+    key: string
+    date: string
+    time: string
+    /** null = pour tout le monde */
+    forWhom?: string[] | null
+    takenBy?: string | null
+  }
+
+  const planned: Plan[] = [
+    { key: 'breakfast', date: TRIP_START, time: '08:30', takenBy: byName('Lola') },
+    { key: 'big_groceries', date: TRIP_START, time: '10:00', takenBy: byName('Ismaël') },
+    { key: 'cook_meal', date: TRIP_START, time: '19:00', takenBy: byName('Camille') },
+    { key: 'dishes_dinner', date: TRIP_START, time: '21:00', takenBy: byName('Martin') },
+    { key: 'bins', date: TRIP_START, time: '21:30', takenBy: byName('Hugo') },
+    // Petit-dej tardif prepare par Sarah pour quatre personnes seulement.
+    {
+      key: 'breakfast',
+      date: '2026-08-23',
+      time: '10:30',
+      forWhom: [byName('Sarah'), byName('Martin'), byName('Camille'), byName('Théo')],
+      takenBy: byName('Sarah'),
+    },
+    { key: 'drive_long', date: '2026-08-23', time: '11:00', takenBy: byName('Cajun') },
+    { key: 'plan_outing', date: '2026-08-23', time: '12:00', takenBy: byName('Théo') },
+    { key: 'cook_meal', date: '2026-08-23', time: '19:00', takenBy: byName('Lola') },
+    // Ismael arrive tard et se fait son sandwich tout seul : personne ne bouge.
+    { key: 'cook_meal', date: '2026-08-23', time: '23:00', forWhom: [byName('Ismaël')], takenBy: byName('Ismaël') },
+    { key: 'dishes_dinner', date: '2026-08-23', time: '21:00', takenBy: null },
+    { key: 'bread', date: '2026-08-24', time: '08:00', takenBy: null },
+    { key: 'tidy_kitchen', date: '2026-08-24', time: '14:00', takenBy: null },
+    { key: 'deep_clean', date: '2026-08-24', time: '16:00', takenBy: null },
+    { key: 'host_game', date: '2026-08-24', time: '21:00', takenBy: null },
+    { key: 'suggest_activity', date: '2026-08-24', time: '22:00', takenBy: null },
   ]
 
-  const tasks = planned.map(([key, date, time, assignedTo], i) => {
-    const c = entry(key)
+  const tasks: Task[] = planned.map((plan, i) => {
+    const c = entry(plan.key)
     return {
       id: `t${i + 1}`,
       title: c.fr,
       titleKey: c.key,
       emoji: c.emoji,
       points: c.points,
-      date,
-      time,
+      date: plan.date,
+      time: plan.time,
       needsLicense: c.needsLicense,
-      assignedTo,
-      autoAssigned: false,
+      beneficiaryIds: plan.forWhom ?? null,
+      assignedTo: plan.takenBy ?? null,
       status: 'todo' as TaskStatus,
       createdBy: byName('Ismaël'),
-      recurring: key === 'breakfast' || key === 'dishes_dinner',
+      recurring: plan.key === 'breakfast' || plan.key === 'dishes_dinner',
+      isClosing: false,
     }
   })
 
-  // Quelques taches deja validees pour que le podium ait du relief.
-  const doneSpecs: Array<[string, string[], string]> = [
-    ['t1', [byName('Lola')], '2026-08-22T09:10:00.000Z'],
-    ['t2', [byName('Ismaël'), byName('Théo')], '2026-08-22T11:30:00.000Z'],
-    ['t3', [byName('Camille'), byName('Sarah')], '2026-08-22T20:10:00.000Z'],
-    ['t4', [byName('Martin')], '2026-08-22T21:40:00.000Z'],
-    ['t6', [byName('Sarah')], '2026-08-23T08:50:00.000Z'],
-    ['t7', [byName('Cajun')], '2026-08-23T12:00:00.000Z'],
-    ['t8', [byName('Théo')], '2026-08-23T11:45:00.000Z'],
-    ['t9', [byName('Lola'), byName('Manon')], '2026-08-23T20:15:00.000Z'],
-  ]
+  // Les taches de cloture, pre-remplies, sur le dernier jour.
+  CLOSING_CATALOG.forEach((c, i) => {
+    tasks.push({
+      id: `k${i + 1}`,
+      title: c.fr,
+      titleKey: c.key,
+      emoji: c.emoji,
+      points: c.points,
+      date: TRIP_END,
+      time: '10:00',
+      needsLicense: c.needsLicense,
+      beneficiaryIds: null,
+      assignedTo: null,
+      status: 'todo',
+      createdBy: byName('Ismaël'),
+      recurring: false,
+      isClosing: true,
+    })
+  })
 
-  const completions = doneSpecs.map(([taskId, participantIds, at], i) => {
+  const all = members.map((m) => m.id)
+  const entries: Entry[] = []
+
+  function validate(taskId: string, doerIds: string[], at: string) {
     const task = tasks.find((t) => t.id === taskId)!
     task.status = 'done'
-    return {
-      id: `c${i + 1}`,
+    const beneficiaryIds = task.beneficiaryIds ?? all
+    entries.push({
+      id: `e${entries.length + 1}`,
       taskId,
-      participantIds,
-      pointsEach: Math.floor(task.points / participantIds.length),
+      kind: 'completion',
+      doerIds,
+      beneficiaryIds,
+      amounts: completionAmounts(task.points, doerIds, beneficiaryIds),
       validatedBy: byName('Ismaël'),
       at,
-    }
-  })
+    })
+  }
 
-  // Hugo n'a pas sorti les poubelles.
+  validate('t1', [byName('Lola')], '2026-08-22T09:10:00.000Z')
+  validate('t2', [byName('Ismaël'), byName('Théo')], '2026-08-22T11:30:00.000Z')
+  validate('t3', [byName('Camille'), byName('Sarah')], '2026-08-22T20:10:00.000Z')
+  validate('t4', [byName('Martin')], '2026-08-22T21:40:00.000Z')
+  validate('t6', [byName('Sarah')], '2026-08-23T09:50:00.000Z')
+  validate('t7', [byName('Cajun')], '2026-08-23T12:00:00.000Z')
+  validate('t8', [byName('Théo')], '2026-08-23T11:45:00.000Z')
+  validate('t9', [byName('Lola'), byName('Manon')], '2026-08-23T20:15:00.000Z')
+  validate('t10', [byName('Ismaël')], '2026-08-23T23:20:00.000Z')
+
+  // Hugo s'etait engage sur les poubelles et ne les a pas sorties.
   const missed = tasks.find((t) => t.id === 't5')!
   missed.status = 'missed'
-  const penalties = [
-    {
-      id: 'p1',
-      taskId: 't5',
-      memberId: byName('Hugo'),
-      points: -30,
-      at: '2026-08-23T09:00:00.000Z',
-    },
-  ]
+  entries.push({
+    id: `e${entries.length + 1}`,
+    taskId: 't5',
+    kind: 'penalty',
+    doerIds: [],
+    beneficiaryIds: all,
+    amounts: penaltyAmounts(PENALTY, byName('Hugo'), all),
+    validatedBy: byName('Ismaël'),
+    at: '2026-08-23T09:00:00.000Z',
+  })
 
   return {
     trip: {
@@ -121,11 +166,11 @@ export function seedState(): TripState {
       startDate: TRIP_START,
       endDate: TRIP_END,
       ownerId: byName('Ismaël'),
-      penalty: 30,
+      penalty: PENALTY,
+      closingOpen: false,
     },
     members,
     tasks,
-    completions,
-    penalties,
+    entries,
   }
 }

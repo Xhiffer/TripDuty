@@ -559,7 +559,7 @@ button {
   margin: 0 auto;
   width: 100%;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
 }
 
 .nav button {
@@ -586,7 +586,7 @@ button {
 .nav-dot {
   position: absolute;
   top: 10px;
-  right: calc(50% - 20px);
+  right: calc(50% - 16px);
   width: 8px;
   height: 8px;
   border-radius: 50%;
@@ -694,7 +694,10 @@ button {
   margin: 22px 0 10px;
   font-weight: 800;
   font-size: 15px;
-  text-transform: capitalize;
+}
+
+.day-head::first-letter {
+  text-transform: uppercase;
 }
 
 .day-head .pill {

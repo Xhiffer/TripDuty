@@ -1,34 +1,41 @@
 import { useState } from 'react'
 import { tripDays, useApp } from '../state'
 import { CATALOG, EMOJI_CHOICES } from '../lib/catalog'
-import { Segmented, Sheet, Toggle } from './ui'
+import { CLOSING_CATALOG } from '../lib/closing'
+import { Avatar, Segmented, Sheet, Toggle } from './ui'
 import { formatDay } from '../lib/i18n'
 
-export function NewTaskSheet({ onClose }: { onClose: () => void }) {
-  const { state, me, lang, t, addTask, activeDate } = useApp()
+export function NewTaskSheet({ closing = false, onClose }: { closing?: boolean; onClose: () => void }) {
+  const { state, me, isChef, lang, t, addTask, activeDate } = useApp()
   const [tab, setTab] = useState<'catalog' | 'custom'>('catalog')
   const [title, setTitle] = useState('')
   const [emoji, setEmoji] = useState('🎯')
   const [points, setPoints] = useState(15)
-  const [date, setDate] = useState(activeDate)
+  const [date, setDate] = useState(closing ? state.trip.endDate : activeDate)
   const [time, setTime] = useState('19:00')
   const [needsLicense, setNeedsLicense] = useState(false)
+  const [isClosing, setIsClosing] = useState(closing)
+  const [scope, setScope] = useState<'all' | 'some'>('all')
+  const [beneficiaries, setBeneficiaries] = useState<string[]>(me ? [me.id] : [])
   const days = tripDays(state.trip)
+  const catalog = closing ? CLOSING_CATALOG : CATALOG
 
   function create(fields: { title: string; titleKey?: string; emoji: string; points: number; needsLicense: boolean }) {
     addTask({
       ...fields,
       date,
       time,
+      beneficiaryIds: scope === 'all' ? null : beneficiaries,
       assignedTo: null,
       createdBy: me?.id ?? '',
       recurring: false,
+      isClosing,
     })
     onClose()
   }
 
   return (
-    <Sheet title={t('newTask')} onClose={onClose}>
+    <Sheet title={closing ? t('addClosingTask') : t('newTask')} onClose={onClose}>
       <div style={{ marginBottom: 16 }}>
         <Segmented
           value={tab}
@@ -40,7 +47,7 @@ export function NewTaskSheet({ onClose }: { onClose: () => void }) {
         />
       </div>
 
-      <div className="row" style={{ gap: 10, marginBottom: 16 }}>
+      <div className="row" style={{ gap: 10, marginBottom: 14 }}>
         <label className="field" style={{ flex: 1, marginBottom: 0 }}>
           <span className="field-label">{t('taskDate')}</span>
           <select className="input" value={date} onChange={(e) => setDate(e.target.value)}>
@@ -57,9 +64,45 @@ export function NewTaskSheet({ onClose }: { onClose: () => void }) {
         </label>
       </div>
 
+      <div className="field-label">{t('forWhom')}</div>
+      <div style={{ marginBottom: 12 }}>
+        <Segmented
+          value={scope}
+          onChange={setScope}
+          options={[
+            { value: 'all', label: t('everyone') },
+            { value: 'some', label: t('choosePeople') },
+          ]}
+        />
+      </div>
+
+      {scope === 'some' && (
+        <div className="people-grid" style={{ marginBottom: 16 }}>
+          {state.members.map((m) => (
+            <button
+              key={m.id}
+              type="button"
+              className={`person-chip ${beneficiaries.includes(m.id) ? 'is-on' : ''}`}
+              onClick={() =>
+                setBeneficiaries((prev) => (prev.includes(m.id) ? prev.filter((x) => x !== m.id) : [...prev, m.id]))
+              }
+            >
+              <Avatar member={m} size={38} />
+              <span>{m.name}</span>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {isChef && !closing && (
+        <div style={{ marginBottom: 16 }}>
+          <Toggle checked={isClosing} onChange={setIsClosing} label={t('isClosingTask')} />
+        </div>
+      )}
+
       {tab === 'catalog' ? (
         <div className="stack">
-          {CATALOG.map((c) => (
+          {catalog.map((c) => (
             <button
               key={c.key}
               type="button"
@@ -79,7 +122,7 @@ export function NewTaskSheet({ onClose }: { onClose: () => void }) {
                 <span className="task-title">{lang === 'en' ? c.en : c.fr}</span>
                 {c.needsLicense && (
                   <span className="task-sub">
-                    <span className="pill">{t('licenseNeeded')}</span>
+                    <span className="pill">🔑 {t('licenseNeeded')}</span>
                   </span>
                 )}
               </span>
@@ -132,7 +175,7 @@ export function NewTaskSheet({ onClose }: { onClose: () => void }) {
           <button
             type="button"
             className="btn btn-primary btn-block"
-            disabled={!title.trim()}
+            disabled={!title.trim() || (scope === 'some' && beneficiaries.length === 0)}
             onClick={() => create({ title: title.trim(), emoji, points, needsLicense })}
           >
             {t('create')}
