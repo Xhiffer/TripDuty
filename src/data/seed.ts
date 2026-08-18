@@ -13,13 +13,13 @@ const PENALTY = 30
 const PEOPLE: Array<[string, boolean, 'owner' | 'chef' | 'member']> = [
   ['Ismaël', true, 'owner'],
   ['Lola', true, 'chef'],
-  ['Cajun', true, 'member'],
+  ['Matthew', true, 'member'],
+  ['Kejian', false, 'member'],
+  ['Said', false, 'member'],
   ['Martin', false, 'member'],
-  ['Camille', false, 'member'],
-  ['Théo', false, 'member'],
-  ['Sarah', false, 'member'],
-  ['Hugo', false, 'member'],
-  ['Manon', false, 'member'],
+  ['Jack', false, 'member'],
+  ['Victor', false, 'member'],
+  ['Charlie', false, 'member'],
 ]
 
 function entry(key: string) {
@@ -52,19 +52,19 @@ export function seedState(): TripState {
   const planned: Plan[] = [
     { key: 'breakfast', date: TRIP_START, time: '08:30', takenBy: byName('Lola') },
     { key: 'big_groceries', date: TRIP_START, time: '10:00', takenBy: byName('Ismaël') },
-    { key: 'cook_meal', date: TRIP_START, time: '19:00', takenBy: byName('Camille') },
-    { key: 'dishes_dinner', date: TRIP_START, time: '21:00', takenBy: byName('Martin') },
-    { key: 'bins', date: TRIP_START, time: '21:30', takenBy: byName('Hugo') },
-    // Petit-dej tardif prepare par Sarah pour quatre personnes seulement.
+    { key: 'cook_meal', date: TRIP_START, time: '19:00', takenBy: byName('Said') },
+    { key: 'dishes_dinner', date: TRIP_START, time: '21:00', takenBy: byName('Kejian') },
+    { key: 'bins', date: TRIP_START, time: '21:30', takenBy: byName('Victor') },
+    // Petit-dej tardif prepare par Jack pour quatre personnes seulement.
     {
       key: 'breakfast',
       date: '2026-08-23',
       time: '10:30',
-      forWhom: [byName('Sarah'), byName('Martin'), byName('Camille'), byName('Théo')],
-      takenBy: byName('Sarah'),
+      forWhom: [byName('Jack'), byName('Kejian'), byName('Said'), byName('Martin')],
+      takenBy: byName('Jack'),
     },
-    { key: 'drive_long', date: '2026-08-23', time: '11:00', takenBy: byName('Cajun') },
-    { key: 'plan_outing', date: '2026-08-23', time: '12:00', takenBy: byName('Théo') },
+    { key: 'drive_long', date: '2026-08-23', time: '11:00', takenBy: byName('Matthew') },
+    { key: 'plan_outing', date: '2026-08-23', time: '12:00', takenBy: byName('Martin') },
     { key: 'cook_meal', date: '2026-08-23', time: '19:00', takenBy: byName('Lola') },
     // Ismael arrive tard et se fait son sandwich tout seul : personne ne bouge.
     { key: 'cook_meal', date: '2026-08-23', time: '23:00', forWhom: [byName('Ismaël')], takenBy: byName('Ismaël') },
@@ -136,16 +136,16 @@ export function seedState(): TripState {
   }
 
   validate('t1', [byName('Lola')], '2026-08-22T09:10:00.000Z')
-  validate('t2', [byName('Ismaël'), byName('Théo')], '2026-08-22T11:30:00.000Z')
-  validate('t3', [byName('Camille'), byName('Sarah')], '2026-08-22T20:10:00.000Z')
-  validate('t4', [byName('Martin')], '2026-08-22T21:40:00.000Z')
-  validate('t6', [byName('Sarah')], '2026-08-23T09:50:00.000Z')
-  validate('t7', [byName('Cajun')], '2026-08-23T12:00:00.000Z')
-  validate('t8', [byName('Théo')], '2026-08-23T11:45:00.000Z')
-  validate('t9', [byName('Lola'), byName('Manon')], '2026-08-23T20:15:00.000Z')
+  validate('t2', [byName('Ismaël'), byName('Martin')], '2026-08-22T11:30:00.000Z')
+  validate('t3', [byName('Said'), byName('Jack')], '2026-08-22T20:10:00.000Z')
+  validate('t4', [byName('Kejian')], '2026-08-22T21:40:00.000Z')
+  validate('t6', [byName('Jack')], '2026-08-23T09:50:00.000Z')
+  validate('t7', [byName('Matthew')], '2026-08-23T12:00:00.000Z')
+  validate('t8', [byName('Martin')], '2026-08-23T11:45:00.000Z')
+  validate('t9', [byName('Lola'), byName('Charlie')], '2026-08-23T20:15:00.000Z')
   validate('t10', [byName('Ismaël')], '2026-08-23T23:20:00.000Z')
 
-  // Hugo s'etait engage sur les poubelles et ne les a pas sorties.
+  // Victor s'etait engage sur les poubelles et ne les a pas sorties.
   const missed = tasks.find((t) => t.id === 't5')!
   missed.status = 'missed'
   entries.push({
@@ -154,7 +154,7 @@ export function seedState(): TripState {
     kind: 'penalty',
     doerIds: [],
     beneficiaryIds: all,
-    amounts: penaltyAmounts(PENALTY, byName('Hugo'), all),
+    amounts: penaltyAmounts(PENALTY, byName('Victor'), all),
     validatedBy: byName('Ismaël'),
     at: '2026-08-23T09:00:00.000Z',
   })
