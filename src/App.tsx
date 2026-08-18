@@ -10,6 +10,7 @@ import { Planning } from './screens/Planning'
 import { Closing } from './screens/Closing'
 import { Me } from './screens/Me'
 import { Avatar } from './components/ui'
+import { InstallPrompt } from './components/InstallPrompt'
 import { formatDay } from './lib/i18n'
 
 type Tab = 'home' | 'ranking' | 'planning' | 'closing' | 'me'
@@ -27,10 +28,23 @@ export function App() {
     if (result.ok) window.location.hash = ''
   }, [account, joinByCode])
 
-  if (!account) return <Auth />
-  if (!account.firstName || !account.birthDate) return <ProfileSetup />
-  if (!conceptSeen) return <Concept />
-  if (!view || !me) return <Groups />
+  // Avant d'etre dans un groupe, il n'y a pas de barre de navigation en bas :
+  // l'invitation a installer se cale plus bas.
+  if (!account || !account.firstName || !account.birthDate || !conceptSeen || !view || !me) {
+    let screen = <Auth />
+    if (!account) screen = <Auth />
+    else if (!account.firstName || !account.birthDate) screen = <ProfileSetup />
+    else if (!conceptSeen) screen = <Concept />
+    else screen = <Groups />
+    return (
+      <>
+        {screen}
+        <div className="no-nav">
+          <InstallPrompt />
+        </div>
+      </>
+    )
+  }
 
   const mine = rows.find((r) => r.member.id === me.id)
   const owes = !!mine && mine.centi < 0
@@ -84,6 +98,8 @@ export function App() {
           ))}
         </div>
       </nav>
+
+      <InstallPrompt />
     </div>
   )
 }

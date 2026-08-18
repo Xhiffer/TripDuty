@@ -219,6 +219,14 @@ const fr: Dict = {
   host: 'Hôte',
   licenseYes: 'J’ai le permis',
   licenseNo: 'Pas de permis',
+  // installation sur l'ecran d'accueil
+  installTitle: 'Mets Trip Duty sur ton écran d’accueil',
+  installBodyAndroid: 'Elle s’ouvrira comme une vraie application, en plein écran.',
+  installBodyIos: 'Elle s’ouvrira comme une vraie application, en plein écran.',
+  installNow: 'Installer',
+  installIosStep1: 'Appuie sur le bouton Partager',
+  installIosStep2: 'Choisis « Sur l’écran d’accueil »',
+  later: 'Plus tard',
 }
 
 const en: Dict = {
@@ -424,6 +432,13 @@ const en: Dict = {
   host: 'Host',
   licenseYes: 'I can drive',
   licenseNo: 'No licence',
+  installTitle: 'Add Trip Duty to your home screen',
+  installBodyAndroid: 'It will open like a real app, full screen.',
+  installBodyIos: 'It will open like a real app, full screen.',
+  installNow: 'Install',
+  installIosStep1: 'Tap the Share button',
+  installIosStep2: 'Choose "Add to Home Screen"',
+  later: 'Later',
 }
 
 const dicts: Record<Lang, Dict> = { fr, en }
