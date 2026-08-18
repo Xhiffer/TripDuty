@@ -1,17 +1,8 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
-import type {
-  Account,
-  AppData,
-  Group,
-  GroupKind,
-  GroupView,
-  Lang,
-  Person,
-  Role,
-  Task,
-  Theme,
-} from './types'
+import type { Account, AppData, Group, GroupKind, GroupView, Lang, Person, Role, Task, Theme } from './types'
+import type { Mutation } from './data/mutations'
+import { applyMutation } from './data/mutations'
 import { store } from './data/store'
 import { balances, beneficiariesOf, completionAmounts, penaltyAmounts } from './lib/ledger'
 import { CLOSING_CATALOG } from './lib/closing'
@@ -94,7 +85,13 @@ interface Ctx {
   }) => Group
   joinByCode: (code: string) => Result
   inviteByEmail: (email: string) => Result
-  leaveGroup: (groupId: string) => void
+  /**
+   * Quitter un groupe. L'hote doit designer son successeur : un groupe ne doit
+   * jamais se retrouver sans responsable. S'il ne reste qu'une personne, c'est
+   * elle sans qu'on le lui demande ; s'il ne reste personne, le groupe part.
+   * Meme regle que leave_group() dans supabase/migrations/0003_rpc.sql.
+   */
+  leaveGroup: (groupId: string, newHostId?: string) => Result
   updateGroup: (patch: Partial<Group>) => void
   setRole: (accountId: string, role: Role) => void
   setLicense: (accountId: string, hasLicense: boolean) => void
@@ -118,22 +115,53 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Lang>(() => (localStorage.getItem(LANG_KEY) as Lang) || 'fr')
   const [theme, setThemeState] = useState<Theme>(() => (localStorage.getItem(THEME_KEY) as Theme) || 'dark')
 
-  useEffect(() => {
-    store.load().then(setData)
+  // L'etat le plus recent, lisible immediatement. `useState` ne rend la nouvelle
+  // valeur qu'au rendu suivant : deux gestes rapproches liraient sinon le meme
+  // etat, et le second annulerait le premier.
+  const latest = useRef<AppData | null>(null)
+
+  const receive = useCallback((next: AppData) => {
+    latest.current = next
+    setData(next)
   }, [])
+
+  useEffect(() => {
+    store.load().then(receive)
+    // Un changement venu d'ailleurs (autre onglet aujourd'hui, autre telephone
+    // une fois la base branchee) remplace l'etat sans repasser par une mutation :
+    // il a deja ete applique a la source.
+    return store.subscribe?.(receive)
+  }, [receive])
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme
     document.documentElement.lang = lang
   }, [theme, lang])
 
-  const update = useCallback((fn: (draft: AppData) => AppData) => {
-    setData((current) => {
-      if (!current) return current
-      const next = fn(current)
-      void store.save(next)
-      return next
-    })
+  /**
+   * Traduit un geste en mutation, l'affiche aussitot, puis l'envoie au magasin.
+   *
+   * `build` recoit l'etat courant parce qu'une mutation doit partir avec tout ce
+   * qu'il lui faut : les points de la tache, les montants calcules,
+   * l'horodatage. Une fois construite, elle ne depend plus de ce que le
+   * destinataire croit savoir.
+   *
+   * Rendre `null` annule le geste, lorsqu'il n'a plus de sens.
+   */
+  const dispatch = useCallback((build: (current: AppData) => Mutation | Mutation[] | null) => {
+    const current = latest.current
+    if (!current) return
+    const built = build(current)
+    if (!built) return
+
+    // L'affichage n'attend pas l'ecriture : le geste apparait tout de suite.
+    let next = current
+    for (const mutation of Array.isArray(built) ? built : [built]) {
+      next = applyMutation(next, mutation)
+      void store.apply(mutation)
+    }
+    latest.current = next
+    setData(next)
   }, [])
 
   const t = useMemo(() => translator(lang), [lang])
@@ -149,7 +177,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
 
     const group = data.groups.find((g) => g.id === groupId) ?? null
-    const belongs = !!group && !!account && data.memberships.some((m) => m.groupId === group.id && m.accountId === account.id)
+    const belongs =
+      !!group && !!account && data.memberships.some((m) => m.groupId === group.id && m.accountId === account.id)
 
     let view: GroupView | null = null
     if (group && belongs) {
@@ -227,7 +256,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           color: colorFor(id),
           createdAt: new Date().toISOString(),
         }
-        update((d) => ({ ...d, accounts: [...d.accounts, created] }))
+        dispatch(() => ({ type: 'addAccount', account: created }))
         localStorage.setItem(SESSION_KEY, id)
         setAccountId(id)
         return { ok: true }
@@ -253,10 +282,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
       updateProfile: (patch) => {
         if (!account) return
-        update((d) => ({
-          ...d,
-          accounts: d.accounts.map((a) => (a.id === account.id ? { ...a, ...patch } : a)),
-        }))
+        dispatch(() => ({ type: 'updateProfile', accountId: account.id, patch }))
       },
 
       markConceptSeen: () => {
@@ -272,6 +298,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
       createGroup: (input) => {
         const id = uid('g')
+        const now = new Date().toISOString()
+        const hostId = account?.id ?? ''
         const created: Group = {
           id,
           kind: input.kind,
@@ -280,11 +308,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
           color: input.color,
           startDate: input.startDate,
           endDate: input.endDate,
-          hostId: account?.id ?? '',
+          hostId,
           inviteCode: makeInviteCode(),
           penalty: 30,
           closingOpen: false,
-          createdAt: new Date().toISOString(),
+          createdAt: now,
         }
         // Les taches de cloture sont pre-remplies, le chef les modifie ensuite.
         const closingTasks: Task[] = CLOSING_CATALOG.map((c) => ({
@@ -300,25 +328,24 @@ export function AppProvider({ children }: { children: ReactNode }) {
           beneficiaryIds: null,
           assignedTo: null,
           status: 'todo' as const,
-          createdBy: account?.id ?? '',
+          createdBy: hostId,
           recurring: false,
           isClosing: true,
         }))
-        update((d) => ({
-          ...d,
-          groups: [...d.groups, created],
-          tasks: [...d.tasks, ...closingTasks],
-          memberships: [
-            ...d.memberships,
-            {
-              id: uid('ms'),
-              groupId: id,
-              accountId: account?.id ?? '',
-              role: 'host' as Role,
-              hasLicense: input.hasLicense,
-              joinedAt: new Date().toISOString(),
-            },
-          ],
+        // Un seul geste : le groupe, son hote et ses taches arrivent ensemble
+        // ou pas du tout.
+        dispatch(() => ({
+          type: 'addGroup',
+          group: created,
+          membership: {
+            id: uid('ms'),
+            groupId: id,
+            accountId: hostId,
+            role: 'host' as Role,
+            hasLicense: input.hasLicense,
+            joinedAt: now,
+          },
+          closingTasks,
         }))
         // On ne bascule pas tout de suite dans le groupe : l'ecran d'invitation
         // vient d'abord, c'est lui qui appelle selectGroup ensuite.
@@ -329,138 +356,123 @@ export function AppProvider({ children }: { children: ReactNode }) {
         if (!account) return { ok: false, error: 'notSignedIn' }
         const target = data.groups.find((g) => g.inviteCode.toUpperCase() === code.trim().toUpperCase())
         if (!target) return { ok: false, error: 'unknownCode' }
-        const already = data.memberships.some((m) => m.groupId === target.id && m.accountId === account.id)
-        if (!already) {
-          update((d) => ({
-            ...d,
-            memberships: [
-              ...d.memberships,
-              {
-                id: uid('ms'),
-                groupId: target.id,
-                accountId: account.id,
-                role: 'member' as Role,
-                hasLicense: false,
-                joinedAt: new Date().toISOString(),
-              },
-            ],
-          }))
-        }
+        dispatch(() => ({
+          type: 'addMembership',
+          membership: {
+            id: uid('ms'),
+            groupId: target.id,
+            accountId: account.id,
+            role: 'member' as Role,
+            hasLicense: false,
+            joinedAt: new Date().toISOString(),
+          },
+        }))
         localStorage.setItem(GROUP_KEY, target.id)
         setGroupId(target.id)
         return { ok: true }
       },
 
-      // L'invitation par e-mail ne marche que si la personne a deja un compte.
-      inviteByEmail: (email) => {
-        const current = requireGroup()
-        if (!current) return { ok: false, error: 'noGroup' }
-        const clean = normalizeEmail(email)
-        const invited = data.accounts.find((a) => normalizeEmail(a.email) === clean)
-        if (!invited) return { ok: false, error: 'noAccountForEmail' }
-        if (data.memberships.some((m) => m.groupId === current.id && m.accountId === invited.id)) {
-          return { ok: false, error: 'alreadyMember' }
-        }
-        update((d) => ({
-          ...d,
-          memberships: [
-            ...d.memberships,
-            {
-              id: uid('ms'),
-              groupId: current.id,
-              accountId: invited.id,
-              role: 'member' as Role,
-              hasLicense: false,
-              joinedAt: new Date().toISOString(),
-            },
-          ],
-        }))
-        return { ok: true }
-      },
+      // Desactivee : chercher qui possede une adresse permettrait de tester des
+      // adresses pour savoir qui a un compte ici. Le code d'invitation suffit.
+      inviteByEmail: () => ({ ok: false, error: 'inviteByEmailDisabled' }),
 
-      leaveGroup: (id) => {
-        if (!account) return
-        update((d) => ({
-          ...d,
-          memberships: d.memberships.filter((m) => !(m.groupId === id && m.accountId === account.id)),
-        }))
-        if (groupId === id) {
-          localStorage.removeItem(GROUP_KEY)
-          setGroupId(null)
+      leaveGroup: (id, newHostId) => {
+        if (!account) return { ok: false, error: 'notSignedIn' }
+        const mine = data.memberships.find((m) => m.groupId === id && m.accountId === account.id)
+        if (!mine) return { ok: false, error: 'notMember' }
+
+        const others = data.memberships.filter((m) => m.groupId === id && m.accountId !== account.id)
+        const forget = () => {
+          if (groupId === id) {
+            localStorage.removeItem(GROUP_KEY)
+            setGroupId(null)
+          }
         }
+
+        // Un simple membre part sans ceremonie.
+        if (mine.role !== 'host') {
+          dispatch(() => ({ type: 'removeMembership', groupId: id, accountId: account.id }))
+          forget()
+          return { ok: true }
+        }
+
+        // Plus personne ne reste : le groupe disparait. Le garder laisserait un
+        // code d'invitation actif que plus personne ne peut fermer.
+        if (others.length === 0) {
+          dispatch(() => ({ type: 'removeGroup', groupId: id }))
+          forget()
+          return { ok: true }
+        }
+
+        // Une seule personne reste : inutile de le lui demander, c'est elle.
+        const heir =
+          others.length === 1 ? others[0].accountId : others.find((m) => m.accountId === newHostId)?.accountId
+        if (!heir) {
+          return { ok: false, error: newHostId ? 'newHostNotMember' : 'chooseNewHost' }
+        }
+
+        dispatch(() => [
+          { type: 'setRole', groupId: id, accountId: heir, role: 'host' as Role },
+          { type: 'updateGroup', groupId: id, patch: { hostId: heir } },
+          { type: 'removeMembership', groupId: id, accountId: account.id },
+        ])
+        forget()
+        return { ok: true }
       },
 
       updateGroup: (patch) => {
         const current = requireGroup()
         if (!current) return
-        update((d) => ({
-          ...d,
-          groups: d.groups.map((g) => (g.id === current.id ? { ...g, ...patch } : g)),
-        }))
+        dispatch(() => ({ type: 'updateGroup', groupId: current.id, patch }))
       },
 
       setRole: (targetId, role) => {
         const current = requireGroup()
         if (!current) return
-        update((d) => ({
-          ...d,
-          memberships: d.memberships.map((m) =>
-            m.groupId === current.id && m.accountId === targetId && m.role !== 'host' ? { ...m, role } : m,
-          ),
-        }))
+        dispatch(() => ({ type: 'setRole', groupId: current.id, accountId: targetId, role }))
       },
 
       setLicense: (targetId, hasLicense) => {
         const current = requireGroup()
         if (!current) return
-        update((d) => ({
-          ...d,
-          memberships: d.memberships.map((m) =>
-            m.groupId === current.id && m.accountId === targetId ? { ...m, hasLicense } : m,
-          ),
-        }))
+        dispatch(() => ({ type: 'setLicense', groupId: current.id, accountId: targetId, hasLicense }))
       },
 
       addTask: (task) => {
         const current = requireGroup()
         if (!current) return
-        update((d) => ({
-          ...d,
-          tasks: [...d.tasks, { ...task, id: uid('t'), groupId: current.id, status: 'todo' }],
+        dispatch(() => ({
+          type: 'addTask',
+          task: { ...task, id: uid('t'), groupId: current.id, status: 'todo' },
         }))
       },
 
       takeTask: (taskId, who) => {
-        update((d) => ({
-          ...d,
-          tasks: d.tasks.map((task) => (task.id === taskId ? { ...task, assignedTo: who } : task)),
-        }))
+        dispatch(() => ({ type: 'assignTask', taskId, accountId: who }))
       },
 
       validateTask: (taskId, doerIds, beneficiaryIds) => {
         if (doerIds.length === 0 || beneficiaryIds.length === 0) return
         const current = requireGroup()
         if (!current || !account) return
-        update((d) => {
+        dispatch((d) => {
           const task = d.tasks.find((x) => x.id === taskId)
-          if (!task) return d
+          if (!task) return null
           return {
-            ...d,
-            tasks: d.tasks.map((x) => (x.id === taskId ? { ...x, status: 'done' as const } : x)),
-            entries: [
-              ...d.entries.filter((e) => e.taskId !== taskId),
-              {
-                id: uid('e'),
-                groupId: current.id,
-                taskId,
-                kind: 'completion' as const,
-                doerIds,
-                beneficiaryIds,
-                amounts: completionAmounts(task.points, doerIds, beneficiaryIds),
-                validatedBy: account.id,
-                at: new Date().toISOString(),
-              },
-            ],
+            type: 'settleTask',
+            taskId,
+            status: 'done',
+            entry: {
+              id: uid('e'),
+              groupId: current.id,
+              taskId,
+              kind: 'completion',
+              doerIds,
+              beneficiaryIds,
+              amounts: completionAmounts(task.points, doerIds, beneficiaryIds),
+              validatedBy: account.id,
+              at: new Date().toISOString(),
+            },
           }
         })
       },
@@ -469,55 +481,48 @@ export function AppProvider({ children }: { children: ReactNode }) {
       markMissed: (taskId) => {
         const current = requireGroup()
         if (!current || !account || !view) return
-        update((d) => {
+        dispatch((d) => {
           const task = d.tasks.find((x) => x.id === taskId)
-          if (!task || !task.assignedTo) return d
+          if (!task || !task.assignedTo) return null
           const beneficiaryIds = beneficiariesOf(task, view!.members)
           return {
-            ...d,
-            tasks: d.tasks.map((x) => (x.id === taskId ? { ...x, status: 'missed' as const } : x)),
-            entries: [
-              ...d.entries.filter((e) => e.taskId !== taskId),
-              {
-                id: uid('e'),
-                groupId: current.id,
-                taskId,
-                kind: 'penalty' as const,
-                doerIds: [],
-                beneficiaryIds,
-                amounts: penaltyAmounts(current.penalty, task.assignedTo, beneficiaryIds),
-                validatedBy: account.id,
-                at: new Date().toISOString(),
-              },
-            ],
+            type: 'settleTask',
+            taskId,
+            status: 'missed',
+            entry: {
+              id: uid('e'),
+              groupId: current.id,
+              taskId,
+              kind: 'penalty',
+              doerIds: [],
+              beneficiaryIds,
+              amounts: penaltyAmounts(current.penalty, task.assignedTo, beneficiaryIds),
+              validatedBy: account.id,
+              at: new Date().toISOString(),
+            },
           }
         })
       },
 
       reopenTask: (taskId) => {
-        update((d) => ({
-          ...d,
-          tasks: d.tasks.map((x) => (x.id === taskId ? { ...x, status: 'todo' as const } : x)),
-          entries: d.entries.filter((e) => e.taskId !== taskId),
-        }))
+        dispatch(() => ({ type: 'reopenTask', taskId }))
       },
 
       deleteTask: (taskId) => {
-        update((d) => ({
-          ...d,
-          tasks: d.tasks.filter((x) => x.id !== taskId),
-          entries: d.entries.filter((e) => e.taskId !== taskId),
-        }))
+        dispatch(() => ({ type: 'deleteTask', taskId }))
       },
 
+      // Le bouton reste une bascule, mais ce qui part sur le reseau est la
+      // valeur voulue : deux telephones qui appuient en meme temps tombent
+      // d'accord, au lieu de s'annuler.
       toggleRecurring: (taskId) => {
-        update((d) => ({
-          ...d,
-          tasks: d.tasks.map((x) => (x.id === taskId ? { ...x, recurring: !x.recurring } : x)),
-        }))
+        dispatch((d) => {
+          const task = d.tasks.find((x) => x.id === taskId)
+          return task ? { type: 'setRecurring', taskId, recurring: !task.recurring } : null
+        })
       },
     }
-  }, [data, accountId, groupId, conceptSeen, lang, theme, t, update])
+  }, [data, accountId, groupId, conceptSeen, lang, theme, t, dispatch])
 
   if (!value) return null
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>
