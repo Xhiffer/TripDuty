@@ -32,8 +32,6 @@ export function Home({ goRanking }: { goRanking: () => void }) {
 
   return (
     <>
-      <div className="banner">{t('demoBanner')}</div>
-
       <div className="section-title">{t('podium')}</div>
       <div className="card">
         <div className="podium">

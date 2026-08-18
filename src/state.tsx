@@ -1,32 +1,17 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
-import type {
-  Account,
-  AppData,
-  Group,
-  GroupKind,
-  GroupView,
-  Lang,
-  Person,
-  Role,
-  Task,
-  Theme,
-} from './types'
-import { store } from './data/store'
-import { balances, beneficiariesOf, completionAmounts, penaltyAmounts } from './lib/ledger'
-import { CLOSING_CATALOG } from './lib/closing'
-import { colorFor, fullName, hashPassword, makeInviteCode, normalizeEmail } from './lib/identity'
+import type { Account, Group, GroupKind, GroupView, Lang, Person, Role, Task, Theme } from './types'
+import { ApiError, api, type GroupSummary } from './data/api'
+import { balances } from './lib/ledger'
 import { translator } from './lib/i18n'
 
-const SESSION_KEY = 'tripduty:session'
 const GROUP_KEY = 'tripduty:group'
 const LANG_KEY = 'tripduty:lang'
 const THEME_KEY = 'tripduty:theme'
 const CONCEPT_KEY = 'tripduty:concept-seen'
 
-function uid(prefix: string) {
-  return `${prefix}${Math.random().toString(36).slice(2, 9)}`
-}
+/** Toutes les 4 secondes, on demande juste au serveur si quelque chose a bouge. */
+const POLL_MS = 4000
 
 function todayISO() {
   const d = new Date()
@@ -60,14 +45,24 @@ export function groupDays(group: Group): string[] {
 
 export type Result = { ok: true } | { ok: false; error: string }
 
+async function attempt(run: () => Promise<unknown>): Promise<Result> {
+  try {
+    await run()
+    return { ok: true }
+  } catch (error) {
+    return { ok: false, error: error instanceof ApiError ? error.code : 'serverError' }
+  }
+}
+
 interface Ctx {
-  data: AppData
+  loading: boolean
+  offline: boolean
   account: Account | null
   view: GroupView | null
   me: Person | null
   isChef: boolean
   isHost: boolean
-  myGroups: Group[]
+  myGroups: GroupSummary[]
   conceptSeen: boolean
   lang: Lang
   theme: Theme
@@ -75,13 +70,11 @@ interface Ctx {
   activeDate: string
   setLang: (l: Lang) => void
   setTheme: (th: Theme) => void
-  // compte
   signUp: (email: string, password: string) => Promise<Result>
   signIn: (email: string, password: string) => Promise<Result>
   signOut: () => void
-  updateProfile: (patch: Partial<Omit<Account, 'id' | 'passwordHash'>>) => void
+  updateProfile: (patch: Partial<Account>) => void
   markConceptSeen: () => void
-  // groupes
   selectGroup: (groupId: string | null) => void
   createGroup: (input: {
     kind: GroupKind
@@ -91,14 +84,13 @@ interface Ctx {
     startDate: string
     endDate: string
     hasLicense: boolean
-  }) => Group
-  joinByCode: (code: string) => Result
-  inviteByEmail: (email: string) => Result
+  }) => Promise<Group | null>
+  joinByCode: (code: string) => Promise<Result>
+  inviteByEmail: (email: string) => Promise<Result>
   leaveGroup: (groupId: string) => void
   updateGroup: (patch: Partial<Group>) => void
   setRole: (accountId: string, role: Role) => void
   setLicense: (accountId: string, hasLicense: boolean) => void
-  // taches
   addTask: (task: Omit<Task, 'id' | 'status' | 'groupId'>) => void
   takeTask: (taskId: string, accountId: string | null) => void
   validateTask: (taskId: string, doerIds: string[], beneficiaryIds: string[]) => void
@@ -111,84 +103,121 @@ interface Ctx {
 const AppContext = createContext<Ctx | null>(null)
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [data, setData] = useState<AppData | null>(null)
-  const [accountId, setAccountId] = useState<string | null>(() => localStorage.getItem(SESSION_KEY))
+  const [loading, setLoading] = useState(true)
+  const [offline, setOffline] = useState(false)
+  const [account, setAccount] = useState<Account | null>(null)
+  const [myGroups, setMyGroups] = useState<GroupSummary[]>([])
+  const [view, setView] = useState<GroupView | null>(null)
   const [groupId, setGroupId] = useState<string | null>(() => localStorage.getItem(GROUP_KEY))
   const [conceptSeen, setConceptSeen] = useState(() => localStorage.getItem(CONCEPT_KEY) === '1')
   const [lang, setLangState] = useState<Lang>(() => (localStorage.getItem(LANG_KEY) as Lang) || 'fr')
   const [theme, setThemeState] = useState<Theme>(() => (localStorage.getItem(THEME_KEY) as Theme) || 'dark')
-
-  useEffect(() => {
-    store.load().then(setData)
-  }, [])
+  const version = useRef(0)
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme
     document.documentElement.lang = lang
   }, [theme, lang])
 
-  const update = useCallback((fn: (draft: AppData) => AppData) => {
-    setData((current) => {
-      if (!current) return current
-      const next = fn(current)
-      void store.save(next)
-      return next
-    })
+  const loadAccount = useCallback(async () => {
+    try {
+      const { account: me, groups } = await api.me()
+      setAccount(me)
+      setMyGroups(groups)
+      setOffline(false)
+      return groups
+    } catch (error) {
+      if (error instanceof ApiError && error.code === 'notSignedIn') {
+        setAccount(null)
+        setMyGroups([])
+        setOffline(false)
+      } else {
+        setOffline(true)
+      }
+      return []
+    }
   }, [])
+
+  const loadGroup = useCallback(async (id: string) => {
+    try {
+      const remote = await api.group(id)
+      version.current = remote.version
+      setView({ group: remote.group, members: remote.members, tasks: remote.tasks, entries: remote.entries })
+      setOffline(false)
+    } catch (error) {
+      if (error instanceof ApiError && error.code === 'notInGroup') {
+        localStorage.removeItem(GROUP_KEY)
+        setGroupId(null)
+        setView(null)
+      } else if (!(error instanceof ApiError)) {
+        setOffline(true)
+      }
+    }
+  }, [])
+
+  useEffect(() => {
+    void (async () => {
+      const groups = await loadAccount()
+      const wanted = localStorage.getItem(GROUP_KEY)
+      if (wanted && groups.some((g) => g.id === wanted)) await loadGroup(wanted)
+      setLoading(false)
+    })()
+  }, [loadAccount, loadGroup])
+
+  useEffect(() => {
+    if (!groupId) {
+      setView(null)
+      return
+    }
+    void loadGroup(groupId)
+  }, [groupId, loadGroup])
+
+  // Les autres telephones bougent aussi : on verifie regulierement.
+  useEffect(() => {
+    if (!groupId || !account) return
+    let stopped = false
+    const timer = setInterval(async () => {
+      if (document.hidden || stopped) return
+      try {
+        const { version: remote } = await api.version(groupId)
+        setOffline(false)
+        if (remote !== version.current) await loadGroup(groupId)
+      } catch {
+        setOffline(true)
+      }
+    }, POLL_MS)
+    return () => {
+      stopped = true
+      clearInterval(timer)
+    }
+  }, [groupId, account, loadGroup])
+
+  const refresh = useCallback(async () => {
+    if (groupId) await loadGroup(groupId)
+    await loadAccount()
+  }, [groupId, loadAccount, loadGroup])
+
+  /** Lance une ecriture puis recharge, sans bloquer l'ecran qui l'a demandee. */
+  const run = useCallback(
+    (action: () => Promise<unknown>) => {
+      void action()
+        .then(() => refresh())
+        .catch(() => setOffline(true))
+    },
+    [refresh],
+  )
 
   const t = useMemo(() => translator(lang), [lang])
 
-  const value = useMemo<Ctx | null>(() => {
-    if (!data) return null
-
-    const account = data.accounts.find((a) => a.id === accountId) ?? null
-    const myMemberships = account ? data.memberships.filter((m) => m.accountId === account.id) : []
-    const myGroups = myMemberships
-      .map((m) => data.groups.find((g) => g.id === m.groupId))
-      .filter((g): g is Group => !!g)
-      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
-
-    const group = data.groups.find((g) => g.id === groupId) ?? null
-    const belongs = !!group && !!account && data.memberships.some((m) => m.groupId === group.id && m.accountId === account.id)
-
-    let view: GroupView | null = null
-    if (group && belongs) {
-      const members: Person[] = data.memberships
-        .filter((m) => m.groupId === group.id)
-        .map((m) => {
-          const person = data.accounts.find((a) => a.id === m.accountId)
-          if (!person) return null
-          return {
-            id: person.id,
-            name: person.firstName || person.email,
-            photo: person.photo,
-            color: person.color || colorFor(person.id),
-            hasLicense: m.hasLicense,
-            role: m.role,
-            joinedAt: m.joinedAt,
-          }
-        })
-        .filter((p): p is Person => !!p)
-        .sort((a, b) => a.joinedAt.localeCompare(b.joinedAt))
-
-      view = {
-        group,
-        members,
-        tasks: data.tasks.filter((task) => task.groupId === group.id),
-        entries: data.entries.filter((e) => e.groupId === group.id),
-      }
-    }
-
+  const value = useMemo<Ctx>(() => {
     const me = view?.members.find((m) => m.id === account?.id) ?? null
     const isHost = !!me && me.role === 'host'
     const isChef = !!me && (me.role === 'host' || me.role === 'chef')
-
-    function requireGroup(): Group | null {
-      return view ? view.group : null
-    }
+    const current = view?.group ?? null
 
     return {
-      data,
+      loading,
+      offline,
       account,
       view,
       me,
@@ -199,7 +228,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       lang,
       theme,
       t,
-      activeDate: group ? activeDateFor(group) : todayISO(),
+      activeDate: current ? activeDateFor(current) : todayISO(),
       setLang: (l) => {
         localStorage.setItem(LANG_KEY, l)
         setLangState(l)
@@ -210,54 +239,28 @@ export function AppProvider({ children }: { children: ReactNode }) {
       },
 
       signUp: async (email, password) => {
-        const clean = normalizeEmail(email)
-        if (data.accounts.some((a) => normalizeEmail(a.email) === clean)) {
-          return { ok: false, error: 'emailTaken' }
-        }
-        if (password.length < 6) return { ok: false, error: 'passwordShort' }
-        const id = uid('a')
-        const created: Account = {
-          id,
-          email: clean,
-          passwordHash: await hashPassword(password),
-          firstName: '',
-          lastName: '',
-          birthDate: '',
-          photo: null,
-          color: colorFor(id),
-          createdAt: new Date().toISOString(),
-        }
-        update((d) => ({ ...d, accounts: [...d.accounts, created] }))
-        localStorage.setItem(SESSION_KEY, id)
-        setAccountId(id)
-        return { ok: true }
+        const result = await attempt(() => api.signUp(email, password))
+        if (result.ok) await loadAccount()
+        return result
       },
 
       signIn: async (email, password) => {
-        const clean = normalizeEmail(email)
-        const found = data.accounts.find((a) => normalizeEmail(a.email) === clean)
-        if (!found) return { ok: false, error: 'unknownAccount' }
-        const hash = await hashPassword(password)
-        if (hash !== found.passwordHash) return { ok: false, error: 'wrongPassword' }
-        localStorage.setItem(SESSION_KEY, found.id)
-        setAccountId(found.id)
-        return { ok: true }
+        const result = await attempt(() => api.signIn(email, password))
+        if (result.ok) await loadAccount()
+        return result
       },
 
       signOut: () => {
-        localStorage.removeItem(SESSION_KEY)
-        localStorage.removeItem(GROUP_KEY)
-        setAccountId(null)
-        setGroupId(null)
+        void api.signOut().finally(() => {
+          localStorage.removeItem(GROUP_KEY)
+          setGroupId(null)
+          setView(null)
+          setAccount(null)
+          setMyGroups([])
+        })
       },
 
-      updateProfile: (patch) => {
-        if (!account) return
-        update((d) => ({
-          ...d,
-          accounts: d.accounts.map((a) => (a.id === account.id ? { ...a, ...patch } : a)),
-        }))
-      },
+      updateProfile: (patch) => run(() => api.updateProfile(patch)),
 
       markConceptSeen: () => {
         localStorage.setItem(CONCEPT_KEY, '1')
@@ -270,256 +273,95 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setGroupId(id)
       },
 
-      createGroup: (input) => {
-        const id = uid('g')
-        const created: Group = {
-          id,
-          kind: input.kind,
-          name: input.name.trim(),
-          emoji: input.emoji,
-          color: input.color,
-          startDate: input.startDate,
-          endDate: input.endDate,
-          hostId: account?.id ?? '',
-          inviteCode: makeInviteCode(),
-          penalty: 30,
-          closingOpen: false,
-          createdAt: new Date().toISOString(),
+      createGroup: async (input) => {
+        try {
+          const { group } = await api.createGroup(input)
+          await loadAccount()
+          return group
+        } catch {
+          return null
         }
-        // Les taches de cloture sont pre-remplies, le chef les modifie ensuite.
-        const closingTasks: Task[] = CLOSING_CATALOG.map((c) => ({
-          id: uid('t'),
-          groupId: id,
-          title: c.fr,
-          titleKey: c.key,
-          emoji: c.emoji,
-          points: c.points,
-          date: input.endDate,
-          time: '10:00',
-          needsLicense: c.needsLicense,
-          beneficiaryIds: null,
-          assignedTo: null,
-          status: 'todo' as const,
-          createdBy: account?.id ?? '',
-          recurring: false,
-          isClosing: true,
-        }))
-        update((d) => ({
-          ...d,
-          groups: [...d.groups, created],
-          tasks: [...d.tasks, ...closingTasks],
-          memberships: [
-            ...d.memberships,
-            {
-              id: uid('ms'),
-              groupId: id,
-              accountId: account?.id ?? '',
-              role: 'host' as Role,
-              hasLicense: input.hasLicense,
-              joinedAt: new Date().toISOString(),
-            },
-          ],
-        }))
-        // On ne bascule pas tout de suite dans le groupe : l'ecran d'invitation
-        // vient d'abord, c'est lui qui appelle selectGroup ensuite.
-        return created
       },
 
-      joinByCode: (code) => {
-        if (!account) return { ok: false, error: 'notSignedIn' }
-        const target = data.groups.find((g) => g.inviteCode.toUpperCase() === code.trim().toUpperCase())
-        if (!target) return { ok: false, error: 'unknownCode' }
-        const already = data.memberships.some((m) => m.groupId === target.id && m.accountId === account.id)
-        if (!already) {
-          update((d) => ({
-            ...d,
-            memberships: [
-              ...d.memberships,
-              {
-                id: uid('ms'),
-                groupId: target.id,
-                accountId: account.id,
-                role: 'member' as Role,
-                hasLicense: false,
-                joinedAt: new Date().toISOString(),
-              },
-            ],
-          }))
-        }
-        localStorage.setItem(GROUP_KEY, target.id)
-        setGroupId(target.id)
-        return { ok: true }
+      joinByCode: async (code) => {
+        const result = await attempt(async () => {
+          const { group } = await api.joinByCode(code)
+          localStorage.setItem(GROUP_KEY, group.id)
+          setGroupId(group.id)
+        })
+        if (result.ok) await loadAccount()
+        return result
       },
 
-      // L'invitation par e-mail ne marche que si la personne a deja un compte.
-      inviteByEmail: (email) => {
-        const current = requireGroup()
+      inviteByEmail: async (email) => {
         if (!current) return { ok: false, error: 'noGroup' }
-        const clean = normalizeEmail(email)
-        const invited = data.accounts.find((a) => normalizeEmail(a.email) === clean)
-        if (!invited) return { ok: false, error: 'noAccountForEmail' }
-        if (data.memberships.some((m) => m.groupId === current.id && m.accountId === invited.id)) {
-          return { ok: false, error: 'alreadyMember' }
-        }
-        update((d) => ({
-          ...d,
-          memberships: [
-            ...d.memberships,
-            {
-              id: uid('ms'),
-              groupId: current.id,
-              accountId: invited.id,
-              role: 'member' as Role,
-              hasLicense: false,
-              joinedAt: new Date().toISOString(),
-            },
-          ],
-        }))
-        return { ok: true }
+        const result = await attempt(() => api.invite(current.id, email))
+        if (result.ok) await refresh()
+        return result
       },
 
       leaveGroup: (id) => {
-        if (!account) return
-        update((d) => ({
-          ...d,
-          memberships: d.memberships.filter((m) => !(m.groupId === id && m.accountId === account.id)),
-        }))
-        if (groupId === id) {
+        run(async () => {
+          await api.leave(id)
           localStorage.removeItem(GROUP_KEY)
           setGroupId(null)
-        }
+          setView(null)
+        })
       },
 
       updateGroup: (patch) => {
-        const current = requireGroup()
         if (!current) return
-        update((d) => ({
-          ...d,
-          groups: d.groups.map((g) => (g.id === current.id ? { ...g, ...patch } : g)),
-        }))
+        run(() => api.updateGroup(current.id, patch))
       },
 
       setRole: (targetId, role) => {
-        const current = requireGroup()
         if (!current) return
-        update((d) => ({
-          ...d,
-          memberships: d.memberships.map((m) =>
-            m.groupId === current.id && m.accountId === targetId && m.role !== 'host' ? { ...m, role } : m,
-          ),
-        }))
+        run(() => api.setMember(current.id, targetId, { role }))
       },
 
       setLicense: (targetId, hasLicense) => {
-        const current = requireGroup()
         if (!current) return
-        update((d) => ({
-          ...d,
-          memberships: d.memberships.map((m) =>
-            m.groupId === current.id && m.accountId === targetId ? { ...m, hasLicense } : m,
-          ),
-        }))
+        run(() => api.setMember(current.id, targetId, { hasLicense }))
       },
 
       addTask: (task) => {
-        const current = requireGroup()
         if (!current) return
-        update((d) => ({
-          ...d,
-          tasks: [...d.tasks, { ...task, id: uid('t'), groupId: current.id, status: 'todo' }],
-        }))
+        run(() => api.addTask(current.id, task))
       },
 
       takeTask: (taskId, who) => {
-        update((d) => ({
-          ...d,
-          tasks: d.tasks.map((task) => (task.id === taskId ? { ...task, assignedTo: who } : task)),
-        }))
+        if (!current) return
+        run(() => api.patchTask(current.id, taskId, { assignedTo: who }))
       },
 
       validateTask: (taskId, doerIds, beneficiaryIds) => {
-        if (doerIds.length === 0 || beneficiaryIds.length === 0) return
-        const current = requireGroup()
-        if (!current || !account) return
-        update((d) => {
-          const task = d.tasks.find((x) => x.id === taskId)
-          if (!task) return d
-          return {
-            ...d,
-            tasks: d.tasks.map((x) => (x.id === taskId ? { ...x, status: 'done' as const } : x)),
-            entries: [
-              ...d.entries.filter((e) => e.taskId !== taskId),
-              {
-                id: uid('e'),
-                groupId: current.id,
-                taskId,
-                kind: 'completion' as const,
-                doerIds,
-                beneficiaryIds,
-                amounts: completionAmounts(task.points, doerIds, beneficiaryIds),
-                validatedBy: account.id,
-                at: new Date().toISOString(),
-              },
-            ],
-          }
-        })
+        if (!current) return
+        run(() => api.validateTask(current.id, taskId, doerIds, beneficiaryIds))
       },
 
-      // Le malus ne s'applique que si quelqu'un s'etait engage sur la tache.
       markMissed: (taskId) => {
-        const current = requireGroup()
-        if (!current || !account || !view) return
-        update((d) => {
-          const task = d.tasks.find((x) => x.id === taskId)
-          if (!task || !task.assignedTo) return d
-          const beneficiaryIds = beneficiariesOf(task, view!.members)
-          return {
-            ...d,
-            tasks: d.tasks.map((x) => (x.id === taskId ? { ...x, status: 'missed' as const } : x)),
-            entries: [
-              ...d.entries.filter((e) => e.taskId !== taskId),
-              {
-                id: uid('e'),
-                groupId: current.id,
-                taskId,
-                kind: 'penalty' as const,
-                doerIds: [],
-                beneficiaryIds,
-                amounts: penaltyAmounts(current.penalty, task.assignedTo, beneficiaryIds),
-                validatedBy: account.id,
-                at: new Date().toISOString(),
-              },
-            ],
-          }
-        })
+        if (!current) return
+        run(() => api.missTask(current.id, taskId))
       },
 
       reopenTask: (taskId) => {
-        update((d) => ({
-          ...d,
-          tasks: d.tasks.map((x) => (x.id === taskId ? { ...x, status: 'todo' as const } : x)),
-          entries: d.entries.filter((e) => e.taskId !== taskId),
-        }))
+        if (!current) return
+        run(() => api.reopenTask(current.id, taskId))
       },
 
       deleteTask: (taskId) => {
-        update((d) => ({
-          ...d,
-          tasks: d.tasks.filter((x) => x.id !== taskId),
-          entries: d.entries.filter((e) => e.taskId !== taskId),
-        }))
+        if (!current) return
+        run(() => api.deleteTask(current.id, taskId))
       },
 
       toggleRecurring: (taskId) => {
-        update((d) => ({
-          ...d,
-          tasks: d.tasks.map((x) => (x.id === taskId ? { ...x, recurring: !x.recurring } : x)),
-        }))
+        if (!current) return
+        const task = view?.tasks.find((x) => x.id === taskId)
+        run(() => api.patchTask(current.id, taskId, { recurring: !task?.recurring }))
       },
     }
-  }, [data, accountId, groupId, conceptSeen, lang, theme, t, update])
+  }, [loading, offline, account, view, myGroups, conceptSeen, lang, theme, t, loadAccount, refresh, run])
 
-  if (!value) return null
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>
 }
 
@@ -540,5 +382,3 @@ export function useBalances() {
   const { view } = useApp()
   return useMemo(() => (view ? balances(view) : []), [view])
 }
-
-export { fullName }

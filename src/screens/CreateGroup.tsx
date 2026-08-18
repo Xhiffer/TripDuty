@@ -19,7 +19,7 @@ const KINDS: Array<{ kind: GroupKind; emoji: string }> = [
 ]
 
 export function CreateGroup({ onDone }: { onDone: () => void }) {
-  const { t, createGroup, inviteByEmail, data, selectGroup } = useApp()
+  const { t, createGroup, inviteByEmail, selectGroup } = useApp()
   const [step, setStep] = useState<'kind' | 'details' | 'invite'>('kind')
   const [kind, setKind] = useState<GroupKind>('vacances')
   const [name, setName] = useState('')
@@ -34,18 +34,19 @@ export function CreateGroup({ onDone }: { onDone: () => void }) {
   const [invited, setInvited] = useState<string[]>([])
   const [copied, setCopied] = useState(false)
 
-  function submitDetails() {
+  async function submitDetails() {
     if (!name.trim()) return setError(t('errGroupNameRequired'))
     if (endDate < startDate) return setError(t('errBadDates'))
-    const created = createGroup({ kind, name, emoji, color, startDate, endDate, hasLicense })
+    const created = await createGroup({ kind, name, emoji, color, startDate, endDate, hasLicense })
+    if (!created) return setError(t('errServer'))
     setGroup(created)
     setStep('invite')
   }
 
-  function submitInvite() {
+  async function submitInvite() {
     setError('')
     if (!isEmail(invite)) return setError(t('errBadEmail'))
-    const result = inviteByEmail(invite)
+    const result = await inviteByEmail(invite)
     if (!result.ok) {
       const messages: Record<string, string> = {
         noAccountForEmail: t('errNoAccountForEmail'),
@@ -163,7 +164,7 @@ export function CreateGroup({ onDone }: { onDone: () => void }) {
 
           {error && <p className="form-error">{error}</p>}
 
-          <button type="button" className="btn btn-primary btn-block" onClick={submitDetails}>
+          <button type="button" className="btn btn-primary btn-block" onClick={() => void submitDetails()}>
             {t('create')}
           </button>
         </div>
@@ -225,7 +226,7 @@ export function CreateGroup({ onDone }: { onDone: () => void }) {
               setError('')
             }}
           />
-          <button type="button" className="btn" onClick={submitInvite}>
+          <button type="button" className="btn" onClick={() => void submitInvite()}>
             {t('add')}
           </button>
         </div>
@@ -233,21 +234,17 @@ export function CreateGroup({ onDone }: { onDone: () => void }) {
 
         {invited.length > 0 && (
           <div className="stack" style={{ marginTop: 12 }}>
-            {invited.map((mail) => {
-              const person = data.accounts.find((a) => a.email === mail)
-              return (
-                <div key={mail} className="rank-row">
-                  <span className="task-emoji" style={{ background: person?.color, color: '#fff' }}>
-                    {(person?.firstName ?? mail).slice(0, 1).toUpperCase()}
+            {invited.map((mail) => (
+              <div key={mail} className="rank-row">
+                <span className="task-emoji">✉️</span>
+                <span style={{ flex: 1, minWidth: 0 }}>
+                  <span className="rank-name" style={{ fontSize: 14 }}>
+                    {mail}
                   </span>
-                  <span style={{ flex: 1, minWidth: 0 }}>
-                    <span className="rank-name">{person ? `${person.firstName} ${person.lastName}` : mail}</span>
-                    <span className="rank-sub">{mail}</span>
-                  </span>
-                  <span className="pill pill-good">{t('invited')}</span>
-                </div>
-              )
-            })}
+                </span>
+                <span className="pill pill-good">{t('invited')}</span>
+              </div>
+            ))}
           </div>
         )}
       </div>

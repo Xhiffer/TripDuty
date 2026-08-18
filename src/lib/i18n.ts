@@ -148,7 +148,7 @@ const fr: Dict = {
   signOut: 'Se déconnecter',
   email: 'Adresse e-mail',
   password: 'Mot de passe',
-  authLocalNote: 'Pour l’instant le compte est enregistré sur ce téléphone uniquement.',
+  authLocalNote: 'Ton compte te suit sur tous tes appareils.',
   errBadEmail: 'Cette adresse e-mail n’est pas valable.',
   errPasswordShort: 'Le mot de passe doit faire au moins 6 caractères.',
   errEmailTaken: 'Un compte existe déjà avec cette adresse.',
@@ -227,6 +227,9 @@ const fr: Dict = {
   installIosStep1: 'Appuie sur le bouton Partager',
   installIosStep2: 'Choisis « Sur l’écran d’accueil »',
   later: 'Plus tard',
+  errServer: 'Le serveur ne répond pas, réessaie dans un instant.',
+  offline: 'Connexion perdue, les données affichées datent de tout à l’heure.',
+  loading: 'Chargement…',
 }
 
 const en: Dict = {
@@ -365,7 +368,7 @@ const en: Dict = {
   signOut: 'Sign out',
   email: 'Email address',
   password: 'Password',
-  authLocalNote: 'For now the account is stored on this phone only.',
+  authLocalNote: 'Your account follows you on every device.',
   errBadEmail: 'That email address is not valid.',
   errPasswordShort: 'The password must be at least 6 characters.',
   errEmailTaken: 'An account already exists with this address.',
@@ -439,6 +442,9 @@ const en: Dict = {
   installIosStep1: 'Tap the Share button',
   installIosStep2: 'Choose "Add to Home Screen"',
   later: 'Later',
+  errServer: 'The server is not responding, try again in a moment.',
+  offline: 'Connection lost, what you see is a little out of date.',
+  loading: 'Loading…',
 }
 
 const dicts: Record<Lang, Dict> = { fr, en }

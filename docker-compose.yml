@@ -1,0 +1,33 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: tripduty
+      POSTGRES_USER: tripduty
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - tripduty-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U tripduty -d tripduty']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build: ./server
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://tripduty:${POSTGRES_PASSWORD}@db:5432/tripduty
+      JWT_SECRET: ${JWT_SECRET}
+      NODE_ENV: production
+      PORT: 8080
+    # Uniquement joignable depuis la machine : nginx fait le pont.
+    ports:
+      - '127.0.0.1:8090:8080'
+
+volumes:
+  tripduty-db:

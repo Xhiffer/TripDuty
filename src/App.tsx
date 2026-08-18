@@ -16,7 +16,7 @@ import { formatDay } from './lib/i18n'
 type Tab = 'home' | 'ranking' | 'planning' | 'closing' | 'me'
 
 export function App() {
-  const { account, view, me, conceptSeen, lang, t, joinByCode } = useApp()
+  const { loading, offline, account, view, me, conceptSeen, lang, t, joinByCode } = useApp()
   const rows = useBalances()
   const [tab, setTab] = useState<Tab>('home')
 
@@ -24,12 +24,24 @@ export function App() {
   useEffect(() => {
     const match = window.location.hash.match(/^#\/join\/([A-Za-z0-9]+)$/)
     if (!match || !account) return
-    const result = joinByCode(match[1])
-    if (result.ok) window.location.hash = ''
+    void joinByCode(match[1]).then((result) => {
+      if (result.ok) window.location.hash = ''
+    })
   }, [account, joinByCode])
 
   // Avant d'etre dans un groupe, il n'y a pas de barre de navigation en bas :
   // l'invitation a installer se cale plus bas.
+  if (loading) {
+    return (
+      <div className="app app-centered">
+        <div className="hero">
+          <span className="hero-mark">⛰️</span>
+          <p className="hero-sub">{t('loading')}</p>
+        </div>
+      </div>
+    )
+  }
+
   if (!account || !account.firstName || !account.birthDate || !conceptSeen || !view || !me) {
     let screen = <Auth />
     if (!account) screen = <Auth />
@@ -59,6 +71,8 @@ export function App() {
 
   return (
     <div className="app">
+      {offline && <div className="offline-bar">{t('offline')}</div>}
+
       <div className="topbar">
         <div className="brand">
           <span className="brand-mark" style={{ background: view.group.color }}>

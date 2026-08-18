@@ -4,15 +4,15 @@ import { CreateGroup } from './CreateGroup'
 import { formatDay } from '../lib/i18n'
 
 export function Groups() {
-  const { account, myGroups, data, lang, t, selectGroup, joinByCode, signOut } = useApp()
+  const { account, myGroups, lang, t, selectGroup, joinByCode, signOut } = useApp()
   const [creating, setCreating] = useState(false)
   const [code, setCode] = useState('')
   const [error, setError] = useState('')
 
   if (creating) return <CreateGroup onDone={() => setCreating(false)} />
 
-  function join() {
-    const result = joinByCode(code)
+  async function join() {
+    const result = await joinByCode(code)
     if (!result.ok) {
       setError(result.error === 'unknownCode' ? t('errUnknownCode') : result.error)
     } else {
@@ -39,7 +39,7 @@ export function Groups() {
       <div className="stack" style={{ marginTop: 8 }}>
         {myGroups.length === 0 && <div className="empty">{t('noGroupYet')}</div>}
         {myGroups.map((group) => {
-          const count = data.memberships.filter((m) => m.groupId === group.id).length
+          const count = group.memberCount
           return (
             <button key={group.id} type="button" className="group-card" onClick={() => selectGroup(group.id)}>
               <span className="group-mark" style={{ background: group.color }}>
@@ -76,7 +76,7 @@ export function Groups() {
             setError('')
           }}
         />
-        <button type="button" className="btn" disabled={code.trim().length < 4} onClick={join}>
+        <button type="button" className="btn" disabled={code.trim().length < 4} onClick={() => void join()}>
           {t('join')}
         </button>
       </div>

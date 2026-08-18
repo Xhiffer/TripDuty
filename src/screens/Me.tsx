@@ -34,10 +34,10 @@ export function Me() {
   const recurring = state.tasks.filter((task) => task.recurring)
   const link = inviteLink(state.group.inviteCode)
 
-  function submitInvite() {
+  async function submitInvite() {
     setError('')
     if (!isEmail(invite)) return setError(t('errBadEmail'))
-    const result = inviteByEmail(invite)
+    const result = await inviteByEmail(invite)
     if (!result.ok) {
       const messages: Record<string, string> = {
         noAccountForEmail: t('errNoAccountForEmail'),
@@ -141,7 +141,7 @@ export function Me() {
               setError('')
             }}
           />
-          <button type="button" className="btn" onClick={submitInvite}>
+          <button type="button" className="btn" onClick={() => void submitInvite()}>
             {t('add')}
           </button>
         </div>
