@@ -43,7 +43,7 @@ export function Me() {
         noAccountForEmail: t('errNoAccountForEmail'),
         alreadyMember: t('errAlreadyMember'),
       }
-      return setError(messages[result.error] ?? result.error)
+      return setError(messages[result.error] ?? t('errServer'))
     }
     setInvite('')
   }

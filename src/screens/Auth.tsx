@@ -25,7 +25,7 @@ export function Auth() {
         unknownAccount: t('errUnknownAccount'),
         wrongPassword: t('errWrongPassword'),
       }
-      setError(messages[result.error] ?? result.error)
+      setError(messages[result.error] ?? t('errServer'))
     }
   }
 

@@ -14,7 +14,7 @@ export function Groups() {
   async function join() {
     const result = await joinByCode(code)
     if (!result.ok) {
-      setError(result.error === 'unknownCode' ? t('errUnknownCode') : result.error)
+      setError(result.error === 'unknownCode' ? t('errUnknownCode') : t('errServer'))
     } else {
       setCode('')
       setError('')

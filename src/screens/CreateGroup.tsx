@@ -52,7 +52,7 @@ export function CreateGroup({ onDone }: { onDone: () => void }) {
         noAccountForEmail: t('errNoAccountForEmail'),
         alreadyMember: t('errAlreadyMember'),
       }
-      return setError(messages[result.error] ?? result.error)
+      return setError(messages[result.error] ?? t('errServer'))
     }
     setInvited((prev) => [...prev, invite.trim().toLowerCase()])
     setInvite('')
