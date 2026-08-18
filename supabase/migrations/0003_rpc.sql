@@ -1,110 +1,107 @@
--- Les deux seules portes d'entree d'un sejour.
+-- Les deux seules portes d'entree d'un groupe.
 --
--- Creer un sejour et le rejoindre sont les deux moments ou l'on ecrit dans une
+-- Creer un groupe et le rejoindre sont les deux moments ou l'on ecrit dans une
 -- table dont on n'est pas encore membre. Les politiques RLS ne peuvent donc pas
 -- s'appliquer : ces operations passent par des fonctions SECURITY DEFINER, qui
 -- verifient elles-memes ce qu'il faut verifier.
 
--- Code de partage : alphabet sans ambiguite visuelle et sans voyelle, pour ne
--- pas former de mot par hasard et pour se dicter au telephone sans confondre.
-create or replace function generate_join_code() returns text
+-- Meme alphabet que makeInviteCode() dans src/lib/identity.ts : ni O/0 ni I/1,
+-- pour qu'un code se dicte au telephone sans confusion.
+create or replace function generate_invite_code() returns text
   language plpgsql
   volatile
 as $$
 declare
-  alphabet constant text := '23456789bcdfghjkmnpqrstvwxz';
+  alphabet constant text := 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   candidate text;
 begin
   loop
     candidate := '';
-    for _ in 1..10 loop
+    for _ in 1..6 loop
       candidate := candidate || substr(alphabet, 1 + floor(random() * length(alphabet))::int, 1);
     end loop;
-    exit when not exists (select 1 from trips where join_code = candidate);
+    exit when not exists (select 1 from groups where invite_code = candidate);
   end loop;
   return candidate;
 end;
 $$;
 
-create or replace function create_trip(
-  trip_name    text,
-  start_date   date,
-  end_date     date,
-  owner_name   text,
-  owner_photo  text default null,
-  owner_licence boolean default false,
-  penalty      integer default 30
-) returns trips
+create or replace function create_group(
+  group_name  text,
+  kind        group_kind,
+  emoji       text,
+  color       text,
+  start_date  date,
+  end_date    date,
+  has_licence boolean default false,
+  penalty     integer default 30
+) returns groups
   language plpgsql
   volatile
   security definer
   set search_path = public
 as $$
 declare
-  new_trip trips;
+  created groups;
 begin
   if auth.uid() is null then
     raise exception 'Authentification requise';
   end if;
 
-  insert into trips (name, start_date, end_date, penalty, join_code)
-  values (trip_name, start_date, end_date, penalty, generate_join_code())
-  returning * into new_trip;
+  insert into groups (kind, name, emoji, color, start_date, end_date, host_id, invite_code, penalty)
+  values (kind, group_name, emoji, color, start_date, end_date, auth.uid(), generate_invite_code(), penalty)
+  returning * into created;
 
-  insert into members (trip_id, auth_user_id, name, photo_url, has_license, role)
-  values (new_trip.id, auth.uid(), owner_name, owner_photo, owner_licence, 'owner');
+  -- Celui qui cree le groupe en est l'hote, et cela ne se retire pas.
+  insert into memberships (group_id, profile_id, role, has_license)
+  values (created.id, auth.uid(), 'host', has_licence);
 
-  return new_trip;
+  return created;
 end;
 $$;
 
-create or replace function join_trip(
-  code         text,
-  member_name  text,
-  member_photo text default null,
-  has_licence  boolean default false
-) returns members
+create or replace function join_group(
+  code        text,
+  has_licence boolean default false
+) returns memberships
   language plpgsql
   volatile
   security definer
   set search_path = public
 as $$
 declare
-  target   trips;
-  existing members;
-  created  members;
+  target   groups;
+  existing memberships;
+  created  memberships;
 begin
   if auth.uid() is null then
     raise exception 'Authentification requise';
   end if;
 
-  select * into target from trips where join_code = lower(trim(code));
+  select * into target from groups where invite_code = upper(trim(code));
   if not found then
-    raise exception 'Code de sejour inconnu' using errcode = 'no_data_found';
+    raise exception 'Code de groupe inconnu' using errcode = 'no_data_found';
   end if;
 
-  -- Revenir sur le meme sejour depuis le meme telephone n'est pas une erreur :
-  -- on retrouve simplement sa place.
-  select * into existing from members
-   where trip_id = target.id and auth_user_id = auth.uid();
+  -- Revenir sur un groupe deja rejoint n'est pas une erreur : on retrouve
+  -- simplement sa place.
+  select * into existing from memberships
+   where group_id = target.id and profile_id = auth.uid();
   if found then
     return existing;
   end if;
 
-  insert into members (trip_id, auth_user_id, name, photo_url, has_license, role)
-  values (target.id, auth.uid(), member_name, member_photo, has_licence, 'member')
+  insert into memberships (group_id, profile_id, role, has_license)
+  values (target.id, auth.uid(), 'member', has_licence)
   returning * into created;
 
   return created;
-exception
-  when unique_violation then
-    raise exception 'Ce prenom est deja pris dans ce sejour' using errcode = 'unique_violation';
 end;
 $$;
 
--- Le code de partage suffit a entrer : c'est le seul appel autorise sans etre
--- deja membre. Tout le reste passe par les politiques RLS.
-revoke all on function create_trip(text, date, date, text, text, boolean, integer) from public;
-revoke all on function join_trip(text, text, text, boolean) from public;
-grant execute on function create_trip(text, date, date, text, text, boolean, integer) to authenticated;
-grant execute on function join_trip(text, text, text, boolean) to authenticated;
+-- Le code d'invitation suffit a entrer : ce sont les deux seuls appels autorises
+-- sans etre deja membre. Tout le reste passe par les politiques RLS.
+revoke all on function create_group(text, group_kind, text, text, date, date, boolean, integer) from public;
+revoke all on function join_group(text, boolean) from public;
+grant execute on function create_group(text, group_kind, text, text, date, date, boolean, integer) to authenticated;
+grant execute on function join_group(text, boolean) to authenticated;

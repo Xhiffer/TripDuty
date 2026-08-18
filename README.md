@@ -5,6 +5,9 @@ Répartir les tâches d'un séjour entre amis et garder les comptes à zéro.
 Application web pour l'instant, pensée pour devenir une application Android et
 iPhone. Elle s'installe déjà sur l'écran d'accueil des deux plateformes.
 
+La logique, la structure et les décisions techniques sont décrites dans
+[ARCHITECTURE.md](ARCHITECTURE.md).
+
 ## Le principe
 
 Chaque tâche porte deux informations : **qui l'a faite** et **pour qui**. Les
