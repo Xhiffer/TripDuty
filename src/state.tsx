@@ -1,6 +1,8 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import type { Lang, Member, Role, Task, Theme, Trip, TripState } from './types'
+import type { Mutation } from './data/mutations'
+import { applyMutation } from './data/mutations'
 import { store } from './data/store'
 import { balances, beneficiariesOf, completionAmounts, penaltyAmounts } from './lib/ledger'
 import { translator } from './lib/i18n'
@@ -72,22 +74,49 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Lang>(() => (localStorage.getItem(LANG_KEY) as Lang) || 'fr')
   const [theme, setThemeState] = useState<Theme>(() => (localStorage.getItem(THEME_KEY) as Theme) || 'dark')
 
-  useEffect(() => {
-    store.load().then(setState)
+  // L'etat le plus recent, lisible immediatement. `useState` ne rend la nouvelle
+  // valeur qu'au rendu suivant : deux gestes rapproches liraient sinon le meme
+  // etat, et le second annulerait le premier.
+  const latest = useRef<TripState | null>(null)
+
+  const receive = useCallback((next: TripState) => {
+    latest.current = next
+    setState(next)
   }, [])
+
+  useEffect(() => {
+    store.load().then(receive)
+    // Un changement venu d'ailleurs (autre onglet aujourd'hui, autre telephone
+    // une fois la base branchee) remplace l'etat sans repasser par une mutation :
+    // il a deja ete applique a la source.
+    return store.subscribe?.(receive)
+  }, [receive])
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme
     document.documentElement.lang = lang
   }, [theme, lang])
 
-  const update = useCallback((fn: (draft: TripState) => TripState) => {
-    setState((current) => {
-      if (!current) return current
-      const next = fn(current)
-      void store.save(next)
-      return next
-    })
+  /**
+   * Traduit un geste en mutation, l'affiche aussitot, puis l'envoie au magasin.
+   *
+   * `build` recoit l'etat courant parce qu'une mutation doit partir avec tout
+   * ce qu'il lui faut : les points de la tache, les montants calcules,
+   * l'horodatage. Une fois construite, elle ne depend plus de ce que le
+   * destinataire croit savoir du sejour.
+   *
+   * Rendre `null` annule le geste, lorsqu'il n'a plus de sens.
+   */
+  const dispatch = useCallback((build: (current: TripState) => Mutation | null) => {
+    const current = latest.current
+    if (!current) return
+    const mutation = build(current)
+    if (!mutation) return
+
+    // L'affichage n'attend pas l'ecriture : le geste apparait tout de suite.
+    latest.current = applyMutation(current, mutation)
+    setState(latest.current)
+    void store.apply(mutation)
   }, [])
 
   const t = useMemo(() => translator(lang), [lang])
@@ -128,98 +157,85 @@ export function AppProvider({ children }: { children: ReactNode }) {
           role: state.members.length === 0 ? 'owner' : 'member',
           joinedAt: new Date().toISOString(),
         }
-        update((d) => ({ ...d, members: [...d.members, member] }))
+        dispatch(() => ({ type: 'addMember', member }))
         return member
       },
       addTask: (task) => {
-        update((d) => ({ ...d, tasks: [...d.tasks, { ...task, id: uid('t'), status: 'todo' }] }))
+        dispatch(() => ({ type: 'addTask', task: { ...task, id: uid('t'), status: 'todo' } }))
       },
       takeTask: (taskId, memberId) => {
-        update((d) => ({
-          ...d,
-          tasks: d.tasks.map((task) => (task.id === taskId ? { ...task, assignedTo: memberId } : task)),
-        }))
+        dispatch(() => ({ type: 'assignTask', taskId, memberId }))
       },
       validateTask: (taskId, doerIds, beneficiaryIds) => {
         if (doerIds.length === 0 || beneficiaryIds.length === 0) return
-        update((d) => {
+        dispatch((d) => {
           const task = d.tasks.find((x) => x.id === taskId)
-          if (!task || !me) return d
+          const author = d.members.find((m) => m.id === meId)
+          if (!task || !author) return null
           return {
-            ...d,
-            tasks: d.tasks.map((x) => (x.id === taskId ? { ...x, status: 'done' as const } : x)),
-            entries: [
-              ...d.entries.filter((e) => e.taskId !== taskId),
-              {
-                id: uid('e'),
-                taskId,
-                kind: 'completion' as const,
-                doerIds,
-                beneficiaryIds,
-                amounts: completionAmounts(task.points, doerIds, beneficiaryIds),
-                validatedBy: me.id,
-                at: new Date().toISOString(),
-              },
-            ],
+            type: 'settleTask',
+            taskId,
+            status: 'done',
+            entry: {
+              id: uid('e'),
+              taskId,
+              kind: 'completion',
+              doerIds,
+              beneficiaryIds,
+              amounts: completionAmounts(task.points, doerIds, beneficiaryIds),
+              validatedBy: author.id,
+              at: new Date().toISOString(),
+            },
           }
         })
       },
       // Le malus ne s'applique que si quelqu'un s'etait engage sur la tache.
       markMissed: (taskId) => {
-        update((d) => {
+        dispatch((d) => {
           const task = d.tasks.find((x) => x.id === taskId)
-          if (!task || !task.assignedTo || !me) return d
+          const author = d.members.find((m) => m.id === meId)
+          if (!task || !task.assignedTo || !author) return null
           const beneficiaryIds = beneficiariesOf(task, d.members)
           return {
-            ...d,
-            tasks: d.tasks.map((x) => (x.id === taskId ? { ...x, status: 'missed' as const } : x)),
-            entries: [
-              ...d.entries.filter((e) => e.taskId !== taskId),
-              {
-                id: uid('e'),
-                taskId,
-                kind: 'penalty' as const,
-                doerIds: [],
-                beneficiaryIds,
-                amounts: penaltyAmounts(d.trip.penalty, task.assignedTo, beneficiaryIds),
-                validatedBy: me.id,
-                at: new Date().toISOString(),
-              },
-            ],
+            type: 'settleTask',
+            taskId,
+            status: 'missed',
+            entry: {
+              id: uid('e'),
+              taskId,
+              kind: 'penalty',
+              doerIds: [],
+              beneficiaryIds,
+              amounts: penaltyAmounts(d.trip.penalty, task.assignedTo, beneficiaryIds),
+              validatedBy: author.id,
+              at: new Date().toISOString(),
+            },
           }
         })
       },
       reopenTask: (taskId) => {
-        update((d) => ({
-          ...d,
-          tasks: d.tasks.map((x) => (x.id === taskId ? { ...x, status: 'todo' as const } : x)),
-          entries: d.entries.filter((e) => e.taskId !== taskId),
-        }))
+        dispatch(() => ({ type: 'reopenTask', taskId }))
       },
       deleteTask: (taskId) => {
-        update((d) => ({
-          ...d,
-          tasks: d.tasks.filter((x) => x.id !== taskId),
-          entries: d.entries.filter((e) => e.taskId !== taskId),
-        }))
+        dispatch(() => ({ type: 'deleteTask', taskId }))
       },
       updateTrip: (patch) => {
-        update((d) => ({ ...d, trip: { ...d.trip, ...patch } }))
+        dispatch(() => ({ type: 'updateTrip', patch }))
       },
       setRole: (memberId, role) => {
-        update((d) => ({
-          ...d,
-          members: d.members.map((m) => (m.id === memberId && m.role !== 'owner' ? { ...m, role } : m)),
-        }))
+        dispatch(() => ({ type: 'setRole', memberId, role }))
       },
+      // Le bouton reste une bascule, mais ce qui part sur le reseau est la
+      // valeur voulue : deux telephones qui appuient en meme temps tombent
+      // d'accord, au lieu de s'annuler.
       toggleRecurring: (taskId) => {
-        update((d) => ({
-          ...d,
-          tasks: d.tasks.map((x) => (x.id === taskId ? { ...x, recurring: !x.recurring } : x)),
-        }))
+        dispatch((d) => {
+          const task = d.tasks.find((x) => x.id === taskId)
+          return task ? { type: 'setRecurring', taskId, recurring: !task.recurring } : null
+        })
       },
     }
-  }, [state, meId, lang, theme, t, update])
+  }, [state, meId, lang, theme, t, dispatch])
 
   if (!value) return null
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>
