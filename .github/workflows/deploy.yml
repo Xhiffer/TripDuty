@@ -32,6 +32,13 @@ jobs:
       - run: npm run build
         env:
           VITE_BASE_PATH: /TripDuty/
+          # Des variables, pas des secrets : la cle "publishable" part dans le
+          # bundle du navigateur, elle est publique par conception. Toute la
+          # securite tient aux regles RLS de supabase/migrations/.
+          # Absentes, l'application retombe sur le stockage du telephone
+          # plutot que de s'ouvrir sur un ecran blanc.
+          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
