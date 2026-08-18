@@ -208,7 +208,8 @@ export function CreateGroup({ onDone }: { onDone: () => void }) {
         </button>
 
         <div className="field-label" style={{ marginTop: 20 }}>
-          {t('inviteByEmail')}
+          {t('inviteByEmail')}{' '}
+          <span style={{ color: 'var(--muted)', fontWeight: 600, fontSize: 12 }}>· {t('comingSoon')}</span>
         </div>
         <p className="hint" style={{ marginTop: 0 }}>
           {t('inviteByEmailHelp')}
@@ -217,6 +218,7 @@ export function CreateGroup({ onDone }: { onDone: () => void }) {
           <input
             className="input"
             type="email"
+            disabled
             inputMode="email"
             value={invite}
             placeholder="prenom@exemple.fr"
@@ -225,7 +227,7 @@ export function CreateGroup({ onDone }: { onDone: () => void }) {
               setError('')
             }}
           />
-          <button type="button" className="btn" onClick={submitInvite}>
+          <button type="button" className="btn" onClick={submitInvite} disabled>
             {t('add')}
           </button>
         </div>

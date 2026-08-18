@@ -173,13 +173,17 @@ const fr: Dict = {
   add: 'Ajouter',
   // concept
   concept1Title: 'Chacun fait sa part',
-  concept1Body: 'La vaisselle, les courses, la cuisine, la conduite. Chaque tâche vaut des points, et on note qui l’a faite.',
+  concept1Body:
+    'La vaisselle, les courses, la cuisine, la conduite. Chaque tâche vaut des points, et on note qui l’a faite.',
   concept2Title: 'Et surtout pour qui',
-  concept2Body: 'Une tâche faite pour quatre personnes ne concerne que ces quatre-là. Si tu te fais ton sandwich tout seul, ton solde ne bouge pas.',
+  concept2Body:
+    'Une tâche faite pour quatre personnes ne concerne que ces quatre-là. Si tu te fais ton sandwich tout seul, ton solde ne bouge pas.',
   concept3Title: 'Personne n’est forcé',
-  concept3Body: 'L’application ne donne d’ordre à personne. Elle affiche les soldes et suggère qui aurait intérêt à s’y coller.',
+  concept3Body:
+    'L’application ne donne d’ordre à personne. Elle affiche les soldes et suggère qui aurait intérêt à s’y coller.',
   concept4Title: 'On solde à la fin',
-  concept4Body: 'Le dernier jour, les grosses tâches de fin reviennent à ceux qui doivent encore au groupe. La tournée, le grand ménage, et tout le monde repart à zéro.',
+  concept4Body:
+    'Le dernier jour, les grosses tâches de fin reviennent à ceux qui doivent encore au groupe. La tournée, le grand ménage, et tout le monde repart à zéro.',
   conceptStart: 'C’est parti',
   // groupes
   myGroups: 'Mes groupes',
@@ -209,7 +213,9 @@ const fr: Dict = {
   shareLink: 'Partager le lien',
   linkCopied: 'Lien copié',
   inviteByEmail: 'Par e-mail',
-  inviteByEmailHelp: 'L’invitation par e-mail ne marche que si la personne a déjà créé son compte.',
+  inviteByEmailHelp:
+    'Bientôt : inviter quelqu’un directement par son adresse. En attendant, le lien de partage fait le travail.',
+  comingSoon: 'bientôt',
   errNoAccountForEmail: 'Personne n’a de compte avec cette adresse.',
   errAlreadyMember: 'Cette personne est déjà dans le groupe.',
   invited: 'Invité',
@@ -345,8 +351,7 @@ const en: Dict = {
   onlyAssignedMiss: 'A penalty only applies to a task someone had taken on.',
   navClosing: 'Wrap-up',
   closingTitle: 'Trip wrap-up',
-  closingIntro:
-    'Balances are never all at zero, and that is fine. The big closing tasks are there to even things out.',
+  closingIntro: 'Balances are never all at zero, and that is fine. The big closing tasks are there to even things out.',
   closingTasks: 'Closing tasks',
   closingHelp: 'Chefs can edit these: remove what does not apply, add your own.',
   openClosing: 'Start the trip wrap-up',
@@ -391,11 +396,13 @@ const en: Dict = {
   concept1Title: 'Everyone does their bit',
   concept1Body: 'Dishes, groceries, cooking, driving. Every task is worth points, and we record who did it.',
   concept2Title: 'And above all, who for',
-  concept2Body: 'A task done for four people only concerns those four. Make your own sandwich and your balance does not move.',
+  concept2Body:
+    'A task done for four people only concerns those four. Make your own sandwich and your balance does not move.',
   concept3Title: 'Nobody is forced',
   concept3Body: 'The app never gives orders. It shows the balances and suggests who would gain most from stepping up.',
   concept4Title: 'Settle at the end',
-  concept4Body: 'On the last day, the big closing tasks go to those who still owe the group. The round of drinks, the big clean, and everyone leaves even.',
+  concept4Body:
+    'On the last day, the big closing tasks go to those who still owe the group. The round of drinks, the big clean, and everyone leaves even.',
   conceptStart: 'Let us go',
   myGroups: 'My groups',
   noGroupYet: 'No group yet.',
@@ -423,7 +430,9 @@ const en: Dict = {
   shareLink: 'Share the link',
   linkCopied: 'Link copied',
   inviteByEmail: 'By email',
-  inviteByEmailHelp: 'Email invites only work if the person already created their account.',
+  inviteByEmailHelp:
+    'Coming soon: invite someone straight from their address. Until then, the share link does the job.',
+  comingSoon: 'soon',
   errNoAccountForEmail: 'Nobody has an account with this address.',
   errAlreadyMember: 'This person is already in the group.',
   invited: 'Invited',
@@ -451,14 +460,38 @@ export function translator(lang: Lang) {
 
 const DAYS_FR = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi']
 const DAYS_EN = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
-const MONTHS_FR = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre']
-const MONTHS_EN = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+const MONTHS_FR = [
+  'janvier',
+  'février',
+  'mars',
+  'avril',
+  'mai',
+  'juin',
+  'juillet',
+  'août',
+  'septembre',
+  'octobre',
+  'novembre',
+  'décembre',
+]
+const MONTHS_EN = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+]
 
 export function formatDay(iso: string, lang: Lang) {
   const d = new Date(iso + 'T12:00:00')
   const day = lang === 'fr' ? DAYS_FR[d.getDay()] : DAYS_EN[d.getDay()]
   const month = lang === 'fr' ? MONTHS_FR[d.getMonth()] : MONTHS_EN[d.getMonth()]
-  return lang === 'fr'
-    ? `${day} ${d.getDate()} ${month}`
-    : `${day} ${month} ${d.getDate()}`
+  return lang === 'fr' ? `${day} ${d.getDate()} ${month}` : `${day} ${month} ${d.getDate()}`
 }

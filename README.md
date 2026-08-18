@@ -40,7 +40,7 @@ npm run dev
 
 L'application tourne sur http://localhost:3400
 
-Comptes de démonstration : `ismael@demo.fr`, `lola@demo.fr`, `hugo@demo.fr` et
+Comptes de démonstration : `ismael@demo.fr`, `lola@demo.fr`, `matthew@demo.fr` et
 les autres prénoms du groupe de test, tous avec le mot de passe `verdon2026`.
 
 ## Mise en ligne

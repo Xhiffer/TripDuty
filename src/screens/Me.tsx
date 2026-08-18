@@ -124,7 +124,8 @@ export function Me() {
         </button>
 
         <div className="field-label" style={{ marginTop: 20 }}>
-          {t('inviteByEmail')}
+          {t('inviteByEmail')}{' '}
+          <span style={{ color: 'var(--muted)', fontWeight: 600, fontSize: 12 }}>· {t('comingSoon')}</span>
         </div>
         <p className="hint" style={{ marginTop: 0 }}>
           {t('inviteByEmailHelp')}
@@ -133,6 +134,7 @@ export function Me() {
           <input
             className="input"
             type="email"
+            disabled
             inputMode="email"
             value={invite}
             placeholder="prenom@exemple.fr"
@@ -141,7 +143,7 @@ export function Me() {
               setError('')
             }}
           />
-          <button type="button" className="btn" onClick={submitInvite}>
+          <button type="button" className="btn" onClick={submitInvite} disabled>
             {t('add')}
           </button>
         </div>
@@ -158,7 +160,11 @@ export function Me() {
 
             <label className="field">
               <span className="field-label">{t('groupName')}</span>
-              <input className="input" value={state.group.name} onChange={(e) => updateGroup({ name: e.target.value })} />
+              <input
+                className="input"
+                value={state.group.name}
+                onChange={(e) => updateGroup({ name: e.target.value })}
+              />
             </label>
 
             <div className="row" style={{ gap: 10 }}>
