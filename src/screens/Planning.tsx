@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { tripDays, useApp, useBalances } from '../state'
+import { groupDays, useGroup, useBalances } from '../state'
 import type { Task } from '../types'
 import { suggestForDay, type Suggestion } from '../lib/suggest'
 import { TaskRow } from '../components/TaskRow'
@@ -8,12 +8,12 @@ import { NewTaskSheet } from '../components/NewTaskSheet'
 import { formatDay } from '../lib/i18n'
 
 export function Planning() {
-  const { state, lang, t, activeDate } = useApp()
+  const { state, lang, t, activeDate } = useGroup()
   const rows = useBalances()
   const [openTask, setOpenTask] = useState<Task | null>(null)
   const [creating, setCreating] = useState(false)
 
-  const days = tripDays(state.trip)
+  const days = groupDays(state.group)
   const suggestions = useMemo(() => {
     const map = new Map<string, Suggestion[]>()
     for (const day of days) {

@@ -1,6 +1,9 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useApp, useBalances } from './state'
-import { Join } from './screens/Join'
+import { Auth } from './screens/Auth'
+import { ProfileSetup } from './screens/ProfileSetup'
+import { Concept } from './screens/Concept'
+import { Groups } from './screens/Groups'
 import { Home } from './screens/Home'
 import { Ranking } from './screens/Ranking'
 import { Planning } from './screens/Planning'
@@ -12,11 +15,22 @@ import { formatDay } from './lib/i18n'
 type Tab = 'home' | 'ranking' | 'planning' | 'closing' | 'me'
 
 export function App() {
-  const { state, me, lang, t } = useApp()
+  const { account, view, me, conceptSeen, lang, t, joinByCode } = useApp()
   const rows = useBalances()
   const [tab, setTab] = useState<Tab>('home')
 
-  if (!me) return <Join />
+  // Lien d'invitation partage : #/join/CODE
+  useEffect(() => {
+    const match = window.location.hash.match(/^#\/join\/([A-Za-z0-9]+)$/)
+    if (!match || !account) return
+    const result = joinByCode(match[1])
+    if (result.ok) window.location.hash = ''
+  }, [account, joinByCode])
+
+  if (!account) return <Auth />
+  if (!account.firstName || !account.birthDate) return <ProfileSetup />
+  if (!conceptSeen) return <Concept />
+  if (!view || !me) return <Groups />
 
   const mine = rows.find((r) => r.member.id === me.id)
   const owes = !!mine && mine.centi < 0
@@ -25,7 +39,7 @@ export function App() {
     { id: 'home', icon: '🏠', label: t('navHome'), dot: owes },
     { id: 'ranking', icon: '🏆', label: t('navRanking') },
     { id: 'planning', icon: '📅', label: t('navPlanning') },
-    { id: 'closing', icon: '🏁', label: t('navClosing'), dot: state.trip.closingOpen },
+    { id: 'closing', icon: '🏁', label: t('navClosing'), dot: view.group.closingOpen },
     { id: 'me', icon: '👤', label: t('navMe') },
   ]
 
@@ -33,11 +47,13 @@ export function App() {
     <div className="app">
       <div className="topbar">
         <div className="brand">
-          <span className="brand-mark">⛰️</span>
+          <span className="brand-mark" style={{ background: view.group.color }}>
+            {view.group.emoji}
+          </span>
           <span>
-            {state.trip.name}
+            {view.group.name}
             <div className="trip-meta">
-              {formatDay(state.trip.startDate, lang)} {t('to')} {formatDay(state.trip.endDate, lang)}
+              {formatDay(view.group.startDate, lang)} {t('to')} {formatDay(view.group.endDate, lang)}
             </div>
           </span>
         </div>

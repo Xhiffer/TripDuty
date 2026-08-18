@@ -1,13 +1,13 @@
 import { useState } from 'react'
 import type { Task } from '../types'
-import { useApp } from '../state'
+import { useGroup } from '../state'
 import { beneficiariesOf, completionAmounts, formatBalance } from '../lib/ledger'
 import { Avatar, Segmented, Sheet } from './ui'
 import { taskTitle } from './TaskRow'
 import { formatDay } from '../lib/i18n'
 
 export function TaskSheet({ task, onClose }: { task: Task; onClose: () => void }) {
-  const { state, me, isChef, lang, t, validateTask, markMissed, reopenTask, deleteTask, takeTask } = useApp()
+  const { state, me, isChef, lang, t, validateTask, markMissed, reopenTask, deleteTask, takeTask } = useGroup()
   const entry = state.entries.find((e) => e.taskId === task.id)
   const everyone = state.members.map((m) => m.id)
 
@@ -154,7 +154,7 @@ export function TaskSheet({ task, onClose }: { task: Task; onClose: () => void }
 
             {isChef && task.status === 'todo' && task.assignedTo && (
               <button type="button" className="btn btn-danger btn-block" onClick={() => { markMissed(task.id); onClose() }}>
-                {t('markMissed')} (-{state.trip.penalty})
+                {t('markMissed')} (-{state.group.penalty})
               </button>
             )}
 

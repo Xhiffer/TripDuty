@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { useApp, useBalances } from '../state'
+import { useGroup, useBalances } from '../state'
 import type { Task } from '../types'
 import { formatBalance } from '../lib/ledger'
 import { suggestForDay } from '../lib/suggest'
@@ -9,7 +9,7 @@ import { TaskSheet } from '../components/TaskSheet'
 import { formatDay } from '../lib/i18n'
 
 export function Home({ goRanking }: { goRanking: () => void }) {
-  const { state, me, lang, t, activeDate } = useApp()
+  const { state, me, lang, t, activeDate } = useGroup()
   const rows = useBalances()
   const [openTask, setOpenTask] = useState<Task | null>(null)
 

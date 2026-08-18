@@ -1,12 +1,12 @@
 import { useMemo } from 'react'
-import { useApp, useBalances } from '../state'
+import { useGroup, useBalances } from '../state'
 import { formatBalance, settlements, toPoints } from '../lib/ledger'
 import { Avatar } from '../components/ui'
 
 const MEDALS = ['🥇', '🥈', '🥉']
 
 export function Ranking() {
-  const { state, me, t } = useApp()
+  const { state, me, t } = useGroup()
   const rows = useBalances()
   const transfers = useMemo(() => settlements(rows), [rows])
 

@@ -1,20 +1,32 @@
 import type { ReactNode } from 'react'
-import type { Member } from '../types'
+import type { Person } from '../types'
 
-export function Avatar({ member, size = 40 }: { member: Member | null; size?: number }) {
-  const initial = member?.name?.trim().charAt(0).toUpperCase() ?? '?'
+/** Pastille de profil : la photo si elle existe, sinon les initiales sur la couleur du compte. */
+export function Avatar({ member, size = 40 }: { member: Person | null; size?: number }) {
+  const initials = member?.name?.trim().slice(0, 2).toUpperCase() || '?'
+  const background = member?.photo ? undefined : (member?.color ?? 'var(--surface-2)')
   return (
-    <div className="avatar" style={{ width: size, height: size, fontSize: size * 0.4 }}>
+    <div
+      className="avatar"
+      style={{
+        width: size,
+        height: size,
+        fontSize: size * 0.38,
+        background,
+        color: member?.photo ? undefined : '#fff',
+        borderColor: member?.photo ? undefined : 'transparent',
+      }}
+    >
       {member?.photo ? (
         <img src={member.photo} alt={member.name} width={size} height={size} style={{ objectFit: 'cover' }} />
       ) : (
-        initial
+        initials
       )}
     </div>
   )
 }
 
-export function MedalAvatar({ member, place, size = 56 }: { member: Member; place: 1 | 2 | 3; size?: number }) {
+export function MedalAvatar({ member, place, size = 56 }: { member: Person; place: 1 | 2 | 3; size?: number }) {
   return (
     <div className={`medal-ring medal-${place}`}>
       <Avatar member={member} size={size} />

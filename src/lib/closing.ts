@@ -1,4 +1,4 @@
-import type { Task, TripState } from '../types'
+import type { Task, GroupView } from '../types'
 import type { Balance } from './ledger'
 
 /** Grosses taches de fin de sejour, pre-remplies et modifiables par le chef. */
@@ -23,7 +23,7 @@ export interface ClosingMatch {
  * les taches de cloture de la plus lourde a la plus legere, et on apparie.
  * Celui qui doit le plus au groupe herite de la plus grosse.
  */
-export function matchClosing(state: TripState, rows: Balance[]): ClosingMatch[] {
+export function matchClosing(state: GroupView, rows: Balance[]): ClosingMatch[] {
   const tasks = state.tasks
     .filter((task) => task.isClosing && task.status === 'todo')
     .sort((a, b) => b.points - a.points)

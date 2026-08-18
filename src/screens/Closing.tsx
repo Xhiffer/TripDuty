@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { useApp, useBalances } from '../state'
+import { useGroup, useBalances } from '../state'
 import type { Task } from '../types'
 import { formatBalance } from '../lib/ledger'
 import { matchClosing } from '../lib/closing'
@@ -9,7 +9,7 @@ import { TaskSheet } from '../components/TaskSheet'
 import { NewTaskSheet } from '../components/NewTaskSheet'
 
 export function Closing() {
-  const { state, me, isChef, lang, t, updateTrip, deleteTask } = useApp()
+  const { state, me, isChef, lang, t, updateGroup, deleteTask } = useGroup()
   const rows = useBalances()
   const [openTask, setOpenTask] = useState<Task | null>(null)
   const [creating, setCreating] = useState(false)
@@ -26,7 +26,7 @@ export function Closing() {
       </div>
       <p style={{ color: 'var(--muted)', fontSize: 13, margin: '-6px 0 14px', lineHeight: 1.45 }}>{t('closingIntro')}</p>
 
-      {!state.trip.closingOpen ? (
+      {!state.group.closingOpen ? (
         <>
           <div className="section-title">{t('closingTasks')}</div>
           <p style={{ color: 'var(--muted)', fontSize: 12, margin: '-6px 0 12px', lineHeight: 1.45 }}>
@@ -62,7 +62,7 @@ export function Closing() {
               <button
                 type="button"
                 className="btn btn-primary btn-block"
-                onClick={() => updateTrip({ closingOpen: true })}
+                onClick={() => updateGroup({ closingOpen: true })}
               >
                 🏁 {t('openClosing')}
               </button>
@@ -125,7 +125,7 @@ export function Closing() {
               type="button"
               className="btn btn-block"
               style={{ marginTop: 18 }}
-              onClick={() => updateTrip({ closingOpen: false })}
+              onClick={() => updateGroup({ closingOpen: false })}
             >
               {t('closeClosing')}
             </button>

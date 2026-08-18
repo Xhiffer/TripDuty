@@ -461,6 +461,7 @@ button {
 .field {
   display: block;
   margin-bottom: 14px;
+  min-width: 0;
 }
 
 .field-label {
@@ -473,6 +474,8 @@ button {
 
 .input {
   width: 100%;
+  min-width: 0;
+  max-width: 100%;
   padding: 13px 14px;
   border-radius: 13px;
   background: var(--surface-2);
@@ -754,4 +757,198 @@ button {
 .emoji-btn.is-on {
   border-color: var(--accent);
   background: color-mix(in srgb, var(--accent) 14%, var(--surface));
+}
+
+/* ---------- ecrans d'arrivee ---------- */
+
+.app-centered {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-bottom: 32px;
+}
+
+.hero {
+  text-align: center;
+  padding: 28px 8px 22px;
+}
+
+.hero-mark {
+  width: 62px;
+  height: 62px;
+  border-radius: 20px;
+  display: inline-grid;
+  place-items: center;
+  font-size: 32px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  margin-bottom: 14px;
+}
+
+.hero-title {
+  font-size: 27px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  margin: 0 0 6px;
+}
+
+.hero-sub {
+  color: var(--muted);
+  font-size: 14.5px;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.form-error {
+  color: var(--danger);
+  font-size: 13px;
+  font-weight: 600;
+  margin: 0 0 12px;
+  line-height: 1.4;
+}
+
+.hint {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+  margin: 12px 0 0;
+  text-align: center;
+}
+
+.avatar-xl {
+  width: 96px;
+  height: 96px;
+  font-size: 32px;
+  color: #fff;
+}
+
+/* ---------- couleurs de profil ---------- */
+
+.color-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 8px;
+}
+
+.color-dot {
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 3px solid transparent;
+}
+
+.color-dot.is-on {
+  border-color: var(--text);
+}
+
+/* ---------- concept ---------- */
+
+.concept {
+  text-align: center;
+  padding: 34px 22px;
+}
+
+.concept-emoji {
+  font-size: 52px;
+  display: block;
+  margin-bottom: 18px;
+}
+
+.concept-title {
+  font-size: 23px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 0 0 12px;
+}
+
+.concept-body {
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.dots {
+  display: flex;
+  justify-content: center;
+  gap: 7px;
+  margin-top: 20px;
+}
+
+.dot-nav {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--border);
+}
+
+.dot-nav.is-on {
+  background: var(--accent);
+  width: 20px;
+  border-radius: 99px;
+}
+
+/* ---------- groupes ---------- */
+
+.group-card,
+.kind-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px;
+  border-radius: var(--radius);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  width: 100%;
+  text-align: left;
+  box-shadow: var(--shadow);
+}
+
+.group-mark,
+.kind-emoji {
+  width: 48px;
+  height: 48px;
+  border-radius: 15px;
+  display: grid;
+  place-items: center;
+  font-size: 24px;
+  flex: none;
+}
+
+.kind-emoji {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+
+.group-name {
+  display: block;
+  font-weight: 800;
+  font-size: 16px;
+  letter-spacing: -0.01em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.group-meta {
+  display: block;
+  color: var(--muted);
+  font-size: 12.5px;
+  margin-top: 2px;
+  line-height: 1.4;
+}
+
+.group-arrow {
+  color: var(--muted);
+  font-size: 18px;
+  flex: none;
+}
+
+.invite-code {
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: 0.22em;
+  text-align: center;
+  padding: 14px;
+  border-radius: 14px;
+  background: var(--surface-2);
+  border: 1px dashed var(--border);
 }

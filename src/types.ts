@@ -1,28 +1,48 @@
-export type Role = 'owner' | 'chef' | 'member'
+export type Role = 'host' | 'chef' | 'member'
+export type GroupKind = 'vacances' | 'couple' | 'potes'
 
-export interface Member {
+/** Un compte, independant des groupes. Une personne, un compte. */
+export interface Account {
   id: string
-  name: string
+  email: string
+  passwordHash: string
+  firstName: string
+  lastName: string
+  birthDate: string // AAAA-MM-JJ
   photo: string | null // dataURL, remplace par une URL distante plus tard
-  hasLicense: boolean
-  role: Role
-  joinedAt: string
+  color: string // couleur de la pastille quand il n'y a pas de photo
+  createdAt: string
 }
 
-export interface Trip {
+export interface Group {
   id: string
+  kind: GroupKind
   name: string
+  emoji: string
+  color: string
   startDate: string // AAAA-MM-JJ
   endDate: string
-  ownerId: string
+  hostId: string
+  inviteCode: string
   penalty: number // points retires quand une tache acceptee n'est pas faite
-  closingOpen: boolean // le chef a lance le bilan de fin de sejour
+  closingOpen: boolean // l'hote a lance le bilan de fin
+  createdAt: string
+}
+
+export interface Membership {
+  id: string
+  groupId: string
+  accountId: string
+  role: Role
+  hasLicense: boolean
+  joinedAt: string
 }
 
 export type TaskStatus = 'todo' | 'done' | 'missed'
 
 export interface Task {
   id: string
+  groupId: string
   title: string
   titleKey?: string // tache du catalogue, permet la traduction
   emoji: string
@@ -32,22 +52,22 @@ export interface Task {
   needsLicense: boolean
   /** null = la tache profite a tout le monde. Sinon, la liste des beneficiaires. */
   beneficiaryIds: string[] | null
-  /** Une personne s'est engagee sur la tache. Seul ce cas peut donner lieu a un malus. */
+  /** Quelqu'un s'est engage. Seul ce cas peut donner lieu a un malus. */
   assignedTo: string | null
   status: TaskStatus
   createdBy: string
   recurring: boolean
-  isClosing: boolean // tache de cloture, jouee au bilan de fin de sejour
+  isClosing: boolean
 }
 
 /**
  * Une ligne de compte. La somme des montants fait toujours zero :
  * ce que gagnent ceux qui font la tache est exactement ce que doivent
- * ceux pour qui elle est faite.
- * Les montants sont en centiemes de point pour que la division tombe juste.
+ * ceux pour qui elle est faite. Montants en centiemes de point.
  */
 export interface Entry {
   id: string
+  groupId: string
   taskId: string
   kind: 'completion' | 'penalty'
   doerIds: string[]
@@ -57,9 +77,29 @@ export interface Entry {
   at: string
 }
 
-export interface TripState {
-  trip: Trip
-  members: Member[]
+export interface AppData {
+  accounts: Account[]
+  groups: Group[]
+  memberships: Membership[]
+  tasks: Task[]
+  entries: Entry[]
+}
+
+/** Vue d'une personne dans le groupe courant, telle que l'affichent les ecrans. */
+export interface Person {
+  id: string // identifiant du compte
+  name: string
+  photo: string | null
+  color: string
+  hasLicense: boolean
+  role: Role
+  joinedAt: string
+}
+
+/** Le groupe courant, mis a plat pour les ecrans. */
+export interface GroupView {
+  group: Group
+  members: Person[]
   tasks: Task[]
   entries: Entry[]
 }
