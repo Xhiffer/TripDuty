@@ -162,6 +162,28 @@ function profilePatch(patch: Partial<Account>): Row {
   return out
 }
 
+/**
+ * Envoie la photo dans le bucket `avatars` et rend son adresse publique.
+ *
+ * Le chemin commence par l'identifiant du compte : la politique du bucket
+ * n'autorise a ecrire que dans son propre dossier.
+ */
+async function uploadAvatar(accountId: string, dataUrl: string): Promise<string | null> {
+  if (!supabase) return null
+  try {
+    const blob = await (await fetch(dataUrl)).blob()
+    const path = `${accountId}/avatar.jpg`
+    const { error } = await supabase.storage
+      .from('avatars')
+      .upload(path, blob, { contentType: 'image/jpeg', upsert: true })
+    if (error) throw error
+    return supabase.storage.from('avatars').getPublicUrl(path).data.publicUrl
+  } catch (error) {
+    console.error('[supabase] envoi de la photo impossible', error)
+    return null
+  }
+}
+
 // --- le magasin -------------------------------------------------------------
 
 async function loadAll(): Promise<AppData> {
@@ -211,6 +233,14 @@ async function applyOne(mutation: Mutation): Promise<void> {
     case 'updateProfile': {
       const patch = profilePatch(mutation.patch)
       if (Object.keys(patch).length === 0) return
+      // Une photo arrive de l'ecran en base64. La garder telle quelle ferait
+      // voyager ~27 ko par personne a chaque lecture de profil ; elle va dans
+      // le bucket, et seule son adresse reste en base.
+      if (typeof patch.photo_url === 'string' && patch.photo_url.startsWith('data:')) {
+        const uploaded = await uploadAvatar(mutation.accountId, patch.photo_url)
+        // Echec de l'envoi : on garde le base64 plutot que de perdre la photo.
+        if (uploaded) patch.photo_url = uploaded
+      }
       await supabase.from('profiles').update(patch).eq('id', mutation.accountId)
       return
     }
@@ -242,6 +272,17 @@ async function applyOne(mutation: Mutation): Promise<void> {
     }
 
     case 'setLicense': {
+      const { data: session } = await supabase.auth.getUser()
+      // Depuis 0005, personne ne modifie directement sa propre ligne : la
+      // politique laissait passer un changement de role avec le permis.
+      if (session.user?.id === mutation.accountId) {
+        await supabase.rpc('set_my_license', {
+          target_group: mutation.groupId,
+          value: mutation.hasLicense,
+        })
+        return
+      }
+      // Le chef, lui, peut regler celui des autres.
       await supabase
         .from('memberships')
         .update({ has_license: mutation.hasLicense })

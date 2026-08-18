@@ -25,11 +25,15 @@ export function Me() {
     setLicense,
     inviteByEmail,
     toggleRecurring,
+    shared,
+    deactivateAccount,
   } = useGroup()
   const [invite, setInvite] = useState('')
   const [error, setError] = useState('')
   const [copied, setCopied] = useState(false)
   const [leaving, setLeaving] = useState(false)
+  const [deactivating, setDeactivating] = useState(false)
+  const [deactivateError, setDeactivateError] = useState('')
   if (!me || !account) return null
 
   const recurring = state.tasks.filter((task) => task.recurring)
@@ -295,6 +299,47 @@ export function Me() {
           {t('signOut')}
         </button>
       </div>
+
+      {shared && (
+        <div className="stack" style={{ marginTop: 24 }}>
+          <div className="section-title">{t('deactivateAccount')}</div>
+          <div className="card">
+            <p className="sheet-sub" style={{ marginTop: 0 }}>
+              {t('deactivateHelp')}
+            </p>
+            {deactivateError && <p className="form-error">{deactivateError}</p>}
+            {deactivating ? (
+              <div className="stack">
+                <button
+                  type="button"
+                  className="btn btn-danger btn-block"
+                  onClick={async () => {
+                    setDeactivateError('')
+                    const result = await deactivateAccount()
+                    if (!result.ok) {
+                      const messages: Record<string, string> = {
+                        stillHost: t('errStillHost'),
+                        onlyOnline: t('errOnlyOnline'),
+                      }
+                      setDeactivating(false)
+                      setDeactivateError(messages[result.error] ?? t('errServer'))
+                    }
+                  }}
+                >
+                  {t('deactivateConfirm')}
+                </button>
+                <button type="button" className="btn btn-block" onClick={() => setDeactivating(false)}>
+                  {t('cancel')}
+                </button>
+              </div>
+            ) : (
+              <button type="button" className="btn btn-block" onClick={() => setDeactivating(true)}>
+                {t('deactivateAccount')}
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       {leaving && <LeaveGroupSheet onClose={() => setLeaving(false)} />}
     </>

@@ -245,6 +245,12 @@ const fr: Dict = {
   installIosStep1: 'Appuie sur le bouton Partager',
   installIosStep2: 'Choisis « Sur l’écran d’accueil »',
   later: 'Plus tard',
+  deactivateAccount: 'Désactiver mon compte',
+  deactivateHelp:
+    'Ton compte ne sera plus utilisable, mais ce que tu as fait reste dans les comptes du groupe : l’effacer fausserait le solde des autres.',
+  deactivateConfirm: 'Oui, désactiver',
+  errStillHost: 'Tu es encore hôte d’un groupe. Désigne un successeur ou quitte-le d’abord.',
+  errOnlyOnline: 'Disponible seulement avec le compte en ligne.',
   errServer: 'Le serveur ne répond pas, réessaie dans un instant.',
 }
 
@@ -472,6 +478,12 @@ const en: Dict = {
   installIosStep1: 'Tap the Share button',
   installIosStep2: 'Choose "Add to Home Screen"',
   later: 'Later',
+  deactivateAccount: 'Deactivate my account',
+  deactivateHelp:
+    'Your account will no longer be usable, but what you did stays in the group ledger: erasing it would skew everyone else’s balance.',
+  deactivateConfirm: 'Yes, deactivate',
+  errStillHost: 'You are still the host of a group. Name a successor or leave it first.',
+  errOnlyOnline: 'Only available with the online account.',
   errServer: 'The server is not responding, try again in a moment.',
 }
 

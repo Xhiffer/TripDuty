@@ -81,6 +81,13 @@ interface Ctx {
   signOut: () => void
   /** Vrai quand l'application parle a la base en ligne plutot qu'au telephone. */
   shared: boolean
+  /**
+   * Desactive le compte. On ne supprime pas : les ecritures comptables d'une
+   * personne font partie des soldes de tous les autres, les effacer fausserait
+   * le classement retroactivement. Refuse tant qu'on est hote d'un groupe
+   * habite, comme deactivate_account() cote base.
+   */
+  deactivateAccount: () => Promise<Result>
   updateProfile: (patch: Partial<Omit<Account, 'id' | 'passwordHash'>>) => void
   markConceptSeen: () => void
   // groupes
@@ -324,6 +331,24 @@ export function AppProvider({ children }: { children: ReactNode }) {
       },
 
       shared: hasSupabase,
+
+      deactivateAccount: async () => {
+        if (!supabase) return { ok: false, error: 'onlyOnline' }
+        const { error } = await supabase.rpc('deactivate_account')
+        if (error) {
+          if (/successeur|Quittez/i.test(error.message ?? '')) {
+            return { ok: false, error: 'stillHost' }
+          }
+          console.error('[supabase] desactivation refusee', error)
+          return { ok: false, error: 'server' }
+        }
+        await supabase.auth.signOut()
+        localStorage.removeItem(SESSION_KEY)
+        localStorage.removeItem(GROUP_KEY)
+        setAccountId(null)
+        setGroupId(null)
+        return { ok: true }
+      },
 
       signOut: () => {
         if (supabase) void supabase.auth.signOut()
