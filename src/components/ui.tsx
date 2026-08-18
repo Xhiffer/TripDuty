@@ -79,7 +79,12 @@ export function Segmented<T extends string>({
   return (
     <div className="segmented">
       {options.map((o) => (
-        <button key={o.value} type="button" className={value === o.value ? 'is-on' : ''} onClick={() => onChange(o.value)}>
+        <button
+          key={o.value}
+          type="button"
+          className={value === o.value ? 'is-on' : ''}
+          onClick={() => onChange(o.value)}
+        >
           {o.label}
         </button>
       ))}

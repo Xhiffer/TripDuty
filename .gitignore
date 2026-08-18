@@ -1,5 +1,11 @@
 node_modules
 dist
+coverage
 .DS_Store
 *.local
 *.tsbuildinfo
+
+# Variables d'environnement : seul .env.example est versionne.
+.env
+.env.*
+!.env.example

@@ -257,8 +257,7 @@ const en: Dict = {
   onlyAssignedMiss: 'A penalty only applies to a task someone had taken on.',
   navClosing: 'Wrap-up',
   closingTitle: 'Trip wrap-up',
-  closingIntro:
-    'Balances are never all at zero, and that is fine. The big closing tasks are there to even things out.',
+  closingIntro: 'Balances are never all at zero, and that is fine. The big closing tasks are there to even things out.',
   closingTasks: 'Closing tasks',
   closingHelp: 'Chefs can edit these: remove what does not apply, add your own.',
   openClosing: 'Start the trip wrap-up',
@@ -281,14 +280,38 @@ export function translator(lang: Lang) {
 
 const DAYS_FR = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi']
 const DAYS_EN = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
-const MONTHS_FR = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre']
-const MONTHS_EN = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+const MONTHS_FR = [
+  'janvier',
+  'février',
+  'mars',
+  'avril',
+  'mai',
+  'juin',
+  'juillet',
+  'août',
+  'septembre',
+  'octobre',
+  'novembre',
+  'décembre',
+]
+const MONTHS_EN = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+]
 
 export function formatDay(iso: string, lang: Lang) {
   const d = new Date(iso + 'T12:00:00')
   const day = lang === 'fr' ? DAYS_FR[d.getDay()] : DAYS_EN[d.getDay()]
   const month = lang === 'fr' ? MONTHS_FR[d.getMonth()] : MONTHS_EN[d.getMonth()]
-  return lang === 'fr'
-    ? `${day} ${d.getDate()} ${month}`
-    : `${day} ${month} ${d.getDate()}`
+  return lang === 'fr' ? `${day} ${d.getDate()} ${month}` : `${day} ${month} ${d.getDate()}`
 }

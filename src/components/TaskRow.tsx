@@ -81,9 +81,7 @@ export function TaskRow({
           {task.needsLicense && <span className="pill">🔑</span>}
         </span>
       </span>
-      <span className="task-points">
-        {task.status === 'missed' ? `-${state.trip.penalty}` : `+${task.points}`}
-      </span>
+      <span className="task-points">{task.status === 'missed' ? `-${state.trip.penalty}` : `+${task.points}`}</span>
     </button>
   )
 }

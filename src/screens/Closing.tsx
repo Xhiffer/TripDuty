@@ -24,7 +24,9 @@ export function Closing() {
       <div className="section-title" style={{ marginTop: 18 }}>
         {t('closingTitle')}
       </div>
-      <p style={{ color: 'var(--muted)', fontSize: 13, margin: '-6px 0 14px', lineHeight: 1.45 }}>{t('closingIntro')}</p>
+      <p style={{ color: 'var(--muted)', fontSize: 13, margin: '-6px 0 14px', lineHeight: 1.45 }}>
+        {t('closingIntro')}
+      </p>
 
       {!state.trip.closingOpen ? (
         <>
@@ -89,13 +91,7 @@ export function Closing() {
                       </span>
                     </div>
                   )}
-                  <TaskRow
-                    task={task}
-                    state={state}
-                    lang={lang}
-                    t={t}
-                    onClick={() => setOpenTask(task)}
-                  />
+                  <TaskRow task={task} state={state} lang={lang} t={t} onClick={() => setOpenTask(task)} />
                 </div>
               )
             })}
@@ -118,7 +114,11 @@ export function Closing() {
             </>
           )}
 
-          {mine && mine.centi >= 0 && <div className="banner" style={{ marginTop: 14 }}>{t('nothingOwed')}</div>}
+          {mine && mine.centi >= 0 && (
+            <div className="banner" style={{ marginTop: 14 }}>
+              {t('nothingOwed')}
+            </div>
+          )}
 
           {isChef && (
             <button

@@ -24,9 +24,7 @@ export function Home({ goRanking }: { goRanking: () => void }) {
 
   // Les taches ou l'app me place en tete, uniquement si je suis en negatif.
   const forMe =
-    mine && mine.centi < 0
-      ? dayTasks.filter((task) => suggestions.get(task.id)?.[0]?.memberId === me?.id)
-      : []
+    mine && mine.centi < 0 ? dayTasks.filter((task) => suggestions.get(task.id)?.[0]?.memberId === me?.id) : []
 
   const order: Array<0 | 1 | 2> = [1, 0, 2] // argent, or, bronze
 

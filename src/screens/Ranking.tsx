@@ -31,8 +31,8 @@ export function Ranking() {
                 {row.member.hasLicense && <span title="permis">🔑</span>}
               </span>
               <span className="rank-sub">
-                {row.tasksDone} {row.tasksDone > 1 ? t('tasksDone') : t('taskDoneOne')} ·{' '}
-                {toPoints(row.givenCenti)} {t('gaveToGroup')}
+                {row.tasksDone} {row.tasksDone > 1 ? t('tasksDone') : t('taskDoneOne')} · {toPoints(row.givenCenti)}{' '}
+                {t('gaveToGroup')}
               </span>
             </span>
             <span className="rank-score" style={{ color: row.centi < 0 ? 'var(--danger)' : 'var(--good)' }}>

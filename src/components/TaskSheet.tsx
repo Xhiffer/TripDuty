@@ -22,9 +22,7 @@ export function TaskSheet({ task, onClose }: { task: Task; onClose: () => void }
   const eligible = state.members.filter((m) => !task.needsLicense || m.hasLicense)
   const finalBeneficiaries = scope === 'all' ? everyone : beneficiaries
   const preview =
-    doers.length > 0 && finalBeneficiaries.length > 0
-      ? completionAmounts(task.points, doers, finalBeneficiaries)
-      : {}
+    doers.length > 0 && finalBeneficiaries.length > 0 ? completionAmounts(task.points, doers, finalBeneficiaries) : {}
 
   function toggle(list: string[], setList: (v: string[]) => void, id: string) {
     setList(list.includes(id) ? list.filter((x) => x !== id) : [...list, id])
@@ -61,7 +59,14 @@ export function TaskSheet({ task, onClose }: { task: Task; onClose: () => void }
             </div>
           </div>
           {isChef ? (
-            <button type="button" className="btn btn-danger btn-block" onClick={() => { reopenTask(task.id); onClose() }}>
+            <button
+              type="button"
+              className="btn btn-danger btn-block"
+              onClick={() => {
+                reopenTask(task.id)
+                onClose()
+              }}
+            >
               {t('cancelValidation')}
             </button>
           ) : (
@@ -137,7 +142,10 @@ export function TaskSheet({ task, onClose }: { task: Task; onClose: () => void }
               type="button"
               className="btn btn-primary btn-block"
               disabled={doers.length === 0 || finalBeneficiaries.length === 0}
-              onClick={() => { validateTask(task.id, doers, finalBeneficiaries); onClose() }}
+              onClick={() => {
+                validateTask(task.id, doers, finalBeneficiaries)
+                onClose()
+              }}
             >
               ✅ {t('validate')}
             </button>
@@ -146,30 +154,56 @@ export function TaskSheet({ task, onClose }: { task: Task; onClose: () => void }
               <button
                 type="button"
                 className="btn btn-block"
-                onClick={() => { takeTask(task.id, mine ? null : me.id); onClose() }}
+                onClick={() => {
+                  takeTask(task.id, mine ? null : me.id)
+                  onClose()
+                }}
               >
                 {mine ? t('release') : t('takeIt')}
               </button>
             )}
 
             {isChef && task.status === 'todo' && task.assignedTo && (
-              <button type="button" className="btn btn-danger btn-block" onClick={() => { markMissed(task.id); onClose() }}>
+              <button
+                type="button"
+                className="btn btn-danger btn-block"
+                onClick={() => {
+                  markMissed(task.id)
+                  onClose()
+                }}
+              >
                 {t('markMissed')} (-{state.trip.penalty})
               </button>
             )}
 
             {isChef && task.status === 'todo' && !task.assignedTo && (
-              <p className="sheet-sub" style={{ marginBottom: 0 }}>{t('onlyAssignedMiss')}</p>
+              <p className="sheet-sub" style={{ marginBottom: 0 }}>
+                {t('onlyAssignedMiss')}
+              </p>
             )}
 
             {task.status === 'missed' && isChef && (
-              <button type="button" className="btn btn-block" onClick={() => { reopenTask(task.id); onClose() }}>
+              <button
+                type="button"
+                className="btn btn-block"
+                onClick={() => {
+                  reopenTask(task.id)
+                  onClose()
+                }}
+              >
                 {t('cancelValidation')}
               </button>
             )}
 
             {isChef && (
-              <button type="button" className="btn btn-block" onClick={() => { deleteTask(task.id); onClose() }}>
+              <button
+                type="button"
+                className="btn btn-block"
+                onClick={() => {
+                  deleteTask(task.id)
+                  onClose()
+                }}
+              >
                 🗑️
               </button>
             )}

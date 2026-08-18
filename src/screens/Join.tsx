@@ -41,7 +41,8 @@ export function Join() {
           <span>
             {t('appName')}
             <div className="trip-meta">
-              {state.trip.name} · {formatDay(state.trip.startDate, lang)} {t('to')} {formatDay(state.trip.endDate, lang)}
+              {state.trip.name} · {formatDay(state.trip.startDate, lang)} {t('to')}{' '}
+              {formatDay(state.trip.endDate, lang)}
             </div>
           </span>
         </div>
@@ -61,14 +62,23 @@ export function Join() {
                 </button>
               ))}
             </div>
-            <button type="button" className="btn btn-primary btn-block" style={{ marginTop: 16 }} onClick={() => setMode('create')}>
+            <button
+              type="button"
+              className="btn btn-primary btn-block"
+              style={{ marginTop: 16 }}
+              onClick={() => setMode('create')}
+            >
               ＋ {t('joinNew')}
             </button>
           </>
         ) : (
           <>
             <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16 }}>
-              <button type="button" onClick={() => fileRef.current?.click()} style={{ display: 'grid', placeItems: 'center', gap: 8 }}>
+              <button
+                type="button"
+                onClick={() => fileRef.current?.click()}
+                style={{ display: 'grid', placeItems: 'center', gap: 8 }}
+              >
                 <Avatar member={{ id: '', name, photo, hasLicense: false, role: 'member', joinedAt: '' }} size={88} />
                 <span style={{ fontSize: 13, color: 'var(--accent)', fontWeight: 700 }}>
                   {photo ? t('changePhoto') : t('addPhoto')}
