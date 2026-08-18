@@ -268,8 +268,11 @@ async function applyOne(mutation: Mutation): Promise<void> {
     case 'settleTask': {
       const e = mutation.entry
       await supabase.from('tasks').update({ status: mutation.status }).eq('id', mutation.taskId)
-      // `unique (task_id)` : revalider remplace la ligne, cela n'en empile pas.
-      await supabase.from('entries').upsert(
+      // Revalider ne modifie pas la ligne existante, elle la remplace : une
+      // ecriture comptable est un fait, pas un etat. `entries` n'a d'ailleurs
+      // aucune politique UPDATE, un upsert se ferait refuser au second passage.
+      await supabase.from('entries').delete().eq('task_id', mutation.taskId)
+      await supabase.from('entries').insert(
         {
           id: e.id,
           group_id: e.groupId,
@@ -281,7 +284,6 @@ async function applyOne(mutation: Mutation): Promise<void> {
           validated_by: e.validatedBy,
           at: e.at,
         },
-        { onConflict: 'task_id' },
       )
       return
     }
