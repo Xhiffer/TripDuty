@@ -23,6 +23,10 @@ create table profiles (
   birth_date date,
   photo_url  text,
   color      text        not null default '#3d8bff',
+  -- Un compte ne se supprime pas, il se desactive. Supprimer une personne
+  -- emporterait ses ecritures comptables et fausserait les soldes de tous les
+  -- autres, retroactivement. On marque donc, on n'efface jamais.
+  deactivated_at timestamptz,
   created_at timestamptz not null default now()
 );
 
@@ -106,7 +110,9 @@ create table tasks (
   beneficiary_ids uuid[] check (beneficiary_ids is null or array_length(beneficiary_ids, 1) > 0),
   assigned_to     uuid        references profiles (id) on delete set null,
   status          task_status not null default 'todo',
-  created_by      uuid        not null references profiles (id) on delete cascade,
+  -- restrict, pas cascade : la base refuse de supprimer une personne qui porte
+  -- des ecritures. Un compte inutilise se desactive (profiles.deactivated_at).
+  created_by      uuid        not null references profiles (id) on delete restrict,
   recurring       boolean     not null default false,
   is_closing      boolean     not null default false,
   created_at      timestamptz not null default now()
@@ -140,7 +146,7 @@ create table entries (
   beneficiary_ids uuid[]      not null,
   -- { "<profile_id>": <centiemes> }, positif = credit, negatif = debit.
   amounts         jsonb       not null check (ledger_is_balanced(amounts)),
-  validated_by    uuid        not null references profiles (id) on delete cascade,
+  validated_by    uuid        not null references profiles (id) on delete restrict,
   at              timestamptz not null default now(),
   check (kind = 'penalty' or array_length(doer_ids, 1) > 0)
 );

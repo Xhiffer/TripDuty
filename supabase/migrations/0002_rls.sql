@@ -80,8 +80,9 @@ create policy memberships_update_by_chef on memberships for update
   using (is_chef(group_id) and role <> 'host')
   with check (is_chef(group_id) and role <> 'host');
 
--- Quitter un groupe, oui. Exclure quelqu'un d'autre, non.
-create policy memberships_delete_self on memberships for delete using (profile_id = auth.uid());
+-- Aucune politique DELETE : quitter un groupe passe par leave_group(), qui
+-- garantit qu'un groupe ne reste jamais sans chef. Une politique de suppression
+-- directe permettrait a l'hote de contourner cette regle.
 
 -- Taches : tout le monde propose, prend et corrige. C'est un groupe d'amis,
 -- pas une organisation hierarchique.

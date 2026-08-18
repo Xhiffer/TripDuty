@@ -105,3 +105,80 @@ revoke all on function create_group(text, group_kind, text, text, date, date, bo
 revoke all on function join_group(text, boolean) from public;
 grant execute on function create_group(text, group_kind, text, text, date, date, boolean, integer) to authenticated;
 grant execute on function join_group(text, boolean) to authenticated;
+
+-- Quitter un groupe.
+--
+-- Un groupe ne doit jamais se retrouver sans responsable. Trois cas :
+--   * un simple membre part sans ceremonie ;
+--   * l'hote part et il reste une seule personne : c'est elle, inutile de
+--     le lui demander ;
+--   * l'hote part et il reste plusieurs personnes : il doit designer son
+--     successeur.
+-- Si plus personne ne reste, le groupe disparait : un groupe vide n'a pas de
+-- sens, et le garder laisserait un code d'invitation actif dans la nature.
+--
+-- Cette fonction est le seul chemin possible : `memberships` n'a pas de
+-- politique DELETE, sinon l'hote contournerait la regle par une suppression
+-- directe.
+create or replace function leave_group(
+  target_group uuid,
+  new_host     uuid default null
+) returns void
+  language plpgsql
+  volatile
+  security definer
+  set search_path = public
+as $$
+declare
+  my_role member_role;
+  others  integer;
+  heir    uuid;
+begin
+  if auth.uid() is null then
+    raise exception 'Authentification requise';
+  end if;
+
+  select role into my_role from memberships
+   where group_id = target_group and profile_id = auth.uid();
+  if not found then
+    raise exception 'Vous n''etes pas membre de ce groupe';
+  end if;
+
+  if my_role <> 'host' then
+    delete from memberships where group_id = target_group and profile_id = auth.uid();
+    return;
+  end if;
+
+  select count(*) into others from memberships
+   where group_id = target_group and profile_id <> auth.uid();
+
+  if others = 0 then
+    -- Le dernier ferme la porte. Taches et ecritures partent en cascade.
+    delete from groups where id = target_group;
+    return;
+  end if;
+
+  if others = 1 then
+    select profile_id into heir from memberships
+     where group_id = target_group and profile_id <> auth.uid();
+  else
+    if new_host is null then
+      raise exception 'Choisissez un nouveau chef avant de quitter le groupe'
+        using errcode = 'invalid_parameter_value';
+    end if;
+    select profile_id into heir from memberships
+     where group_id = target_group and profile_id = new_host and profile_id <> auth.uid();
+    if not found then
+      raise exception 'Le nouveau chef doit etre un autre membre du groupe'
+        using errcode = 'invalid_parameter_value';
+    end if;
+  end if;
+
+  update memberships set role = 'host' where group_id = target_group and profile_id = heir;
+  update groups set host_id = heir where id = target_group;
+  delete from memberships where group_id = target_group and profile_id = auth.uid();
+end;
+$$;
+
+revoke all on function leave_group(uuid, uuid) from public;
+grant execute on function leave_group(uuid, uuid) to authenticated;

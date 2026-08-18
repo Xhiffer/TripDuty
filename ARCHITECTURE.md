@@ -196,6 +196,22 @@ production.
 
 **Ne jamais stocker de mot de passe.** Supabase Auth s'en occupe.
 
+**Un compte ne se supprime pas, il se desactive** (`profiles.deactivated_at`).
+Supprimer une personne emporterait ses ecritures comptables et fausserait les
+soldes de tous les autres, retroactivement. Les references depuis `tasks` et
+`entries` sont en `on delete restrict` : la base refuse la suppression plutot
+que de l'accepter en silence.
+
+**Quitter un groupe passe par `leave_group()`, jamais par une suppression
+directe.** Un groupe ne doit jamais se retrouver sans responsable : l'hote qui
+part designe son successeur, ou c'est automatiquement la seule personne qui
+reste. Si plus personne ne reste, le groupe disparait. `memberships` n'a
+volontairement aucune politique `DELETE`, sinon la regle serait contournable.
+
+**Pas d'invitation par e-mail.** Chercher qui possede une adresse revient a
+permettre a n'importe qui de tester des adresses pour savoir qui a un compte.
+Le code d'invitation est le seul chemin.
+
 **Les photos vont dans Storage, pas en base.** Une photo 256×256 pèse ~20 ko,
 ~27 ko une fois en base64 : à dix personnes, ça alourdit chaque lecture pour
 rien. Seule l'URL est stockée.
