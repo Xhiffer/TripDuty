@@ -186,7 +186,7 @@ async function uploadAvatar(accountId: string, dataUrl: string): Promise<string 
 
 // --- le magasin -------------------------------------------------------------
 
-async function loadAll(): Promise<AppData> {
+async function loadAll(retry = true): Promise<AppData> {
   if (!supabase) return EMPTY
   const { data: session } = await supabase.auth.getUser()
   const user = session.user
@@ -205,9 +205,19 @@ async function loadAll(): Promise<AppData> {
   const failed = [profiles, groups, memberships, tasks, entries].find((r) => r.error)
   if (failed?.error) throw new Error(failed.error.message)
 
+  // Juste apres une inscription, la session existe avant que la fiche profil
+  // posee par le declencheur ne soit visible. Rendre cet instant tel quel
+  // donnerait une application sans compte : l'ecran d'inscription reste
+  // affiche, et la personne croit que son inscription a echoue.
+  const rows = profiles.data ?? []
+  if (!rows.some((r) => (r as Row).id === user.id) && retry) {
+    await new Promise((resume) => setTimeout(resume, 400))
+    return loadAll(false)
+  }
+
   const email = user.email ?? ''
   return {
-    accounts: (profiles.data ?? []).map((r) => toAccount(r as Row, user.id, email)),
+    accounts: rows.map((r) => toAccount(r as Row, user.id, email)),
     groups: (groups.data ?? []).map((r) => toGroup(r as Row)),
     memberships: (memberships.data ?? []).map((r) => toMembership(r as Row)),
     tasks: (tasks.data ?? []).map((r) => toTask(r as Row)),
@@ -344,7 +354,7 @@ async function applyOne(mutation: Mutation): Promise<void> {
 }
 
 export const supabaseStore = {
-  load: loadAll,
+  load: () => loadAll(),
 
   async apply(mutation: Mutation) {
     try {
