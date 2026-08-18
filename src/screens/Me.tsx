@@ -4,6 +4,7 @@ import { formatBalance } from '../lib/ledger'
 import { inviteLink, isEmail } from '../lib/identity'
 import { Avatar, Segmented } from '../components/ui'
 import { taskTitle } from '../components/TaskRow'
+import { LeaveGroupSheet } from '../components/LeaveGroupSheet'
 
 export function Me() {
   const {
@@ -23,12 +24,12 @@ export function Me() {
     setRole,
     setLicense,
     inviteByEmail,
-    leaveGroup,
     toggleRecurring,
   } = useGroup()
   const [invite, setInvite] = useState('')
   const [error, setError] = useState('')
   const [copied, setCopied] = useState(false)
+  const [leaving, setLeaving] = useState(false)
   if (!me || !account) return null
 
   const recurring = state.tasks.filter((task) => task.recurring)
@@ -287,15 +288,15 @@ export function Me() {
         <button type="button" className="btn btn-block" onClick={() => selectGroup(null)}>
           {t('switchGroup')}
         </button>
-        {!isHost && (
-          <button type="button" className="btn btn-danger btn-block" onClick={() => leaveGroup(state.group.id)}>
-            {t('leaveGroup')}
-          </button>
-        )}
+        <button type="button" className="btn btn-danger btn-block" onClick={() => setLeaving(true)}>
+          {t('leaveGroup')}
+        </button>
         <button type="button" className="btn btn-block" onClick={signOut}>
           {t('signOut')}
         </button>
       </div>
+
+      {leaving && <LeaveGroupSheet onClose={() => setLeaving(false)} />}
     </>
   )
 }
