@@ -76,4 +76,17 @@ export const localStore: Store = {
   },
 }
 
+/**
+ * Le magasin utilise par l'application.
+ *
+ * Volontairement `localStore`, meme quand les variables Supabase sont
+ * presentes. Le magasin partage sait lire, ecrire et s'abonner, mais il ne
+ * sait pas encore ouvrir un sejour : `createSupabaseStore().load()` echoue
+ * avec `NoTripError` tant que ce telephone n'est membre d'aucun sejour, et
+ * seul l'ecran d'accueil peut alors proposer d'en creer un ou d'en rejoindre
+ * un avec le code de partage.
+ *
+ * Basculer ici avant que cet ecran existe donnerait une application qui ne
+ * demarre pas. C'est donc la derniere ligne a changer, pas la premiere.
+ */
 export const store: Store = localStore
