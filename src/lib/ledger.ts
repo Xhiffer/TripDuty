@@ -1,4 +1,4 @@
-import type { Entry, Member, Task, TripState } from '../types'
+import type { Entry, Person, Task, GroupView } from '../types'
 
 /** Tout est compte en centiemes de point pour que les divisions tombent juste. */
 export const CENTI = 100
@@ -14,7 +14,7 @@ export function splitExact(total: number, n: number): number[] {
   return Array.from({ length: n }, (_, i) => base + (i < rest ? 1 : 0))
 }
 
-export function beneficiariesOf(task: Task, members: Member[]): string[] {
+export function beneficiariesOf(task: Task, members: Person[]): string[] {
   if (task.beneficiaryIds === null) return members.map((m) => m.id)
   return task.beneficiaryIds.filter((id) => members.some((m) => m.id === id))
 }
@@ -59,7 +59,7 @@ export function penaltyAmounts(penalty: number, culpritId: string, beneficiaryId
 }
 
 export interface Balance {
-  member: Member
+  member: Person
   /** Solde en centiemes. Positif : la personne a donne plus qu'elle n'a recu. */
   centi: number
   /** Points bruts apportes au groupe, pour l'anecdote. */
@@ -69,7 +69,7 @@ export interface Balance {
   rank: number
 }
 
-export function balances(state: TripState): Balance[] {
+export function balances(state: GroupView): Balance[] {
   const rows = state.members.map((member) => {
     let centi = 0
     let givenCenti = 0
@@ -148,6 +148,6 @@ export function settlements(rows: Balance[]): Transfer[] {
   return transfers
 }
 
-export function entriesForTask(state: TripState, taskId: string): Entry | undefined {
+export function entriesForTask(state: GroupView, taskId: string): Entry | undefined {
   return state.entries.find((e) => e.taskId === taskId)
 }

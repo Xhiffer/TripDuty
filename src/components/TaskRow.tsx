@@ -1,4 +1,4 @@
-import type { Lang, Task, TripState } from '../types'
+import type { Lang, Task, GroupView } from '../types'
 import type { Suggestion } from '../lib/suggest'
 import { CATALOG } from '../lib/catalog'
 import { CLOSING_CATALOG } from '../lib/closing'
@@ -13,7 +13,7 @@ export function taskTitle(task: Task, lang: Lang) {
 }
 
 /** Etiquette qui dit d'un coup d'oeil pour qui la tache est faite. */
-function ForWhom({ task, state, t }: { task: Task; state: TripState; t: (k: string) => string }) {
+function ForWhom({ task, state, t }: { task: Task; state: GroupView; t: (k: string) => string }) {
   if (task.beneficiaryIds === null) return null
   const count = task.beneficiaryIds.length
   if (count === 1 && task.beneficiaryIds[0] === task.assignedTo) return <span className="pill">{t('solo')}</span>
@@ -34,7 +34,7 @@ export function TaskRow({
   onClick,
 }: {
   task: Task
-  state: TripState
+  state: GroupView
   lang: Lang
   t: (k: string) => string
   suggestions?: Suggestion[]
@@ -81,7 +81,9 @@ export function TaskRow({
           {task.needsLicense && <span className="pill">🔑</span>}
         </span>
       </span>
-      <span className="task-points">{task.status === 'missed' ? `-${state.trip.penalty}` : `+${task.points}`}</span>
+      <span className="task-points">
+        {task.status === 'missed' ? `-${state.group.penalty}` : `+${task.points}`}
+      </span>
     </button>
   )
 }

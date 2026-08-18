@@ -1,14 +1,54 @@
-import { useApp } from '../state'
+import { useState } from 'react'
+import { useGroup } from '../state'
 import { formatBalance } from '../lib/ledger'
+import { inviteLink, isEmail } from '../lib/identity'
 import { Avatar, Segmented } from '../components/ui'
 import { taskTitle } from '../components/TaskRow'
 
 export function Me() {
-  const { state, me, isChef, lang, theme, t, setLang, setTheme, setMe, updateTrip, setRole, toggleRecurring } = useApp()
-  if (!me) return null
+  const {
+    state,
+    account,
+    me,
+    isChef,
+    isHost,
+    lang,
+    theme,
+    t,
+    setLang,
+    setTheme,
+    signOut,
+    selectGroup,
+    updateGroup,
+    setRole,
+    setLicense,
+    inviteByEmail,
+    leaveGroup,
+    toggleRecurring,
+  } = useGroup()
+  const [invite, setInvite] = useState('')
+  const [error, setError] = useState('')
+  const [copied, setCopied] = useState(false)
+  if (!me || !account) return null
 
   const recurring = state.tasks.filter((task) => task.recurring)
-  const canManageRoles = me.role === 'owner'
+  const link = inviteLink(state.group.inviteCode)
+
+  function submitInvite() {
+    setError('')
+    if (!isEmail(invite)) return setError(t('errBadEmail'))
+    const result = inviteByEmail(invite)
+    if (!result.ok) {
+      const messages: Record<string, string> = {
+        noAccountForEmail: t('errNoAccountForEmail'),
+        alreadyMember: t('errAlreadyMember'),
+      }
+      return setError(messages[result.error] ?? t('errServer'))
+    }
+    setInvite('')
+  }
+
+  const roleLabel = (role: string) => (role === 'host' ? t('host') : role === 'chef' ? t('chef') : t('member'))
 
   return (
     <>
@@ -21,13 +61,24 @@ export function Me() {
           <Avatar member={me} size={56} />
           <span style={{ flex: 1, minWidth: 0 }}>
             <span className="rank-name" style={{ fontSize: 17 }}>
-              {me.name}
+              {account.firstName} {account.lastName}
             </span>
             <span className="rank-sub">
-              {me.role === 'owner' ? t('owner') : me.role === 'chef' ? t('chef') : t('member')}
+              {roleLabel(me.role)}
               {me.hasLicense ? ' · 🔑' : ''}
             </span>
+            <span className="rank-sub">{account.email}</span>
           </span>
+        </div>
+        <div style={{ marginTop: 14 }}>
+          <Segmented
+            value={me.hasLicense ? 'yes' : 'no'}
+            onChange={(v) => setLicense(me.id, v === 'yes')}
+            options={[
+              { value: 'yes', label: `🔑 ${t('licenseYes')}` },
+              { value: 'no', label: t('licenseNo') },
+            ]}
+          />
         </div>
       </div>
 
@@ -51,6 +102,52 @@ export function Me() {
         ]}
       />
 
+      <div className="section-title">{t('invitePeople')}</div>
+      <div className="card">
+        <div className="field-label">{t('inviteByLink')}</div>
+        <div className="invite-code">{state.group.inviteCode}</div>
+        <button
+          type="button"
+          className="btn btn-block"
+          style={{ marginTop: 10 }}
+          onClick={async () => {
+            try {
+              if (navigator.share) await navigator.share({ title: 'Trip Duty', url: link })
+              else await navigator.clipboard.writeText(link)
+              setCopied(true)
+            } catch {
+              setCopied(false)
+            }
+          }}
+        >
+          🔗 {copied ? t('linkCopied') : t('shareLink')}
+        </button>
+
+        <div className="field-label" style={{ marginTop: 20 }}>
+          {t('inviteByEmail')}
+        </div>
+        <p className="hint" style={{ marginTop: 0 }}>
+          {t('inviteByEmailHelp')}
+        </p>
+        <div className="row" style={{ gap: 8 }}>
+          <input
+            className="input"
+            type="email"
+            inputMode="email"
+            value={invite}
+            placeholder="prenom@exemple.fr"
+            onChange={(e) => {
+              setInvite(e.target.value)
+              setError('')
+            }}
+          />
+          <button type="button" className="btn" onClick={submitInvite}>
+            {t('add')}
+          </button>
+        </div>
+        {error && <p className="form-error">{error}</p>}
+      </div>
+
       {isChef && (
         <>
           <div className="section-title">{t('chefSpace')}</div>
@@ -60,8 +157,8 @@ export function Me() {
             </p>
 
             <label className="field">
-              <span className="field-label">{t('tripName')}</span>
-              <input className="input" value={state.trip.name} onChange={(e) => updateTrip({ name: e.target.value })} />
+              <span className="field-label">{t('groupName')}</span>
+              <input className="input" value={state.group.name} onChange={(e) => updateGroup({ name: e.target.value })} />
             </label>
 
             <div className="row" style={{ gap: 10 }}>
@@ -70,8 +167,8 @@ export function Me() {
                 <input
                   className="input"
                   type="date"
-                  value={state.trip.startDate}
-                  onChange={(e) => updateTrip({ startDate: e.target.value })}
+                  value={state.group.startDate}
+                  onChange={(e) => updateGroup({ startDate: e.target.value })}
                 />
               </label>
               <label className="field" style={{ flex: 1 }}>
@@ -79,24 +176,24 @@ export function Me() {
                 <input
                   className="input"
                   type="date"
-                  value={state.trip.endDate}
-                  onChange={(e) => updateTrip({ endDate: e.target.value })}
+                  value={state.group.endDate}
+                  onChange={(e) => updateGroup({ endDate: e.target.value })}
                 />
               </label>
             </div>
 
             <label className="field" style={{ marginBottom: 0 }}>
               <span className="field-label">
-                {t('penaltyLabel')} : -{state.trip.penalty}
+                {t('penaltyLabel')} : -{state.group.penalty}
               </span>
               <input
                 type="range"
                 min={0}
                 max={50}
                 step={5}
-                value={state.trip.penalty}
+                value={state.group.penalty}
                 style={{ width: '100%', accentColor: 'var(--danger)' }}
-                onChange={(e) => updateTrip({ penalty: Number(e.target.value) })}
+                onChange={(e) => updateGroup({ penalty: Number(e.target.value) })}
               />
             </label>
           </div>
@@ -108,11 +205,9 @@ export function Me() {
                 <Avatar member={m} size={34} />
                 <span style={{ flex: 1, minWidth: 0 }}>
                   <span className="rank-name">{m.name}</span>
-                  <span className="rank-sub">
-                    {m.role === 'owner' ? t('owner') : m.role === 'chef' ? t('chef') : t('member')}
-                  </span>
+                  <span className="rank-sub">{roleLabel(m.role)}</span>
                 </span>
-                {canManageRoles && m.role !== 'owner' && (
+                {isHost && m.role !== 'host' && (
                   <button
                     type="button"
                     className="btn btn-sm"
@@ -182,9 +277,19 @@ export function Me() {
           })}
       </div>
 
-      <button type="button" className="btn btn-block" style={{ marginTop: 20 }} onClick={() => setMe(null)}>
-        {t('logout')}
-      </button>
+      <div className="stack" style={{ marginTop: 24 }}>
+        <button type="button" className="btn btn-block" onClick={() => selectGroup(null)}>
+          {t('switchGroup')}
+        </button>
+        {!isHost && (
+          <button type="button" className="btn btn-danger btn-block" onClick={() => leaveGroup(state.group.id)}>
+            {t('leaveGroup')}
+          </button>
+        )}
+        <button type="button" className="btn btn-block" onClick={signOut}>
+          {t('signOut')}
+        </button>
+      </div>
     </>
   )
 }

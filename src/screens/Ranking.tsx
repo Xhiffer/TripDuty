@@ -1,12 +1,12 @@
 import { useMemo } from 'react'
-import { useApp, useBalances } from '../state'
+import { useGroup, useBalances } from '../state'
 import { formatBalance, settlements, toPoints } from '../lib/ledger'
 import { Avatar } from '../components/ui'
 
 const MEDALS = ['🥇', '🥈', '🥉']
 
 export function Ranking() {
-  const { state, me, t } = useApp()
+  const { state, me, t } = useGroup()
   const rows = useBalances()
   const transfers = useMemo(() => settlements(rows), [rows])
 
@@ -31,8 +31,8 @@ export function Ranking() {
                 {row.member.hasLicense && <span title="permis">🔑</span>}
               </span>
               <span className="rank-sub">
-                {row.tasksDone} {row.tasksDone > 1 ? t('tasksDone') : t('taskDoneOne')} · {toPoints(row.givenCenti)}{' '}
-                {t('gaveToGroup')}
+                {row.tasksDone} {row.tasksDone > 1 ? t('tasksDone') : t('taskDoneOne')} ·{' '}
+                {toPoints(row.givenCenti)} {t('gaveToGroup')}
               </span>
             </span>
             <span className="rank-score" style={{ color: row.centi < 0 ? 'var(--danger)' : 'var(--good)' }}>

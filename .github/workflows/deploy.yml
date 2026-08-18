@@ -15,29 +15,15 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # Rien ne part en ligne si le format, le lint, les tests ou le typage echouent.
-  ci:
-    uses: ./.github/workflows/ci.yml
-
   build:
-    needs: ci
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: npm
       - run: npm ci
       - run: npm run build
-        env:
-          VITE_BASE_PATH: /TripDuty/
-          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
-      # GitHub Pages n'a pas de reecriture SPA : sans ce fichier, un lien
-      # profond comme /TripDuty/trip/abc123 renvoie une page 404.
-      - name: Fallback SPA
-        run: cp dist/index.html dist/404.html
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

@@ -11,3 +11,12 @@ createRoot(document.getElementById('root')!).render(
     </AppProvider>
   </StrictMode>,
 )
+
+// Installation sur l'ecran d'accueil, Android comme iPhone.
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`).catch(() => {
+      // pas de service worker en developpement, ce n'est pas bloquant
+    })
+  })
+}

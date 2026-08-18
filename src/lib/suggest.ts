@@ -1,4 +1,4 @@
-import type { Task, TripState } from '../types'
+import type { Task, GroupView } from '../types'
 import { CENTI, beneficiariesOf, type Balance } from './ledger'
 
 export interface Suggestion {
@@ -13,7 +13,7 @@ export interface Suggestion {
  */
 export function suggestFor(
   task: Task,
-  state: TripState,
+  state: GroupView,
   rows: Balance[],
   excluded: Set<string> = new Set(),
 ): Suggestion[] {
@@ -54,7 +54,7 @@ export function suggestFor(
  * de toutes les taches du jour : sinon celui qui a decroche se prend six
  * suggestions au reveil et ferme l'application.
  */
-export function suggestForDay(state: TripState, rows: Balance[], day: string): Map<string, Suggestion[]> {
+export function suggestForDay(state: GroupView, rows: Balance[], day: string): Map<string, Suggestion[]> {
   const result = new Map<string, Suggestion[]>()
   const alreadyFirst = new Set<string>()
 

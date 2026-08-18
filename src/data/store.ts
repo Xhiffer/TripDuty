@@ -1,92 +1,38 @@
-import type { TripState } from '../types'
-import type { Mutation } from './mutations'
-import { applyMutation } from './mutations'
-import { seedState } from './seed'
+import type { AppData } from '../types'
+import { seedData } from './seed'
 
 /**
- * Couche de donnees.
- *
- * L'interface ne propose volontairement aucun `save(state)`. Envoyer l'etat
- * complet revient a dire « voici le sejour tel que je le connais », ce qui
- * efface tout ce que l'on n'a pas vu : le geste d'un autre telephone disparait
- * sans erreur ni conflit. On envoie donc des mutations, qui ne parlent que de
- * ce qu'elles touchent.
- *
- * Brancher la base en ligne consiste a ecrire un second objet qui respecte
- * cette interface, en traduisant chaque mutation en une ecriture ciblee
- * (voir supabase/migrations). Aucun ecran n'a besoin d'etre modifie.
+ * Couche de donnees. Aujourd'hui tout est dans le telephone (localStorage),
+ * ce qui suffit pour valider l'application. Le jour ou la base en ligne est
+ * branchee, il suffit d'ecrire un autre objet qui respecte cette interface :
+ * aucun ecran n'a besoin d'etre modifie.
  */
 export interface Store {
-  load(): Promise<TripState>
-  apply(mutation: Mutation): Promise<void>
-  /**
-   * Signale un changement venu d'ailleurs, et retourne de quoi se desabonner.
-   * Optionnel : un magasin sans partage n'a rien a annoncer.
-   */
-  subscribe?(onChange: (state: TripState) => void): () => void
+  load(): Promise<AppData>
+  save(data: AppData): Promise<void>
 }
 
-const KEY = 'tripduty:state:v2'
+const KEY = 'tripduty:data:v3'
 
-function read(): TripState | null {
-  try {
-    const raw = localStorage.getItem(KEY)
-    return raw ? (JSON.parse(raw) as TripState) : null
-  } catch {
-    // donnees illisibles, on repart d'une base propre
-    return null
-  }
-}
-
-/**
- * Tout reste dans le telephone. Suffisant pour valider l'interface, mais
- * chaque telephone garde son propre sejour : rien n'est partage.
- */
 export const localStore: Store = {
   async load() {
-    const existing = read()
-    if (existing) return existing
-    const fresh = seedState()
+    try {
+      const raw = localStorage.getItem(KEY)
+      if (raw) return JSON.parse(raw) as AppData
+    } catch {
+      // donnees illisibles, on repart d'une base propre
+    }
+    const fresh = seedData()
     localStorage.setItem(KEY, JSON.stringify(fresh))
     return fresh
   },
-
-  async apply(mutation) {
-    // On relit avant d'ecrire, plutot que de faire confiance a l'etat que React
-    // a en memoire. C'est ce qui evite qu'un second onglet du meme telephone
-    // ecrase le premier, et c'est exactement le raisonnement qui vaut ensuite
-    // entre deux telephones.
-    const current = read()
-    if (!current) return
-    localStorage.setItem(KEY, JSON.stringify(applyMutation(current, mutation)))
-  },
-
-  subscribe(onChange) {
-    // Le navigateur previent les autres onglets, jamais celui qui vient d'ecrire.
-    const handler = (event: StorageEvent) => {
-      if (event.key !== KEY || !event.newValue) return
-      try {
-        onChange(JSON.parse(event.newValue) as TripState)
-      } catch {
-        // ecriture illisible, on garde l'etat courant
-      }
-    }
-    window.addEventListener('storage', handler)
-    return () => window.removeEventListener('storage', handler)
+  async save(data) {
+    localStorage.setItem(KEY, JSON.stringify(data))
   },
 }
 
-/**
- * Le magasin utilise par l'application.
- *
- * Volontairement `localStore`, meme quand les variables Supabase sont
- * presentes. Le magasin partage sait lire, ecrire et s'abonner, mais il ne
- * sait pas encore ouvrir un sejour : `createSupabaseStore().load()` echoue
- * avec `NoTripError` tant que ce telephone n'est membre d'aucun sejour, et
- * seul l'ecran d'accueil peut alors proposer d'en creer un ou d'en rejoindre
- * un avec le code de partage.
- *
- * Basculer ici avant que cet ecran existe donnerait une application qui ne
- * demarre pas. C'est donc la derniere ligne a changer, pas la premiere.
- */
+export function resetStore() {
+  localStorage.removeItem(KEY)
+}
+
 export const store: Store = localStore

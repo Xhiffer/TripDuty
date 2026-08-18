@@ -1,23 +1,23 @@
 import { useState } from 'react'
-import { tripDays, useApp } from '../state'
+import { groupDays, useGroup } from '../state'
 import { CATALOG, EMOJI_CHOICES } from '../lib/catalog'
 import { CLOSING_CATALOG } from '../lib/closing'
 import { Avatar, Segmented, Sheet, Toggle } from './ui'
 import { formatDay } from '../lib/i18n'
 
 export function NewTaskSheet({ closing = false, onClose }: { closing?: boolean; onClose: () => void }) {
-  const { state, me, isChef, lang, t, addTask, activeDate } = useApp()
+  const { state, me, isChef, lang, t, addTask, activeDate } = useGroup()
   const [tab, setTab] = useState<'catalog' | 'custom'>('catalog')
   const [title, setTitle] = useState('')
   const [emoji, setEmoji] = useState('🎯')
   const [points, setPoints] = useState(15)
-  const [date, setDate] = useState(closing ? state.trip.endDate : activeDate)
+  const [date, setDate] = useState(closing ? state.group.endDate : activeDate)
   const [time, setTime] = useState('19:00')
   const [needsLicense, setNeedsLicense] = useState(false)
   const [isClosing, setIsClosing] = useState(closing)
   const [scope, setScope] = useState<'all' | 'some'>('all')
   const [beneficiaries, setBeneficiaries] = useState<string[]>(me ? [me.id] : [])
-  const days = tripDays(state.trip)
+  const days = groupDays(state.group)
   const catalog = closing ? CLOSING_CATALOG : CATALOG
 
   function create(fields: { title: string; titleKey?: string; emoji: string; points: number; needsLicense: boolean }) {

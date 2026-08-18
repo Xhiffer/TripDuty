@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { useApp, useBalances } from '../state'
+import { useGroup, useBalances } from '../state'
 import type { Task } from '../types'
 import { formatBalance } from '../lib/ledger'
 import { suggestForDay } from '../lib/suggest'
@@ -9,7 +9,7 @@ import { TaskSheet } from '../components/TaskSheet'
 import { formatDay } from '../lib/i18n'
 
 export function Home({ goRanking }: { goRanking: () => void }) {
-  const { state, me, lang, t, activeDate } = useApp()
+  const { state, me, lang, t, activeDate } = useGroup()
   const rows = useBalances()
   const [openTask, setOpenTask] = useState<Task | null>(null)
 
@@ -24,7 +24,9 @@ export function Home({ goRanking }: { goRanking: () => void }) {
 
   // Les taches ou l'app me place en tete, uniquement si je suis en negatif.
   const forMe =
-    mine && mine.centi < 0 ? dayTasks.filter((task) => suggestions.get(task.id)?.[0]?.memberId === me?.id) : []
+    mine && mine.centi < 0
+      ? dayTasks.filter((task) => suggestions.get(task.id)?.[0]?.memberId === me?.id)
+      : []
 
   const order: Array<0 | 1 | 2> = [1, 0, 2] // argent, or, bronze
 
