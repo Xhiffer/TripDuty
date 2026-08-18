@@ -2,6 +2,8 @@ import type { AppData } from '../types'
 import type { Mutation } from './mutations'
 import { applyMutation } from './mutations'
 import { seedData } from './seed'
+import { hasSupabase } from './supabaseClient'
+import { supabaseStore } from './supabaseStore'
 
 /**
  * Couche de donnees.
@@ -76,4 +78,11 @@ export const localStore: Store = {
   },
 }
 
-export const store: Store = localStore
+/**
+ * Le magasin en vigueur.
+ *
+ * Sans variables d'environnement on reste sur le telephone : une application
+ * qui fonctionne seule vaut mieux qu'un ecran blanc, et la demonstration doit
+ * pouvoir tourner sans base. Voir supabaseClient.ts.
+ */
+export const store: Store = hasSupabase ? supabaseStore : localStore

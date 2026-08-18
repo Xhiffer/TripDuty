@@ -9,7 +9,7 @@ import { TaskSheet } from '../components/TaskSheet'
 import { formatDay } from '../lib/i18n'
 
 export function Home({ goRanking }: { goRanking: () => void }) {
-  const { state, me, lang, t, activeDate } = useGroup()
+  const { state, me, lang, t, activeDate, shared } = useGroup()
   const rows = useBalances()
   const [openTask, setOpenTask] = useState<Task | null>(null)
 
@@ -32,7 +32,7 @@ export function Home({ goRanking }: { goRanking: () => void }) {
 
   return (
     <>
-      <div className="banner">{t('demoBanner')}</div>
+      {!shared && <div className="banner">{t('demoBanner')}</div>}
 
       <div className="section-title">{t('podium')}</div>
       <div className="card">

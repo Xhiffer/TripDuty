@@ -24,8 +24,9 @@ export function App() {
   useEffect(() => {
     const match = window.location.hash.match(/^#\/join\/([A-Za-z0-9]+)$/)
     if (!match || !account) return
-    const result = joinByCode(match[1])
-    if (result.ok) window.location.hash = ''
+    void joinByCode(match[1]).then((result) => {
+      if (result.ok) window.location.hash = ''
+    })
   }, [account, joinByCode])
 
   // Avant d'etre dans un groupe, il n'y a pas de barre de navigation en bas :

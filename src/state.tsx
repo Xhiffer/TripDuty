@@ -4,6 +4,7 @@ import type { Account, AppData, Group, GroupKind, GroupView, Lang, Person, Role,
 import type { Mutation } from './data/mutations'
 import { applyMutation } from './data/mutations'
 import { store } from './data/store'
+import { hasSupabase, supabase } from './data/supabaseClient'
 import { balances, beneficiariesOf, completionAmounts, penaltyAmounts } from './lib/ledger'
 import { CLOSING_CATALOG } from './lib/closing'
 import { colorFor, fullName, hashPassword, makeInviteCode, normalizeEmail } from './lib/identity'
@@ -15,8 +16,16 @@ const LANG_KEY = 'tripduty:lang'
 const THEME_KEY = 'tripduty:theme'
 const CONCEPT_KEY = 'tripduty:concept-seen'
 
-function uid(prefix: string) {
-  return `${prefix}${Math.random().toString(36).slice(2, 9)}`
+/**
+ * Un identifiant, fabrique par le telephone.
+ *
+ * C'est un vrai UUID, pas une chaine lisible : les colonnes sont de type uuid
+ * cote base, qui refuse tout le reste. Le tirer ici plutot que de le demander
+ * au serveur permet a la mutation de partir complete, et deux telephones ne
+ * peuvent pas tomber sur le meme.
+ */
+function uid() {
+  return crypto.randomUUID()
 }
 
 function todayISO() {
@@ -70,6 +79,8 @@ interface Ctx {
   signUp: (email: string, password: string) => Promise<Result>
   signIn: (email: string, password: string) => Promise<Result>
   signOut: () => void
+  /** Vrai quand l'application parle a la base en ligne plutot qu'au telephone. */
+  shared: boolean
   updateProfile: (patch: Partial<Omit<Account, 'id' | 'passwordHash'>>) => void
   markConceptSeen: () => void
   // groupes
@@ -82,8 +93,8 @@ interface Ctx {
     startDate: string
     endDate: string
     hasLicense: boolean
-  }) => Group
-  joinByCode: (code: string) => Result
+  }) => Promise<Group | null>
+  joinByCode: (code: string) => Promise<Result>
   inviteByEmail: (email: string) => Result
   /**
    * Quitter un groupe. L'hote doit designer son successeur : un groupe ne doit
@@ -91,7 +102,7 @@ interface Ctx {
    * elle sans qu'on le lui demande ; s'il ne reste personne, le groupe part.
    * Meme regle que leave_group() dans supabase/migrations/0003_rpc.sql.
    */
-  leaveGroup: (groupId: string, newHostId?: string) => Result
+  leaveGroup: (groupId: string, newHostId?: string) => Promise<Result>
   updateGroup: (patch: Partial<Group>) => void
   setRole: (accountId: string, role: Role) => void
   setLicense: (accountId: string, hasLicense: boolean) => void
@@ -109,7 +120,12 @@ const AppContext = createContext<Ctx | null>(null)
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [data, setData] = useState<AppData | null>(null)
-  const [accountId, setAccountId] = useState<string | null>(() => localStorage.getItem(SESSION_KEY))
+  // Avec la base en ligne, c'est Supabase qui detient la session : un
+  // identifiant laisse ici par une session locale precedente ne designerait
+  // aucun compte reel.
+  const [accountId, setAccountId] = useState<string | null>(() =>
+    hasSupabase ? null : localStorage.getItem(SESSION_KEY),
+  )
   const [groupId, setGroupId] = useState<string | null>(() => localStorage.getItem(GROUP_KEY))
   const [conceptSeen, setConceptSeen] = useState(() => localStorage.getItem(CONCEPT_KEY) === '1')
   const [lang, setLangState] = useState<Lang>(() => (localStorage.getItem(LANG_KEY) as Lang) || 'fr')
@@ -131,6 +147,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
     // une fois la base branchee) remplace l'etat sans repasser par une mutation :
     // il a deja ete applique a la source.
     return store.subscribe?.(receive)
+  }, [receive])
+
+  // La session Supabase fait autorite : elle survit au rechargement, se
+  // rafraichit toute seule, et c'est elle qui decide de quels groupes la RLS
+  // laissera passer les lignes. On relit donc l'etat a chaque changement.
+  useEffect(() => {
+    if (!supabase) return
+    const client = supabase
+    void client.auth.getSession().then(({ data }) => {
+      setAccountId(data.session?.user.id ?? null)
+    })
+    const { data: listener } = client.auth.onAuthStateChange((_event, session) => {
+      setAccountId(session?.user.id ?? null)
+      void store.load().then(receive)
+    })
+    return () => listener.subscription.unsubscribe()
   }, [receive])
 
   useEffect(() => {
@@ -240,11 +272,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
       signUp: async (email, password) => {
         const clean = normalizeEmail(email)
+        if (supabase) {
+          if (password.length < 6) return { ok: false, error: 'passwordShort' }
+          const { error } = await supabase.auth.signUp({ email: clean, password })
+          // Le declencheur on_auth_user_created pose la fiche profil ; l'ecran
+          // suivant la completera. Rien a inserer d'ici.
+          if (error) {
+            const already = /already|registered|exists/i.test(error.message)
+            return { ok: false, error: already ? 'emailTaken' : 'server' }
+          }
+          return { ok: true }
+        }
         if (data.accounts.some((a) => normalizeEmail(a.email) === clean)) {
           return { ok: false, error: 'emailTaken' }
         }
         if (password.length < 6) return { ok: false, error: 'passwordShort' }
-        const id = uid('a')
+        const id = uid()
         const created: Account = {
           id,
           email: clean,
@@ -264,6 +307,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
       signIn: async (email, password) => {
         const clean = normalizeEmail(email)
+        if (supabase) {
+          const { error } = await supabase.auth.signInWithPassword({ email: clean, password })
+          // La base ne dit jamais laquelle des deux valeurs est fausse : le
+          // preciser permettrait de decouvrir quelles adresses ont un compte.
+          if (error) return { ok: false, error: 'wrongPassword' }
+          return { ok: true }
+        }
         const found = data.accounts.find((a) => normalizeEmail(a.email) === clean)
         if (!found) return { ok: false, error: 'unknownAccount' }
         const hash = await hashPassword(password)
@@ -273,7 +323,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
         return { ok: true }
       },
 
+      shared: hasSupabase,
+
       signOut: () => {
+        if (supabase) void supabase.auth.signOut()
         localStorage.removeItem(SESSION_KEY)
         localStorage.removeItem(GROUP_KEY)
         setAccountId(null)
@@ -296,8 +349,64 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setGroupId(id)
       },
 
-      createGroup: (input) => {
-        const id = uid('g')
+      createGroup: async (input) => {
+        if (supabase) {
+          // create_group() est SECURITY DEFINER : c'est le seul chemin, car on
+          // ecrit dans `groups` et `memberships` sans en etre encore membre.
+          // Elle pose aussi le code d'invitation et l'hote.
+          const { data: row, error } = await supabase.rpc('create_group', {
+            group_name: input.name.trim(),
+            kind: input.kind,
+            emoji: input.emoji,
+            color: input.color,
+            start_date: input.startDate,
+            end_date: input.endDate,
+            has_licence: input.hasLicense,
+          })
+          if (error || !row) {
+            console.error('[supabase] creation du groupe refusee', error)
+            return null
+          }
+          const created: Group = {
+            id: row.id,
+            kind: row.kind,
+            name: row.name,
+            emoji: row.emoji,
+            color: row.color,
+            startDate: row.start_date,
+            endDate: row.end_date,
+            hostId: row.host_id,
+            inviteCode: row.invite_code,
+            penalty: row.penalty,
+            closingOpen: row.closing_open,
+            createdAt: row.created_at,
+          }
+          // Les identifiants viennent du navigateur : la base les accepte tels
+          // quels, et deux telephones ne peuvent pas tomber sur le meme.
+          const closing = CLOSING_CATALOG.map((c) => ({
+            id: crypto.randomUUID(),
+            group_id: created.id,
+            title: c.fr,
+            title_key: c.key,
+            emoji: c.emoji,
+            points: c.points,
+            day: created.endDate,
+            time_of_day: '10:00',
+            needs_license: c.needsLicense,
+            beneficiary_ids: null,
+            assigned_to: null,
+            status: 'todo',
+            created_by: created.hostId,
+            recurring: false,
+            is_closing: true,
+          }))
+          const { error: tasksError } = await supabase.from('tasks').insert(closing)
+          if (tasksError) console.error('[supabase] taches de cloture refusees', tasksError)
+          await store.load().then(receive)
+          return created
+        }
+
+        const id = uid()
         const now = new Date().toISOString()
         const hostId = account?.id ?? ''
         const created: Group = {
@@ -316,7 +425,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         }
         // Les taches de cloture sont pre-remplies, le chef les modifie ensuite.
         const closingTasks: Task[] = CLOSING_CATALOG.map((c) => ({
-          id: uid('t'),
+          id: uid(),
           groupId: id,
           title: c.fr,
           titleKey: c.key,
@@ -338,7 +447,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           type: 'addGroup',
           group: created,
           membership: {
-            id: uid('ms'),
+            id: uid(),
             groupId: id,
             accountId: hostId,
             role: 'host' as Role,
@@ -352,14 +461,29 @@ export function AppProvider({ children }: { children: ReactNode }) {
         return created
       },
 
-      joinByCode: (code) => {
+      joinByCode: async (code) => {
+        if (supabase) {
+          const { data: row, error } = await supabase.rpc('join_group', {
+            code: code.trim().toUpperCase(),
+            has_licence: false,
+          })
+          // La fonction ne dit pas si un groupe existe pour un code donne :
+          // elle leve. Sans cela, on pourrait essayer des codes au hasard et
+          // apprendre lesquels sont valides.
+          if (error || !row) return { ok: false, error: 'unknownCode' }
+          await store.load().then(receive)
+          localStorage.setItem(GROUP_KEY, row.group_id)
+          setGroupId(row.group_id)
+          return { ok: true }
+        }
+
         if (!account) return { ok: false, error: 'notSignedIn' }
         const target = data.groups.find((g) => g.inviteCode.toUpperCase() === code.trim().toUpperCase())
         if (!target) return { ok: false, error: 'unknownCode' }
         dispatch(() => ({
           type: 'addMembership',
           membership: {
-            id: uid('ms'),
+            id: uid(),
             groupId: target.id,
             accountId: account.id,
             role: 'member' as Role,
@@ -376,7 +500,31 @@ export function AppProvider({ children }: { children: ReactNode }) {
       // adresses pour savoir qui a un compte ici. Le code d'invitation suffit.
       inviteByEmail: () => ({ ok: false, error: 'inviteByEmailDisabled' }),
 
-      leaveGroup: (id, newHostId) => {
+      leaveGroup: async (id, newHostId) => {
+        if (supabase) {
+          // memberships n'a pas de politique DELETE : cette fonction est le
+          // seul chemin, sinon l'hote contournerait la succession par une
+          // suppression directe.
+          const { error } = await supabase.rpc('leave_group', {
+            target_group: id,
+            new_host: newHostId ?? null,
+          })
+          if (error) {
+            const message = error.message ?? ''
+            if (/Choisissez/i.test(message)) return { ok: false, error: 'chooseNewHost' }
+            if (/nouveau chef/i.test(message)) return { ok: false, error: 'newHostNotMember' }
+            if (/pas membre/i.test(message)) return { ok: false, error: 'notMember' }
+            console.error('[supabase] depart refuse', error)
+            return { ok: false, error: 'server' }
+          }
+          await store.load().then(receive)
+          if (groupId === id) {
+            localStorage.removeItem(GROUP_KEY)
+            setGroupId(null)
+          }
+          return { ok: true }
+        }
+
         if (!account) return { ok: false, error: 'notSignedIn' }
         const mine = data.memberships.find((m) => m.groupId === id && m.accountId === account.id)
         if (!mine) return { ok: false, error: 'notMember' }
@@ -443,7 +591,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         if (!current) return
         dispatch(() => ({
           type: 'addTask',
-          task: { ...task, id: uid('t'), groupId: current.id, status: 'todo' },
+          task: { ...task, id: uid(), groupId: current.id, status: 'todo' },
         }))
       },
 
@@ -463,7 +611,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
             taskId,
             status: 'done',
             entry: {
-              id: uid('e'),
+              id: uid(),
               groupId: current.id,
               taskId,
               kind: 'completion',
@@ -490,7 +638,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
             taskId,
             status: 'missed',
             entry: {
-              id: uid('e'),
+              id: uid(),
               groupId: current.id,
               taskId,
               kind: 'penalty',

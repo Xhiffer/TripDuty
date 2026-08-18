@@ -6,6 +6,12 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev"],
       "port": 3400
+    },
+    {
+      "name": "trip-duty-supabase",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["vite", "--port", "3401"],
+      "port": 3401
     }
   ]
 }

@@ -34,10 +34,13 @@ export function CreateGroup({ onDone }: { onDone: () => void }) {
   const [invited, setInvited] = useState<string[]>([])
   const [copied, setCopied] = useState(false)
 
-  function submitDetails() {
+  async function submitDetails() {
     if (!name.trim()) return setError(t('errGroupNameRequired'))
     if (endDate < startDate) return setError(t('errBadDates'))
-    const created = createGroup({ kind, name, emoji, color, startDate, endDate, hasLicense })
+    const created = await createGroup({ kind, name, emoji, color, startDate, endDate, hasLicense })
+    // La base peut refuser. Passer a l'ecran d'invitation sans groupe
+    // afficherait un code vide, sans rien dire de ce qui a echoue.
+    if (!created) return setError(t('errServer'))
     setGroup(created)
     setStep('invite')
   }

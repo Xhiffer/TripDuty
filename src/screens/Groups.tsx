@@ -11,8 +11,8 @@ export function Groups() {
 
   if (creating) return <CreateGroup onDone={() => setCreating(false)} />
 
-  function join() {
-    const result = joinByCode(code)
+  async function join() {
+    const result = await joinByCode(code)
     if (!result.ok) {
       setError(result.error === 'unknownCode' ? t('errUnknownCode') : t('errServer'))
     } else {

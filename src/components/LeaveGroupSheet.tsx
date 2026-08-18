@@ -28,9 +28,9 @@ export function LeaveGroupSheet({ onClose }: { onClose: () => void }) {
         ? t('leaveSoleHeir')
         : t('leaveAsMember')
 
-  function confirm() {
+  async function confirm() {
     setError('')
-    const result = leaveGroup(state.group.id, heir ?? undefined)
+    const result = await leaveGroup(state.group.id, heir ?? undefined)
     if (!result.ok) {
       const messages: Record<string, string> = {
         chooseNewHost: t('errChooseNewHost'),
