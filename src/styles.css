@@ -20,6 +20,11 @@
   --bronze: #cd7f43;
   --danger: #ff3b52;
   --good: #17b877;
+  --brand-1: #ffb27a;
+  --brand-2: #fba0c0;
+  --brand-3: #c9a6f0;
+  --brand-gradient: linear-gradient(105deg, var(--brand-1), var(--brand-2) 52%, var(--brand-3));
+  --brand-ink: #1b1026;
   --shadow: 0 10px 30px rgba(19, 24, 34, 0.08);
   --radius: 18px;
   --radius-sm: 12px;
@@ -43,6 +48,10 @@
   --bronze: #e08a4e;
   --danger: #ff4d63;
   --good: #35d39a;
+  --brand-1: #ff9f63;
+  --brand-2: #f98bb4;
+  --brand-3: #b18df0;
+  --brand-ink: #170d20;
   --shadow: 0 12px 34px rgba(0, 0, 0, 0.4);
   color-scheme: dark;
 }
@@ -182,8 +191,8 @@ button {
   border-radius: 11px;
   display: grid;
   place-items: center;
-  background: linear-gradient(135deg, var(--accent), var(--accent-2));
-  color: var(--accent-ink);
+  background: var(--brand-gradient);
+  color: var(--brand-ink);
   font-size: 18px;
 }
 
@@ -506,8 +515,8 @@ button {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--accent), var(--accent-2));
-  color: var(--accent-ink);
+  background: var(--brand-gradient);
+  color: var(--brand-ink);
   border-color: transparent;
 }
 
@@ -866,7 +875,7 @@ button {
   display: inline-grid;
   place-items: center;
   font-size: 32px;
-  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  background: var(--brand-gradient);
   margin-bottom: 14px;
 }
 
@@ -1254,8 +1263,8 @@ button {
   display: grid;
   place-items: center;
   font-size: 27px;
-  background: linear-gradient(135deg, var(--accent), var(--accent-2));
-  box-shadow: 0 10px 26px color-mix(in srgb, var(--accent) 35%, transparent);
+  background: var(--brand-gradient);
+  box-shadow: 0 10px 26px color-mix(in srgb, var(--brand-2) 45%, transparent);
   flex: none;
 }
 
@@ -1564,8 +1573,8 @@ button {
   place-items: center;
   font-size: 12.5px;
   font-weight: 800;
-  color: var(--accent-ink);
-  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: var(--brand-ink);
+  background: var(--brand-gradient);
   margin-top: 1px;
 }
 

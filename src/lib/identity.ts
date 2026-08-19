@@ -1,13 +1,24 @@
 /** Palette des pastilles de profil, utilisee quand la personne n'a pas de photo. */
+/**
+ * Les couleurs de profil et de groupe.
+ *
+ * Ce ne sont pas des aplats mais des degrades : plusieurs tons d'une meme
+ * famille, comme les illustrations. Une couleur unie a cote d'un dessin
+ * degrade fait toujours pauvre.
+ *
+ * Ce sont des valeurs CSS completes, stockees telles quelles : la base garde
+ * une chaine, et un ancien groupe enregistre en `#ff6a3d` continue de
+ * s'afficher, un code hexadecimal etant aussi un fond valable.
+ */
 export const AVATAR_COLORS = [
-  '#ff6a3d',
-  '#f5b301',
-  '#17b877',
-  '#3d8bff',
-  '#8b5cf6',
-  '#ec4899',
-  '#0ea5e9',
-  '#e11d48',
+  'linear-gradient(135deg, #FFA36B, #FF6F91, #F0559B)',
+  'linear-gradient(135deg, #FFD873, #FFAE4D, #FF8A3D)',
+  'linear-gradient(135deg, #A9E9A4, #4FD9A6, #16BFA6)',
+  'linear-gradient(135deg, #86D2FF, #55A9FF, #5C7DF7)',
+  'linear-gradient(135deg, #CFAcFF, #A87CF6, #7C5CE6)',
+  'linear-gradient(135deg, #FFAEDA, #F77BC2, #E15BA8)',
+  'linear-gradient(135deg, #8FEAE2, #48C9DC, #2FA8CE)',
+  'linear-gradient(135deg, #FF9C9C, #F45A72, #D63A62)',
 ]
 
 export const GROUP_COLORS = AVATAR_COLORS
