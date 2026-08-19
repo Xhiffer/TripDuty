@@ -89,7 +89,7 @@ export function App() {
   // l'avatar en haut a droite. Pas de barre du bas : il n'y a qu'un endroit.
   if (!view || !me) {
     return (
-      <div className="app no-tabbar">
+      <div className={`app no-tabbar ${outerTab === 'groups' ? 'has-bottom-action' : ''}`}>
         {outerTab === 'profile' ? (
           <>
             <div className="topbar">
@@ -109,15 +109,21 @@ export function App() {
             <Account />
           </>
         ) : (
-          <>
-            <div className="app-header">
-              <span className="app-wordmark">Trip Duty</span>
-              <button type="button" className="header-avatar" onClick={() => setOuterTab('profile')} aria-label={t('navProfile')}>
-                <Avatar member={accountAsPerson} size={38} />
-              </button>
-            </div>
-            <Groups />
-          </>
+          <Groups
+            header={
+              <div className="app-header">
+                <span className="app-wordmark">Trip Duty</span>
+                <button
+                  type="button"
+                  className="header-avatar"
+                  onClick={() => setOuterTab('profile')}
+                  aria-label={t('navProfile')}
+                >
+                  <Avatar member={accountAsPerson} size={38} />
+                </button>
+              </div>
+            }
+          />
         )}
       </div>
     )

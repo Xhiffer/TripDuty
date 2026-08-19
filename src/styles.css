@@ -1428,3 +1428,29 @@ button {
   display: grid;
   place-items: center;
 }
+
+/* ---------- geste principal, fixe en bas ---------- */
+
+.bottom-action {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 40;
+  padding: 18px 16px calc(env(safe-area-inset-bottom) + 12px);
+  /* Un dégradé plutôt qu'une barre pleine : la liste passe dessous sans
+     coupure nette, et le bouton reste lisible. */
+  background: linear-gradient(to top, var(--bg) 72%, color-mix(in srgb, var(--bg) 60%, transparent) 88%, transparent);
+  pointer-events: none;
+}
+
+.bottom-action-inner {
+  max-width: 540px;
+  margin: 0 auto;
+  pointer-events: auto;
+}
+
+/* La page reserve la place du bouton pour ne rien cacher en fin de liste. */
+.app.has-bottom-action {
+  padding-bottom: calc(env(safe-area-inset-bottom) + 92px);
+}

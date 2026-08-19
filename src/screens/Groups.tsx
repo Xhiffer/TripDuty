@@ -1,11 +1,12 @@
 import { useState } from 'react'
+import type { ReactNode } from 'react'
 import { useApp } from '../state'
 import { CreateGroup } from './CreateGroup'
 import { InstallButton } from '../components/InstallButton'
 import { GroupMark } from '../components/ui'
 import { formatRange } from '../lib/i18n'
 
-export function Groups() {
+export function Groups({ header }: { header: ReactNode }) {
   const { myGroups, data, lang, t, selectGroup, joinByCode } = useApp()
   const [creating, setCreating] = useState(false)
   const [code, setCode] = useState('')
@@ -25,6 +26,7 @@ export function Groups() {
 
   return (
     <>
+      {header}
 
       <div className="stack" style={{ marginTop: 8 }}>
         {myGroups.length === 0 && <div className="empty">{t('noGroupYet')}</div>}
@@ -46,11 +48,6 @@ export function Groups() {
         })}
       </div>
 
-      <button type="button" className="btn btn-primary btn-block" style={{ marginTop: 18 }} onClick={() => setCreating(true)}>
-        ＋ {t('createGroup')}
-      </button>
-
-      <InstallButton />
 
       <div className="section-title">{t('joinWithCode')}</div>
       <div className="card">
@@ -81,6 +78,18 @@ export function Groups() {
           </button>
         </div>
         {error && <p className="form-error" style={{ margin: '12px 0 0' }}>{error}</p>}
+      </div>
+
+      <InstallButton />
+
+      {/* Le geste principal reste sous le pouce, quelle que soit la longueur
+          de la liste. La page lui reserve sa hauteur plus bas. */}
+      <div className="bottom-action">
+        <div className="bottom-action-inner">
+          <button type="button" className="btn btn-primary btn-block" onClick={() => setCreating(true)}>
+            ＋ {t('createGroup')}
+          </button>
+        </div>
       </div>
     </>
   )
