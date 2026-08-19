@@ -39,14 +39,23 @@ function todayISO() {
 function activeDateFor(group: Group) {
   const today = todayISO()
   if (today < group.startDate) return group.startDate
-  if (today > group.endDate) return group.endDate
+  if (group.endDate && today > group.endDate) return group.endDate
   return today
 }
 
+/** Combien de jours afficher pour un groupe sans fin. */
+const OPEN_ENDED_DAYS = 21
+
 export function groupDays(group: Group): string[] {
   const days: string[] = []
-  const cursor = new Date(group.startDate + 'T12:00:00')
-  const end = new Date(group.endDate + 'T12:00:00')
+  // Sans date de fin, on montre trois semaines a partir d'aujourd'hui :
+  // un planning infini ne s'affiche pas.
+  const openEnded = !group.endDate
+  const start = openEnded ? activeDateFor(group) : group.startDate
+  const cursor = new Date(start + 'T12:00:00')
+  const end = openEnded
+    ? new Date(new Date(start + 'T12:00:00').getTime() + OPEN_ENDED_DAYS * 86400000)
+    : new Date(group.endDate + 'T12:00:00')
   let guard = 0
   while (cursor <= end && guard < 400) {
     const m = String(cursor.getMonth() + 1).padStart(2, '0')
@@ -100,7 +109,7 @@ interface Ctx {
     photo: string | null
     color: string
     startDate: string
-    endDate: string
+    endDate: string | null
     hasLicense: boolean
   }) => Promise<Group | null>
   joinByCode: (code: string) => Promise<Result>
@@ -451,7 +460,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           }
           // Les identifiants viennent du navigateur : la base les accepte tels
           // quels, et deux telephones ne peuvent pas tomber sur le meme.
-          const closing = CLOSING_CATALOG.map((c) => ({
+          const closing = (created.endDate ? CLOSING_CATALOG : []).map((c) => ({
             id: crypto.randomUUID(),
             group_id: created.id,
             title: c.fr,
@@ -493,14 +502,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
           createdAt: now,
         }
         // Les taches de cloture sont pre-remplies, le chef les modifie ensuite.
-        const closingTasks: Task[] = CLOSING_CATALOG.map((c) => ({
+        const closingTasks: Task[] = (created.endDate ? CLOSING_CATALOG : []).map((c) => ({
           id: uid(),
           groupId: id,
           title: c.fr,
           titleKey: c.key,
           emoji: c.emoji,
           points: c.points,
-          date: input.endDate,
+          date: input.endDate ?? input.startDate,
           time: '10:00',
           needsLicense: c.needsLicense,
           beneficiaryIds: null,

@@ -25,7 +25,8 @@ export interface Group {
   photo: string | null
   color: string
   startDate: string // AAAA-MM-JJ
-  endDate: string
+  /** Vide : le groupe n'a pas de fin, il court indefiniment. */
+  endDate: string | null
   hostId: string
   inviteCode: string
   penalty: number // points retires quand une tache acceptee n'est pas faite

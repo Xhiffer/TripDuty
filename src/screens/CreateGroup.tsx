@@ -3,6 +3,7 @@ import { useApp } from '../state'
 import type { Group, GroupKind } from '../types'
 import { GROUP_COLORS, GROUP_EMOJIS, inviteLink, isEmail } from '../lib/identity'
 import { Camera, Trash2 } from 'lucide-react'
+import { Toggle } from '../components/ui'
 
 /** Reduit la photo du groupe pour qu'elle reste legere. */
 async function shrinkGroupPhoto(file: File): Promise<string> {
@@ -42,6 +43,7 @@ export function CreateGroup({ onDone }: { onDone: () => void }) {
   const [color, setColor] = useState(GROUP_COLORS[0])
   const [startDate, setStartDate] = useState(plusDays(0))
   const [endDate, setEndDate] = useState(plusDays(7))
+  const [openEnded, setOpenEnded] = useState(false)
   const hasLicense = false
   const [error, setError] = useState('')
   const [group, setGroup] = useState<Group | null>(null)
@@ -51,8 +53,17 @@ export function CreateGroup({ onDone }: { onDone: () => void }) {
 
   async function submitDetails() {
     if (!name.trim()) return setError(t('errGroupNameRequired'))
-    if (endDate < startDate) return setError(t('errBadDates'))
-    const created = await createGroup({ kind, name, emoji, photo, color, startDate, endDate, hasLicense })
+    if (!openEnded && endDate < startDate) return setError(t('errBadDates'))
+    const created = await createGroup({
+      kind,
+      name,
+      emoji,
+      photo,
+      color,
+      startDate,
+      endDate: openEnded ? null : endDate,
+      hasLicense,
+    })
     // La base peut refuser. Passer a l'ecran d'invitation sans groupe
     // afficherait un code vide, sans rien dire de ce qui a echoue.
     if (!created) return setError(t('errServer'))
@@ -137,10 +148,19 @@ export function CreateGroup({ onDone }: { onDone: () => void }) {
               <span className="field-label">{t('from')}</span>
               <input className="input" type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
             </label>
-            <label className="field" style={{ flex: 1 }}>
-              <span className="field-label">{t('to')}</span>
-              <input className="input" type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
-            </label>
+            {!openEnded && (
+              <label className="field" style={{ flex: 1 }}>
+                <span className="field-label">{t('to')}</span>
+                <input className="input" type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+              </label>
+            )}
+          </div>
+
+          <div style={{ marginBottom: 14 }}>
+            <Toggle checked={openEnded} onChange={setOpenEnded} label={t('noEndDate')} />
+            <p className="hint" style={{ textAlign: 'left' }}>
+              {t('noEndDateHelp')}
+            </p>
           </div>
 
           <div className="field">

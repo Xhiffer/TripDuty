@@ -2,7 +2,7 @@ import { useRef } from 'react'
 import { ArrowLeft, Camera, Trash2 } from 'lucide-react'
 import { useGroup } from '../state'
 import { formatBalance } from '../lib/ledger'
-import { Avatar } from '../components/ui'
+import { Avatar, Toggle } from '../components/ui'
 import { taskTitle } from '../components/TaskRow'
 
 /**
@@ -89,15 +89,25 @@ export function GroupSettings({ onClose }: { onClose: () => void }) {
                   onChange={(e) => updateGroup({ startDate: e.target.value })}
                 />
               </label>
-              <label className="field" style={{ flex: 1 }}>
-                <span className="field-label">{t('to')}</span>
-                <input
-                  className="input"
-                  type="date"
-                  value={state.group.endDate}
-                  onChange={(e) => updateGroup({ endDate: e.target.value })}
-                />
-              </label>
+              {state.group.endDate !== null && (
+                <label className="field" style={{ flex: 1 }}>
+                  <span className="field-label">{t('to')}</span>
+                  <input
+                    className="input"
+                    type="date"
+                    value={state.group.endDate}
+                    onChange={(e) => updateGroup({ endDate: e.target.value })}
+                  />
+                </label>
+              )}
+            </div>
+
+            <div style={{ marginBottom: 14 }}>
+              <Toggle
+                checked={state.group.endDate === null}
+                onChange={(on) => updateGroup({ endDate: on ? null : state.group.startDate })}
+                label={t('noEndDate')}
+              />
             </div>
 
             <label className="field" style={{ marginBottom: 0 }}>

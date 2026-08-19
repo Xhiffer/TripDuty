@@ -11,26 +11,31 @@ export function NewTaskSheet({ closing = false, onClose }: { closing?: boolean; 
   const [title, setTitle] = useState('')
   const [emoji, setEmoji] = useState('🎯')
   const [points, setPoints] = useState(15)
-  const [date, setDate] = useState(closing ? state.group.endDate : activeDate)
+  const [date, setDate] = useState(closing ? (state.group.endDate ?? activeDate) : activeDate)
   const [time, setTime] = useState('19:00')
   const needsLicense = false
   const [isClosing, setIsClosing] = useState(closing)
+  const [recurring, setRecurring] = useState(false)
   const [scope, setScope] = useState<'all' | 'some'>('all')
   const [beneficiaries, setBeneficiaries] = useState<string[]>(me ? [me.id] : [])
   const days = groupDays(state.group)
   const catalog = closing ? CLOSING_CATALOG : CATALOG
 
   function create(fields: { title: string; titleKey?: string; emoji: string; points: number; needsLicense: boolean }) {
-    addTask({
+    const common = {
       ...fields,
-      date,
       time,
       beneficiaryIds: scope === 'all' ? null : beneficiaries,
       assignedTo: null,
       createdBy: me?.id ?? '',
-      recurring: false,
+      recurring,
       isClosing,
-    })
+    }
+
+    // Une tache recurrente est posee sur chaque jour restant : le planning
+    // montre alors vraiment ce qui est prevu, plutot qu'une simple etiquette.
+    const targets = recurring && !isClosing ? days.filter((d) => d >= date) : [date]
+    for (const day of targets) addTask({ ...common, date: day })
     onClose()
   }
 
@@ -91,6 +96,15 @@ export function NewTaskSheet({ closing = false, onClose }: { closing?: boolean; 
               <span>{m.name}</span>
             </button>
           ))}
+        </div>
+      )}
+
+      {!closing && (
+        <div style={{ marginBottom: 16 }}>
+          <Toggle checked={recurring} onChange={setRecurring} label={t('recurringTask')} />
+          <p className="hint" style={{ textAlign: 'left' }}>
+            {t('recurringTaskHelp')}
+          </p>
         </div>
       )}
 

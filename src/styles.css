@@ -109,7 +109,7 @@ button {
 
 .topbar-name {
   font-weight: 800;
-  font-size: 17px;
+  font-size: 21px;
   letter-spacing: -0.02em;
   max-width: 100%;
   overflow: hidden;
@@ -119,7 +119,7 @@ button {
 
 .topbar-dates {
   color: var(--muted);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
 }
 
@@ -1000,7 +1000,7 @@ button {
 .group-name {
   display: block;
   font-weight: 800;
-  font-size: 16px;
+  font-size: 17.5px;
   letter-spacing: -0.01em;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1413,4 +1413,18 @@ button {
   height: 100%;
   object-fit: cover;
   border-radius: inherit;
+}
+
+/* Sans barre du bas, la page n'a pas besoin de reserver sa hauteur. */
+.app.no-tabbar {
+  padding-bottom: calc(env(safe-area-inset-bottom) + 28px);
+}
+
+.app-header {
+  justify-content: space-between;
+}
+
+.header-avatar {
+  display: grid;
+  place-items: center;
 }

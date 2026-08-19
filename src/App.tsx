@@ -11,13 +11,13 @@ import { Planning } from './screens/Planning'
 import { Closing } from './screens/Closing'
 import { Expenses } from './screens/Expenses'
 import { GroupSettings } from './screens/GroupSettings'
-import { GroupMark } from './components/ui'
+import { Avatar, GroupMark } from './components/ui'
 import { GroupMenu } from './components/GroupMenu'
 import { ShareSheet } from './components/ShareSheet'
 import { LeaveGroupSheet } from './components/LeaveGroupSheet'
-import { ArrowLeft, MoreHorizontal, House, Trophy, CalendarDays, Wallet, Compass, CircleUser } from 'lucide-react'
+import { ArrowLeft, MoreHorizontal, House, Trophy, CalendarDays, Wallet } from 'lucide-react'
 import { Splash } from './components/Splash'
-import { formatDay } from './lib/i18n'
+import { formatRange } from './lib/i18n'
 
 type Tab = 'home' | 'ranking' | 'planning' | 'expenses'
 type OuterTab = 'groups' | 'profile'
@@ -35,6 +35,19 @@ export function App() {
   const [closing, setClosing] = useState(false)
   // L'etape photo est passee une fois par appareil, une fois le compte cree.
   const [profileDone, setProfileDone] = useState(false)
+
+  // Hors d'un groupe, la personne n'a pas de role : on fabrique juste sa vignette.
+  const accountAsPerson = account
+    ? {
+        id: account.id,
+        name: account.nickname || account.firstName || account.email,
+        photo: account.photo,
+        color: account.color,
+        hasLicense: false,
+        role: 'member' as const,
+        joinedAt: account.createdAt,
+      }
+    : null
 
   useEffect(() => {
     if (!account) return setProfileDone(false)
@@ -72,32 +85,40 @@ export function App() {
     )
   }
 
-  // Connecte mais pas encore dans un groupe : la liste et le profil du compte.
+  // Connecte mais pas encore dans un groupe : la liste, et le profil derriere
+  // l'avatar en haut a droite. Pas de barre du bas : il n'y a qu'un endroit.
   if (!view || !me) {
-    const outerTabs = [
-      { id: 'groups' as OuterTab, Icon: Compass, label: t('navGroups') },
-      { id: 'profile' as OuterTab, Icon: CircleUser, label: t('navProfile') },
-    ]
     return (
-      <div className="app">
-        {outerTab === 'groups' ? <Groups /> : <Account />}
-
-        <nav className="nav">
-          <div className="nav-inner">
-            {outerTabs.map((item) => (
+      <div className="app no-tabbar">
+        {outerTab === 'profile' ? (
+          <>
+            <div className="topbar">
               <button
-                key={item.id}
                 type="button"
-                className={outerTab === item.id ? 'is-on' : ''}
-                onClick={() => setOuterTab(item.id)}
+                className="icon-button"
+                onClick={() => setOuterTab('groups')}
+                aria-label={t('back')}
               >
-                <item.Icon size={21} strokeWidth={outerTab === item.id ? 2.4 : 1.9} />
-                <span>{item.label}</span>
+                <ArrowLeft size={20} />
               </button>
-            ))}
-          </div>
-        </nav>
-
+              <div className="topbar-title">
+                <span className="topbar-name">{t('meTitle')}</span>
+              </div>
+              <span className="icon-button is-ghost" />
+            </div>
+            <Account />
+          </>
+        ) : (
+          <>
+            <div className="app-header">
+              <span className="app-wordmark">Trip Duty</span>
+              <button type="button" className="header-avatar" onClick={() => setOuterTab('profile')} aria-label={t('navProfile')}>
+                <Avatar member={accountAsPerson} size={38} />
+              </button>
+            </div>
+            <Groups />
+          </>
+        )}
       </div>
     )
   }
@@ -153,9 +174,7 @@ export function App() {
       <div className="group-head">
         <GroupMark group={view.group} small />
         <span className="topbar-name">{view.group.name}</span>
-        <span className="topbar-dates">
-          {formatDay(view.group.startDate, lang)} {t('to')} {formatDay(view.group.endDate, lang)}
-        </span>
+        <span className="topbar-dates">{formatRange(view.group.startDate, view.group.endDate, lang)}</span>
       </div>
 
       {tab === 'home' && <Home goRanking={() => setTab('ranking')} />}

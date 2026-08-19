@@ -6,12 +6,15 @@ import { suggestForDay } from '../lib/suggest'
 import { Avatar } from '../components/ui'
 import { TaskRow } from '../components/TaskRow'
 import { TaskSheet } from '../components/TaskSheet'
+import { NewTaskSheet } from '../components/NewTaskSheet'
+import { Plus } from 'lucide-react'
 import { formatDay } from '../lib/i18n'
 
 export function Home({ goRanking }: { goRanking: () => void }) {
   const { state, me, lang, t, activeDate } = useGroup()
   const rows = useBalances()
   const [openTask, setOpenTask] = useState<Task | null>(null)
+  const [creating, setCreating] = useState(false)
 
   const suggestions = useMemo(() => suggestForDay(state, rows, activeDate), [state, rows, activeDate])
 
@@ -58,6 +61,11 @@ export function Home({ goRanking }: { goRanking: () => void }) {
       <div className="section-title">
         {t('todayTasks')} · {formatDay(activeDate, lang)}
       </div>
+      <button type="button" className="btn btn-primary btn-block" style={{ marginBottom: 12 }} onClick={() => setCreating(true)}>
+        <Plus size={18} />
+        {t('addTask')}
+      </button>
+
       <div className="stack">
         {dayTasks.length === 0 && <div className="empty">{t('noTaskToday')}</div>}
         {dayTasks.map((task) => (
@@ -96,6 +104,7 @@ export function Home({ goRanking }: { goRanking: () => void }) {
       )}
 
       {openTask && <TaskSheet task={openTask} onClose={() => setOpenTask(null)} />}
+      {creating && <NewTaskSheet onClose={() => setCreating(false)} />}
     </>
   )
 }

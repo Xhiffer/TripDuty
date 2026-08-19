@@ -47,11 +47,7 @@ export function Account() {
 
   return (
     <>
-      <div className="section-title" style={{ marginTop: 18 }}>
-        {t('meTitle')}
-      </div>
-
-      <div className="card">
+      <div className="card" style={{ marginTop: 8 }}>
         <div style={{ display: 'grid', placeItems: 'center', gap: 10 }}>
           <button
             type="button"

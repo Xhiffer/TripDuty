@@ -3,7 +3,7 @@ import { useApp } from '../state'
 import { CreateGroup } from './CreateGroup'
 import { InstallButton } from '../components/InstallButton'
 import { GroupMark } from '../components/ui'
-import { formatDay } from '../lib/i18n'
+import { formatRange } from '../lib/i18n'
 
 export function Groups() {
   const { myGroups, data, lang, t, selectGroup, joinByCode } = useApp()
@@ -25,9 +25,6 @@ export function Groups() {
 
   return (
     <>
-      <div className="app-header">
-        <span className="app-wordmark">Trip Duty</span>
-      </div>
 
       <div className="stack" style={{ marginTop: 8 }}>
         {myGroups.length === 0 && <div className="empty">{t('noGroupYet')}</div>}
@@ -39,11 +36,9 @@ export function Groups() {
               <span style={{ flex: 1, minWidth: 0 }}>
                 <span className="group-name">{group.name}</span>
                 <span className="group-meta">
-                  {t(`kind_${group.kind}`)} · {count} {t('people')}
+                  {t(`kind_${group.kind}`)} · {count} {count > 1 ? t('people') : t('personOne')}
                 </span>
-                <span className="group-meta">
-                  {formatDay(group.startDate, lang)} {t('to')} {formatDay(group.endDate, lang)}
-                </span>
+                <span className="group-meta">{formatRange(group.startDate, group.endDate, lang)}</span>
               </span>
               <span className="group-arrow">→</span>
             </button>

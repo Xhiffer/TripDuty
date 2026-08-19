@@ -165,6 +165,8 @@ const fr: Dict = {
   closingOpenBadge: 'Bilan en cours',
   nothingOwed: 'Rien à faire, tu es à l’équilibre.',
   addClosingTask: 'Ajouter une tâche de clôture',
+  recurringTask: 'Tâche récurrente',
+  recurringTaskHelp: 'Elle sera posée sur chaque jour restant, à la même heure.',
   isClosingTask: 'Tâche de clôture',
   gaveToGroup: 'pts apportés',
   taskDoneOne: 'tâche faite',
@@ -238,11 +240,14 @@ const fr: Dict = {
   kind_potes_help: 'Une coloc, un week-end, une bande d’amis.',
   groupDetailsSub: 'Tu es l’hôte, c’est toi qui règles tout ça.',
   groupName: 'Nom du groupe',
+  noEndDate: 'Pas de date de fin',
+  noEndDateHelp: 'Pour une coloc ou un couple : le groupe court indéfiniment, et le planning affiche les trois prochaines semaines.',
   groupPhoto: 'Photo du groupe',
   addGroupPhoto: 'Choisir une photo',
   groupIcon: 'Icône',
   groupColor: 'Couleur',
   people: 'personnes',
+  personOne: 'personne',
   joinWithCode: 'Rejoindre avec un code',
   joinWithCodeHelp: 'Quelqu’un t’a envoyé un code à six caractères ? Saisis-le ici.',
   join: 'Rejoindre',
@@ -485,6 +490,8 @@ const en: Dict = {
   closingOpenBadge: 'Wrap-up running',
   nothingOwed: 'Nothing to do, you are even.',
   addClosingTask: 'Add a closing task',
+  recurringTask: 'Recurring task',
+  recurringTaskHelp: 'It will be placed on every remaining day, at the same time.',
   isClosingTask: 'Closing task',
   gaveToGroup: 'pts given',
   taskDoneOne: 'task done',
@@ -552,11 +559,14 @@ const en: Dict = {
   kind_potes_help: 'A flatshare, a weekend, a group of friends.',
   groupDetailsSub: 'You are the host, so you set all this.',
   groupName: 'Group name',
+  noEndDate: 'No end date',
+  noEndDateHelp: 'For a flatshare or a couple: the group runs indefinitely, and the planner shows the next three weeks.',
   groupPhoto: 'Group photo',
   addGroupPhoto: 'Choose a photo',
   groupIcon: 'Icon',
   groupColor: 'Colour',
   people: 'people',
+  personOne: 'person',
   joinWithCode: 'Join with a code',
   joinWithCodeHelp: 'Someone sent you a six-character code? Enter it here.',
   join: 'Join',
@@ -679,6 +689,14 @@ const MONTHS_EN = [
   'November',
   'December',
 ]
+
+/** « du 22 au 29 août », ou « depuis le 19 août » quand le groupe n'a pas de fin. */
+export function formatRange(startDate: string, endDate: string | null, lang: Lang) {
+  const start = formatDay(startDate, lang)
+  if (!endDate) return lang === 'en' ? `Since ${start}` : `Depuis ${start}`
+  const end = formatDay(endDate, lang)
+  return lang === 'en' ? `${start} to ${end}` : `${start} au ${end}`
+}
 
 export function formatDay(iso: string, lang: Lang) {
   const d = new Date(iso + 'T12:00:00')
