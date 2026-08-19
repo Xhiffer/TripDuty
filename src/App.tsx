@@ -11,6 +11,7 @@ import { Closing } from './screens/Closing'
 import { Me } from './screens/Me'
 import { Avatar } from './components/ui'
 import { InstallPrompt } from './components/InstallPrompt'
+import { Splash } from './components/Splash'
 import { formatDay } from './lib/i18n'
 
 type Tab = 'home' | 'ranking' | 'planning' | 'closing' | 'me'
@@ -19,6 +20,14 @@ export function App() {
   const { account, view, me, conceptSeen, lang, t, joinByCode } = useApp()
   const rows = useBalances()
   const [tab, setTab] = useState<Tab>('home')
+  const [splashDone, setSplashDone] = useState(false)
+  // L'etape photo est passee une fois par appareil, une fois le compte cree.
+  const [profileDone, setProfileDone] = useState(false)
+
+  useEffect(() => {
+    if (!account) return setProfileDone(false)
+    setProfileDone(localStorage.getItem(`tripduty:profile-done:${account.id}`) === '1')
+  }, [account])
 
   // Lien d'invitation partage : #/join/CODE
   useEffect(() => {
@@ -29,12 +38,21 @@ export function App() {
     })
   }, [account, joinByCode])
 
+  if (!splashDone) return <Splash onDone={() => setSplashDone(true)} />
+
+  const needsProfile = !!account && (!account.firstName || !account.birthDate || !profileDone)
+
+  function finishProfile() {
+    if (account) localStorage.setItem(`tripduty:profile-done:${account.id}`, '1')
+    setProfileDone(true)
+  }
+
   // Avant d'etre dans un groupe, il n'y a pas de barre de navigation en bas :
   // l'invitation a installer se cale plus bas.
-  if (!account || !account.firstName || !account.birthDate || !conceptSeen || !view || !me) {
+  if (!account || needsProfile || !conceptSeen || !view || !me) {
     let screen = <Auth />
     if (!account) screen = <Auth />
-    else if (!account.firstName || !account.birthDate) screen = <ProfileSetup />
+    else if (needsProfile) screen = <ProfileSetup onDone={finishProfile} />
     else if (!conceptSeen) screen = <Concept />
     else screen = <Groups />
     return (

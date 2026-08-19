@@ -78,6 +78,7 @@ interface Ctx {
   // compte
   signUp: (email: string, password: string) => Promise<Result>
   signIn: (email: string, password: string) => Promise<Result>
+  resetPassword: (email: string) => Promise<Result>
   signOut: () => void
   /** Vrai quand l'application parle a la base en ligne plutot qu'au telephone. */
   shared: boolean
@@ -327,6 +328,25 @@ export function AppProvider({ children }: { children: ReactNode }) {
         if (hash !== found.passwordHash) return { ok: false, error: 'wrongPassword' }
         localStorage.setItem(SESSION_KEY, found.id)
         setAccountId(found.id)
+        return { ok: true }
+      },
+
+      /**
+       * Mot de passe oublie. Un mot de passe ne peut pas etre reaffiche : la
+       * base n'en garde qu'une empreinte, personne ne peut le relire, pas meme
+       * nous. On envoie donc un lien de reinitialisation.
+       */
+      resetPassword: async (email) => {
+        const clean = normalizeEmail(email)
+        if (!supabase) return { ok: false, error: 'onlyOnline' }
+        const { error } = await supabase.auth.resetPasswordForEmail(clean, {
+          redirectTo: window.location.origin + import.meta.env.BASE_URL,
+        })
+        if (error) {
+          console.error('[supabase] reinitialisation refusee', error)
+          return { ok: false, error: 'server' }
+        }
+        // On ne dit jamais si l'adresse existe : ca revelerait qui a un compte.
         return { ok: true }
       },
 

@@ -15,8 +15,14 @@ async function shrinkImage(file: File): Promise<string> {
   return canvas.toDataURL('image/jpeg', 0.72)
 }
 
-export function ProfileSetup() {
+/**
+ * Deuxieme temps de l'inscription : la photo et la couleur.
+ * Le nom et la date de naissance sont demandes a la creation du compte ;
+ * ils ne reapparaissent ici que si le compte est arrive sans eux.
+ */
+export function ProfileSetup({ onDone }: { onDone: () => void }) {
   const { account, t, updateProfile } = useApp()
+  const missingIdentity = !account?.firstName || !account?.birthDate
   const [firstName, setFirstName] = useState(account?.firstName ?? '')
   const [lastName, setLastName] = useState(account?.lastName ?? '')
   const [birthDate, setBirthDate] = useState(account?.birthDate ?? '')
@@ -28,16 +34,25 @@ export function ProfileSetup() {
   const initials = initialsOf(firstName, lastName)
 
   function submit() {
-    if (!firstName.trim()) return setError(t('errFirstNameRequired'))
-    if (!lastName.trim()) return setError(t('errLastNameRequired'))
-    if (!birthDate) return setError(t('errBirthDateRequired'))
-    updateProfile({ firstName: firstName.trim(), lastName: lastName.trim(), birthDate, photo, color })
+    if (missingIdentity) {
+      if (!firstName.trim()) return setError(t('errFirstNameRequired'))
+      if (!lastName.trim()) return setError(t('errLastNameRequired'))
+      if (!birthDate) return setError(t('errBirthDateRequired'))
+    }
+    updateProfile({
+      firstName: firstName.trim(),
+      lastName: lastName.trim(),
+      birthDate,
+      photo,
+      color,
+    })
+    onDone()
   }
 
   return (
     <div className="app app-centered">
       <div className="hero">
-        <h1 className="hero-title">{t('profileTitle')}</h1>
+        <h1 className="hero-title">{t('photoTitle')}</h1>
         <p className="hero-sub">{t('profileSub')}</p>
       </div>
 
@@ -94,43 +109,47 @@ export function ProfileSetup() {
           </div>
         )}
 
-        <div className="row" style={{ gap: 10 }}>
-          <label className="field" style={{ flex: 1 }}>
-            <span className="field-label">{t('firstName')}</span>
-            <input
-              className="input"
-              value={firstName}
-              onChange={(e) => {
-                setFirstName(e.target.value)
-                setError('')
-              }}
-            />
-          </label>
-          <label className="field" style={{ flex: 1 }}>
-            <span className="field-label">{t('lastName')}</span>
-            <input
-              className="input"
-              value={lastName}
-              onChange={(e) => {
-                setLastName(e.target.value)
-                setError('')
-              }}
-            />
-          </label>
-        </div>
+        {missingIdentity && (
+          <>
+            <div className="row" style={{ gap: 10 }}>
+              <label className="field" style={{ flex: 1 }}>
+                <span className="field-label">{t('firstName')}</span>
+                <input
+                  className="input"
+                  value={firstName}
+                  onChange={(e) => {
+                    setFirstName(e.target.value)
+                    setError('')
+                  }}
+                />
+              </label>
+              <label className="field" style={{ flex: 1 }}>
+                <span className="field-label">{t('lastName')}</span>
+                <input
+                  className="input"
+                  value={lastName}
+                  onChange={(e) => {
+                    setLastName(e.target.value)
+                    setError('')
+                  }}
+                />
+              </label>
+            </div>
 
-        <label className="field">
-          <span className="field-label">{t('birthDate')}</span>
-          <input
-            className="input"
-            type="date"
-            value={birthDate}
-            onChange={(e) => {
-              setBirthDate(e.target.value)
-              setError('')
-            }}
-          />
-        </label>
+            <label className="field">
+              <span className="field-label">{t('birthDate')}</span>
+              <input
+                className="input"
+                type="date"
+                value={birthDate}
+                onChange={(e) => {
+                  setBirthDate(e.target.value)
+                  setError('')
+                }}
+              />
+            </label>
+          </>
+        )}
 
         {error && <p className="form-error">{error}</p>}
 
