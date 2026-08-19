@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react'
+import { LogoStacked } from './Logo'
 
 /**
- * Ecran d'ouverture. Il tient deux secondes, le temps que l'application charge,
- * puis s'efface. Sur un telephone, c'est ce qui fait la difference entre
- * « un site qui met du temps » et « une application qui demarre ».
+ * Ecran d'ouverture. Il tient deux secondes, le temps que l'application
+ * charge, puis s'efface. Sur un telephone, c'est ce qui fait la difference
+ * entre « un site qui met du temps » et « une application qui demarre ».
+ *
+ * C'est le seul endroit ou le logo empile s'affiche.
  */
 export function Splash({ onDone }: { onDone: () => void }) {
   const [leaving, setLeaving] = useState(false)
@@ -21,10 +24,7 @@ export function Splash({ onDone }: { onDone: () => void }) {
     <div className={`splash ${leaving ? 'is-leaving' : ''}`} aria-hidden="true">
       <div className="splash-photo" />
       <div className="splash-veil" />
-      <div className="splash-center">
-        <span className="splash-mark">⛰️</span>
-        <span className="splash-name">Trip Duty</span>
-      </div>
+      <LogoStacked className="splash-logo" />
     </div>
   )
 }

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useApp } from '../state'
 import { isEmail } from '../lib/identity'
 import { Segmented } from '../components/ui'
+import { LogoLong } from '../components/Logo'
 
 type Mode = 'signin' | 'signup' | 'forgot'
 
@@ -63,8 +64,7 @@ export function Auth() {
   return (
     <div className="app app-centered">
       <div className="hero">
-        <span className="hero-mark">⛰️</span>
-        <h1 className="hero-title">Trip Duty</h1>
+        <LogoLong className="hero-logo" />
         <p className="hero-sub">{t('authTagline')}</p>
       </div>
 

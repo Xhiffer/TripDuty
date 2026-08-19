@@ -12,6 +12,7 @@ import { Closing } from './screens/Closing'
 import { Expenses } from './screens/Expenses'
 import { GroupSettings } from './screens/GroupSettings'
 import { Avatar, GroupMark } from './components/ui'
+import { LogoLong } from './components/Logo'
 import { InstallButton } from './components/InstallButton'
 import { GroupMenu } from './components/GroupMenu'
 import { ShareSheet } from './components/ShareSheet'
@@ -115,7 +116,7 @@ export function App() {
               <div className="app-header is-fixed">
                 <div className="app-header-inner">
                   <span className="app-wordmark">
-                    Trip Duty
+                    <LogoLong className="app-logo-long" />
                     {__RECENT_CHANGES__[0] && <span className="version-tag">{__RECENT_CHANGES__[0].version}</span>}
                   </span>
                   <span className="header-actions">
