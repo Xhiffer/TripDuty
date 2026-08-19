@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Share, Smartphone } from 'lucide-react'
+import { detectBrowser, installGuide } from '../lib/install'
 import { useApp } from '../state'
 import { Sheet } from './ui'
 
@@ -26,10 +27,11 @@ function isApple(): boolean {
  * aucune commande n'existe : on montre le geste.
  */
 export function InstallButton({ variant = 'block' }: { variant?: 'block' | 'icon' }) {
-  const { t } = useApp()
+  const { t, lang } = useApp()
   const [event, setEvent] = useState<InstallEvent | null>(null)
   const [installed, setInstalled] = useState(() => isStandalone())
   const [steps, setSteps] = useState(false)
+  const guide = installGuide(lang)
 
   useEffect(() => {
     function onPrompt(e: Event) {
@@ -72,28 +74,29 @@ export function InstallButton({ variant = 'block' }: { variant?: 'block' | 'icon
       )}
 
       {steps && (
-        <Sheet title={t('installTitle')} subtitle={t('installBodyIos')} onClose={() => setSteps(false)}>
-          <div className="install-steps">
-            {isApple() ? (
-              <>
-                <span className="install-step">
-                  <b>1.</b> {t('installIosStep1')} <Share size={15} className="share-glyph" />
-                </span>
-                <span className="install-step">
-                  <b>2.</b> {t('installIosStep2')}
-                </span>
-              </>
-            ) : (
-              <>
-                <span className="install-step">
-                  <b>1.</b> {t('installOtherStep1')}
-                </span>
-                <span className="install-step">
-                  <b>2.</b> {t('installIosStep2')}
-                </span>
-              </>
-            )}
-          </div>
+        <Sheet
+          title={t('installTitle')}
+          subtitle={guide.browser ? `${t('installOn')} ${guide.browser}` : t('installBodyIos')}
+          onClose={() => setSteps(false)}
+        >
+          <ol className="install-list">
+            {guide.steps.map((step, i) => (
+              <li key={i}>
+                <span className="install-number">{i + 1}</span>
+                <span>{step}</span>
+              </li>
+            ))}
+          </ol>
+
+          {isApple() && detectBrowser() === 'safari' && (
+            <p className="hint" style={{ textAlign: 'left' }}>
+              {t('installShareHint')} <Share size={14} className="share-glyph" />
+            </p>
+          )}
+
+          <p className="hint" style={{ textAlign: 'left' }}>
+            {t('installWhy')}
+          </p>
         </Sheet>
       )}
     </>
