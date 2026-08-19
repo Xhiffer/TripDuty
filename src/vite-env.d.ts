@@ -14,4 +14,10 @@ interface ImportMeta {
 }
 
 /** Les dernieres modifications du depot, injectees a la compilation. */
-declare const __RECENT_CHANGES__: Array<{ author: string; date: string; subject: string }>
+declare const __RECENT_CHANGES__: Array<{
+  version: string
+  author: string
+  date: string
+  subject: string
+  body: string
+}>

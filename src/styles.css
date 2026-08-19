@@ -1493,3 +1493,55 @@ button {
   align-items: center;
   gap: 10px;
 }
+
+/* ---------- numero de version ---------- */
+
+.version-tag {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0;
+  color: var(--muted);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 3px 8px;
+  margin-left: 8px;
+  vertical-align: 4px;
+}
+
+.version-tag.is-solid {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+  margin-left: 0;
+  vertical-align: baseline;
+}
+
+.change-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+}
+
+.change-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.change-subject {
+  font-weight: 700;
+  font-size: 14.5px;
+  line-height: 1.35;
+  margin: 0;
+}
+
+.change-body {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.55;
+  margin: 8px 0 0;
+  white-space: pre-line;
+}

@@ -114,7 +114,10 @@ export function App() {
             header={
               <div className="app-header is-fixed">
                 <div className="app-header-inner">
-                  <span className="app-wordmark">Trip Duty</span>
+                  <span className="app-wordmark">
+                    Trip Duty
+                    {__RECENT_CHANGES__[0] && <span className="version-tag">{__RECENT_CHANGES__[0].version}</span>}
+                  </span>
                   <span className="header-actions">
                     <InstallButton variant="icon" />
                     <button

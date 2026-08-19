@@ -193,7 +193,7 @@ export function Account() {
             <span style={{ flex: 1 }}>
               {t('lastUpdate')}
               <span className="menu-sub">
-                {who(last.author)} · {formatDay(last.date, lang)}
+                {t('version')} {last.version} · {who(last.author)} · {formatDay(last.date, lang)}
               </span>
             </span>
             <ChevronRight size={17} />
@@ -269,15 +269,15 @@ export function Account() {
         <Sheet title={t('changesTitle')} onClose={() => setSheet(null)}>
           <div className="stack">
             {changes.map((change, i) => (
-              <div key={i} className="rank-row">
-                <span style={{ flex: 1, minWidth: 0 }}>
-                  <span className="rank-name" style={{ fontSize: 14 }}>
-                    {change.subject}
-                  </span>
+              <div key={i} className="change-card">
+                <div className="change-head">
+                  <span className="version-tag is-solid">{change.version}</span>
                   <span className="rank-sub">
                     {who(change.author)} · {formatDay(change.date, lang)}
                   </span>
-                </span>
+                </div>
+                <p className="change-subject">{change.subject}</p>
+                {change.body && <p className="change-body">{change.body}</p>}
               </div>
             ))}
           </div>
