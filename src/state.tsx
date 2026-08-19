@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
-import type { Account, AppData, Group, GroupKind, GroupView, Lang, Person, Role, Task, Theme } from './types'
+import type { Account, AppData, Expense, Group, GroupKind, GroupView, Lang, Person, Role, Task, Theme } from './types'
 import type { Mutation } from './data/mutations'
 import { applyMutation } from './data/mutations'
 import { store } from './data/store'
@@ -97,6 +97,7 @@ interface Ctx {
     kind: GroupKind
     name: string
     emoji: string
+    photo: string | null
     color: string
     startDate: string
     endDate: string
@@ -121,6 +122,17 @@ interface Ctx {
   markMissed: (taskId: string) => void
   reopenTask: (taskId: string) => void
   deleteTask: (taskId: string) => void
+  addExpense: (input: {
+    title: string
+    emoji: string
+    amountCents: number
+    payerId: string
+    participantIds: string[]
+    date: string
+    receipt: string | null
+  }) => void
+  updateExpense: (expenseId: string, patch: Partial<Expense>) => void
+  deleteExpense: (expenseId: string) => void
   toggleRecurring: (taskId: string) => void
 }
 
@@ -246,6 +258,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         group,
         members,
         tasks: data.tasks.filter((task) => task.groupId === group.id),
+        expenses: data.expenses.filter((e) => e.groupId === group.id),
         entries: data.entries.filter((e) => e.groupId === group.id),
       }
     }
@@ -420,6 +433,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
             kind: row.kind,
             name: row.name,
             emoji: row.emoji,
+            photo: row.photo_url ?? null,
             color: row.color,
             startDate: row.start_date,
             endDate: row.end_date,
@@ -428,6 +442,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
             penalty: row.penalty,
             closingOpen: row.closing_open,
             createdAt: row.created_at,
+          }
+          // create_group() ne prend pas la photo : on la pose juste apres,
+          // en tant qu'hote, plutot que de toucher a la fonction en base.
+          if (input.photo) {
+            await supabase.from('groups').update({ photo_url: input.photo }).eq('id', created.id)
+            created.photo = input.photo
           }
           // Les identifiants viennent du navigateur : la base les accepte tels
           // quels, et deux telephones ne peuvent pas tomber sur le meme.
@@ -462,6 +482,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           kind: input.kind,
           name: input.name.trim(),
           emoji: input.emoji,
+          photo: input.photo,
           color: input.color,
           startDate: input.startDate,
           endDate: input.endDate,
@@ -706,6 +727,33 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
       deleteTask: (taskId) => {
         dispatch(() => ({ type: 'deleteTask', taskId }))
+      },
+
+      addExpense: (input) => {
+        const current = view?.group
+        if (!current || !account) return
+        const expense: Expense = {
+          id: uid(),
+          groupId: current.id,
+          title: input.title.trim(),
+          emoji: input.emoji,
+          amountCents: input.amountCents,
+          payerId: input.payerId,
+          participantIds: input.participantIds,
+          date: input.date,
+          receipt: input.receipt,
+          createdBy: account.id,
+          createdAt: new Date().toISOString(),
+        }
+        dispatch(() => ({ type: 'addExpense', expense }))
+      },
+
+      updateExpense: (expenseId, patch) => {
+        dispatch(() => ({ type: 'updateExpense', expenseId, patch }))
+      },
+
+      deleteExpense: (expenseId) => {
+        dispatch(() => ({ type: 'deleteExpense', expenseId }))
       },
 
       // Le bouton reste une bascule, mais ce qui part sur le reseau est la

@@ -21,6 +21,7 @@ const group: Group = {
   kind: 'vacances',
   name: 'Gorges du Verdon',
   emoji: '⛰️',
+  photo: null,
   color: '#ff6a3d',
   startDate: '2026-08-22',
   endDate: '2026-08-29',
@@ -32,7 +33,7 @@ const group: Group = {
 }
 
 function viewWith(entries: Entry[], members: Person[]): GroupView {
-  return { group, members, tasks: [], entries }
+  return { group, members, tasks: [], entries, expenses: [] }
 }
 
 function entry(patch: Partial<Entry> & Pick<Entry, 'id' | 'taskId' | 'amounts'>): Entry {

@@ -1,4 +1,4 @@
-import type { Account, AppData, Entry, Group, Membership, Role, Task } from '../types'
+import type { Account, AppData, Entry, Expense, Group, Membership, Role, Task } from '../types'
 
 /**
  * Une modification, decrite comme un fait acheve.
@@ -38,6 +38,9 @@ export type Mutation =
   | { type: 'settleTask'; taskId: string; status: 'done' | 'missed'; entry: Entry }
   | { type: 'reopenTask'; taskId: string }
   | { type: 'deleteTask'; taskId: string }
+  | { type: 'addExpense'; expense: Expense }
+  | { type: 'updateExpense'; expenseId: string; patch: Partial<Expense> }
+  | { type: 'deleteExpense'; expenseId: string }
 
 /**
  * Applique une mutation, sans jamais modifier l'original.
@@ -176,6 +179,21 @@ export function applyMutation(data: AppData, mutation: Mutation): AppData {
         tasks: data.tasks.filter((t) => t.id !== mutation.taskId),
         entries: data.entries.filter((e) => e.taskId !== mutation.taskId),
       }
+    }
+
+    case 'addExpense': {
+      return { ...data, expenses: [...data.expenses, mutation.expense] }
+    }
+
+    case 'updateExpense': {
+      return {
+        ...data,
+        expenses: data.expenses.map((e) => (e.id === mutation.expenseId ? { ...e, ...mutation.patch } : e)),
+      }
+    }
+
+    case 'deleteExpense': {
+      return { ...data, expenses: data.expenses.filter((e) => e.id !== mutation.expenseId) }
     }
   }
 }

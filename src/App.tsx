@@ -9,15 +9,17 @@ import { Home } from './screens/Home'
 import { Ranking } from './screens/Ranking'
 import { Planning } from './screens/Planning'
 import { Closing } from './screens/Closing'
+import { Expenses } from './screens/Expenses'
 import { GroupSettings } from './screens/GroupSettings'
+import { GroupMark } from './components/ui'
 import { GroupMenu } from './components/GroupMenu'
 import { ShareSheet } from './components/ShareSheet'
 import { LeaveGroupSheet } from './components/LeaveGroupSheet'
-import { ArrowLeft, MoreHorizontal, House, Trophy, CalendarDays, Flag, Compass, CircleUser } from 'lucide-react'
+import { ArrowLeft, MoreHorizontal, House, Trophy, CalendarDays, Wallet, Compass, CircleUser } from 'lucide-react'
 import { Splash } from './components/Splash'
 import { formatDay } from './lib/i18n'
 
-type Tab = 'home' | 'ranking' | 'planning' | 'closing'
+type Tab = 'home' | 'ranking' | 'planning' | 'expenses'
 type OuterTab = 'groups' | 'profile'
 
 export function App() {
@@ -30,6 +32,7 @@ export function App() {
   const [sharing, setSharing] = useState(false)
   const [leaving, setLeaving] = useState(false)
   const [editing, setEditing] = useState(false)
+  const [closing, setClosing] = useState(false)
   // L'etape photo est passee une fois par appareil, une fois le compte cree.
   const [profileDone, setProfileDone] = useState(false)
 
@@ -106,13 +109,30 @@ export function App() {
     { id: 'home' as Tab, Icon: House, label: t('navHome'), dot: owes },
     { id: 'ranking' as Tab, Icon: Trophy, label: t('navRanking'), dot: false },
     { id: 'planning' as Tab, Icon: CalendarDays, label: t('navPlanning'), dot: false },
-    { id: 'closing' as Tab, Icon: Flag, label: t('navClosing'), dot: view.group.closingOpen },
+    { id: 'expenses' as Tab, Icon: Wallet, label: t('navExpenses'), dot: false },
   ]
 
   if (editing) {
     return (
       <div className="app">
         <GroupSettings onClose={() => setEditing(false)} />
+      </div>
+    )
+  }
+
+  if (closing) {
+    return (
+      <div className="app">
+        <div className="topbar">
+          <button type="button" className="icon-button" onClick={() => setClosing(false)} aria-label={t('back')}>
+            <ArrowLeft size={20} />
+          </button>
+          <div className="topbar-title">
+            <span className="topbar-name">{t('closingTitle')}</span>
+          </div>
+          <span className="icon-button is-ghost" />
+        </div>
+        <Closing />
       </div>
     )
   }
@@ -131,9 +151,7 @@ export function App() {
       </div>
 
       <div className="group-head">
-        <span className="group-mark is-small" style={{ background: view.group.color }}>
-          {view.group.emoji}
-        </span>
+        <GroupMark group={view.group} small />
         <span className="topbar-name">{view.group.name}</span>
         <span className="topbar-dates">
           {formatDay(view.group.startDate, lang)} {t('to')} {formatDay(view.group.endDate, lang)}
@@ -143,7 +161,7 @@ export function App() {
       {tab === 'home' && <Home goRanking={() => setTab('ranking')} />}
       {tab === 'ranking' && <Ranking />}
       {tab === 'planning' && <Planning />}
-      {tab === 'closing' && <Closing />}
+      {tab === 'expenses' && <Expenses />}
 
       <nav className="nav">
         <div className="nav-inner">
@@ -177,6 +195,10 @@ export function App() {
           onLeave={() => {
             setMenuOpen(false)
             setLeaving(true)
+          }}
+          onClosing={() => {
+            setMenuOpen(false)
+            setClosing(true)
           }}
         />
       )}

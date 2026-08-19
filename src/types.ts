@@ -21,6 +21,8 @@ export interface Group {
   kind: GroupKind
   name: string
   emoji: string
+  /** Une photo remplace l'icone quand elle est renseignee. */
+  photo: string | null
   color: string
   startDate: string // AAAA-MM-JJ
   endDate: string
@@ -79,12 +81,31 @@ export interface Entry {
   at: string
 }
 
+/**
+ * Une depense du groupe. Un seul payeur, un partage a parts egales entre
+ * les participants coches. Montant en centimes d'euro.
+ */
+export interface Expense {
+  id: string
+  groupId: string
+  title: string
+  emoji: string
+  amountCents: number
+  payerId: string
+  participantIds: string[]
+  date: string // AAAA-MM-JJ
+  receipt: string | null
+  createdBy: string
+  createdAt: string
+}
+
 export interface AppData {
   accounts: Account[]
   groups: Group[]
   memberships: Membership[]
   tasks: Task[]
   entries: Entry[]
+  expenses: Expense[]
 }
 
 /** Vue d'une personne dans le groupe courant, telle que l'affichent les ecrans. */
@@ -104,6 +125,7 @@ export interface GroupView {
   members: Person[]
   tasks: Task[]
   entries: Entry[]
+  expenses: Expense[]
 }
 
 export type Lang = 'fr' | 'en'

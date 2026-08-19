@@ -1,4 +1,4 @@
-import type { Account, AppData, Entry, Group, Membership, Task } from '../types'
+import type { Account, AppData, Entry, Expense, Group, Membership, Task } from '../types'
 import type { Mutation } from './mutations'
 import { supabase } from './supabaseClient'
 
@@ -19,7 +19,7 @@ import { supabase } from './supabaseClient'
  * transporte de toute facon ni le code d'invitation ni le successeur designe.
  */
 
-const EMPTY: AppData = { accounts: [], groups: [], memberships: [], tasks: [], entries: [] }
+const EMPTY: AppData = { accounts: [], groups: [], memberships: [], tasks: [], entries: [], expenses: [] }
 
 // --- traduction base -> ecrans ---------------------------------------------
 
@@ -51,12 +51,29 @@ function toAccount(row: Row, myId: string | null, myEmail: string): Account {
   }
 }
 
+function toExpense(row: Row): Expense {
+  return {
+    id: str(row.id),
+    groupId: str(row.group_id),
+    title: str(row.title),
+    emoji: str(row.emoji),
+    amountCents: num(row.amount_cents),
+    payerId: str(row.payer_id),
+    participantIds: (row.participant_ids as string[] | null) ?? [],
+    date: str(row.date),
+    receipt: row.receipt_url ? String(row.receipt_url) : null,
+    createdBy: str(row.created_by),
+    createdAt: str(row.created_at),
+  }
+}
+
 function toGroup(row: Row): Group {
   return {
     id: str(row.id),
     kind: str(row.kind) as Group['kind'],
     name: str(row.name),
     emoji: str(row.emoji),
+    photo: row.photo_url ? String(row.photo_url) : null,
     color: str(row.color),
     startDate: str(row.start_date),
     endDate: str(row.end_date),
@@ -149,6 +166,7 @@ function groupPatch(patch: Partial<Group>): Row {
   if (patch.endDate !== undefined) out.end_date = patch.endDate
   if (patch.penalty !== undefined) out.penalty = patch.penalty
   if (patch.closingOpen !== undefined) out.closing_open = patch.closingOpen
+  if (patch.photo !== undefined) out.photo_url = patch.photo
   if (patch.hostId !== undefined) out.host_id = patch.hostId
   return out
 }
@@ -196,12 +214,13 @@ async function loadAll(retry = true): Promise<AppData> {
   // pas payer cinq requetes pour se le faire confirmer.
   if (!user) return EMPTY
 
-  const [profiles, groups, memberships, tasks, entries] = await Promise.all([
+  const [profiles, groups, memberships, tasks, entries, expenses] = await Promise.all([
     supabase.from('profiles').select('*'),
     supabase.from('groups').select('*'),
     supabase.from('memberships').select('*'),
     supabase.from('tasks').select('*'),
     supabase.from('entries').select('*'),
+    supabase.from('expenses').select('*'),
   ])
 
   const failed = [profiles, groups, memberships, tasks, entries].find((r) => r.error)
@@ -224,6 +243,7 @@ async function loadAll(retry = true): Promise<AppData> {
     memberships: (memberships.data ?? []).map((r) => toMembership(r as Row)),
     tasks: (tasks.data ?? []).map((r) => toTask(r as Row)),
     entries: (entries.data ?? []).map((r) => toEntry(r as Row)),
+    expenses: (expenses.data ?? []).map((r) => toExpense(r as Row)),
   }
 }
 
@@ -351,6 +371,42 @@ async function applyOne(mutation: Mutation): Promise<void> {
       // `on delete cascade` emporte la ligne de compte avec la tache.
       await supabase.from('tasks').delete().eq('id', mutation.taskId)
       return
+    }
+
+    case 'addExpense': {
+      const e = mutation.expense
+      await supabase.from('expenses').insert({
+        id: e.id,
+        group_id: e.groupId,
+        title: e.title,
+        emoji: e.emoji,
+        amount_cents: e.amountCents,
+        payer_id: e.payerId,
+        participant_ids: e.participantIds,
+        date: e.date,
+        receipt_url: e.receipt,
+        created_by: e.createdBy,
+      })
+      break
+    }
+
+    case 'updateExpense': {
+      const p = mutation.patch
+      const row: Row = { updated_at: new Date().toISOString() }
+      if (p.title !== undefined) row.title = p.title
+      if (p.emoji !== undefined) row.emoji = p.emoji
+      if (p.amountCents !== undefined) row.amount_cents = p.amountCents
+      if (p.payerId !== undefined) row.payer_id = p.payerId
+      if (p.participantIds !== undefined) row.participant_ids = p.participantIds
+      if (p.date !== undefined) row.date = p.date
+      if (p.receipt !== undefined) row.receipt_url = p.receipt
+      await supabase.from('expenses').update(row).eq('id', mutation.expenseId)
+      break
+    }
+
+    case 'deleteExpense': {
+      await supabase.from('expenses').delete().eq('id', mutation.expenseId)
+      break
     }
   }
 }

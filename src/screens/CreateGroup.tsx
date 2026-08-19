@@ -1,7 +1,21 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useApp } from '../state'
 import type { Group, GroupKind } from '../types'
 import { GROUP_COLORS, GROUP_EMOJIS, inviteLink, isEmail } from '../lib/identity'
+import { Camera, Trash2 } from 'lucide-react'
+
+/** Reduit la photo du groupe pour qu'elle reste legere. */
+async function shrinkGroupPhoto(file: File): Promise<string> {
+  const bitmap = await createImageBitmap(file)
+  const size = 400
+  const canvas = document.createElement('canvas')
+  canvas.width = size
+  canvas.height = size
+  const ctx = canvas.getContext('2d')!
+  const side = Math.min(bitmap.width, bitmap.height)
+  ctx.drawImage(bitmap, (bitmap.width - side) / 2, (bitmap.height - side) / 2, side, side, 0, 0, size, size)
+  return canvas.toDataURL('image/jpeg', 0.72)
+}
 
 function plusDays(days: number): string {
   const d = new Date()
@@ -23,6 +37,8 @@ export function CreateGroup({ onDone }: { onDone: () => void }) {
   const [kind, setKind] = useState<GroupKind>('vacances')
   const [name, setName] = useState('')
   const [emoji, setEmoji] = useState('⛰️')
+  const [photo, setPhoto] = useState<string | null>(null)
+  const fileRef = useRef<HTMLInputElement>(null)
   const [color, setColor] = useState(GROUP_COLORS[0])
   const [startDate, setStartDate] = useState(plusDays(0))
   const [endDate, setEndDate] = useState(plusDays(7))
@@ -36,7 +52,7 @@ export function CreateGroup({ onDone }: { onDone: () => void }) {
   async function submitDetails() {
     if (!name.trim()) return setError(t('errGroupNameRequired'))
     if (endDate < startDate) return setError(t('errBadDates'))
-    const created = await createGroup({ kind, name, emoji, color, startDate, endDate, hasLicense })
+    const created = await createGroup({ kind, name, emoji, photo, color, startDate, endDate, hasLicense })
     // La base peut refuser. Passer a l'ecran d'invitation sans groupe
     // afficherait un code vide, sans rien dire de ce qui a echoue.
     if (!created) return setError(t('errServer'))
@@ -125,6 +141,34 @@ export function CreateGroup({ onDone }: { onDone: () => void }) {
               <span className="field-label">{t('to')}</span>
               <input className="input" type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
             </label>
+          </div>
+
+          <div className="field">
+            <span className="field-label">{t('groupPhoto')}</span>
+            {photo ? (
+              <div className="receipt-preview">
+                <img src={photo} alt="" />
+                <button type="button" className="btn btn-sm" onClick={() => setPhoto(null)}>
+                  <Trash2 size={15} />
+                  {t('removePhoto')}
+                </button>
+              </div>
+            ) : (
+              <button type="button" className="btn btn-block" onClick={() => fileRef.current?.click()}>
+                <Camera size={17} />
+                {t('addGroupPhoto')}
+              </button>
+            )}
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/*"
+              hidden
+              onChange={async (e) => {
+                const file = e.target.files?.[0]
+                if (file) setPhoto(await shrinkGroupPhoto(file))
+              }}
+            />
           </div>
 
           <div className="field">

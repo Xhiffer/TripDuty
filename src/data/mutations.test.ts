@@ -22,6 +22,7 @@ const group: Group = {
   kind: 'vacances',
   name: 'Gorges du Verdon',
   emoji: '⛰️',
+  photo: null,
   color: '#ff6a3d',
   startDate: '2026-08-22',
   endDate: '2026-08-29',
@@ -82,6 +83,7 @@ function baseData(patch: Partial<AppData> = {}): AppData {
     accounts: [account('a1'), account('a2')],
     groups: [group],
     memberships: [membership('a1', 'host'), membership('a2')],
+    expenses: [],
     tasks: [task('t1')],
     entries: [],
     ...patch,
@@ -120,7 +122,7 @@ describe('garanties generales', () => {
 
 describe('groupes et roles', () => {
   it('creer un groupe amene son hote et ses taches de cloture ensemble', () => {
-    const vide: AppData = { accounts: [account('a1')], groups: [], memberships: [], tasks: [], entries: [] }
+    const vide: AppData = { accounts: [account('a1')], groups: [], memberships: [], tasks: [], entries: [], expenses: [] }
     const after = applyMutation(vide, {
       type: 'addGroup',
       group,

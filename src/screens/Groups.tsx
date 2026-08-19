@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useApp } from '../state'
 import { CreateGroup } from './CreateGroup'
 import { InstallButton } from '../components/InstallButton'
+import { GroupMark } from '../components/ui'
 import { formatDay } from '../lib/i18n'
 
 export function Groups() {
@@ -34,9 +35,7 @@ export function Groups() {
           const count = data.memberships.filter((m) => m.groupId === group.id).length
           return (
             <button key={group.id} type="button" className="group-card" onClick={() => selectGroup(group.id)}>
-              <span className="group-mark" style={{ background: group.color }}>
-                {group.emoji}
-              </span>
+              <GroupMark group={group} />
               <span style={{ flex: 1, minWidth: 0 }}>
                 <span className="group-name">{group.name}</span>
                 <span className="group-meta">

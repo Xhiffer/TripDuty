@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import type { Person } from '../types'
+import type { Group, Person } from '../types'
 
 /** Pastille de profil : la photo si elle existe, sinon les initiales sur la couleur du compte. */
 export function Avatar({ member, size = 40 }: { member: Person | null; size?: number }) {
@@ -23,6 +23,15 @@ export function Avatar({ member, size = 40 }: { member: Person | null; size?: nu
         initials
       )}
     </div>
+  )
+}
+
+/** La vignette d'un groupe : sa photo si elle existe, sinon son icone. */
+export function GroupMark({ group, small = false }: { group: Group; small?: boolean }) {
+  return (
+    <span className={`group-mark ${small ? 'is-small' : ''}`} style={{ background: group.color }}>
+      {group.photo ? <img src={group.photo} alt="" className="group-photo" /> : group.emoji}
+    </span>
   )
 }
 

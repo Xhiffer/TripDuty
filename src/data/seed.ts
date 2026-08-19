@@ -1,4 +1,4 @@
-import type { AppData, Entry, Membership, Task, TaskStatus } from '../types'
+import type { AppData, Entry, Expense, Membership, Task, TaskStatus } from '../types'
 import { CATALOG } from '../lib/catalog'
 import { CLOSING_CATALOG } from '../lib/closing'
 import { completionAmounts, penaltyAmounts } from '../lib/ledger'
@@ -151,6 +151,32 @@ export function seedData(): AppData {
   })
 
   const all = accounts.map((a) => a.id)
+  // Quelques depenses, pour que l'ecran ne soit pas vide en demonstration.
+  const spend: Array<[string, string, number, string, string[] | null, string]> = [
+    // intitule, icone, centimes, payeur, participants (null = tout le monde), jour
+    ['Courses du samedi', '🛒', 18740, byName('Ismaël'), null, TRIP_START],
+    ['Plein essence aller', '⛽', 9200, byName('Matthew'), null, TRIP_START],
+    ['Location de la maison', '🏠', 84000, byName('Lola'), null, TRIP_START],
+    ['Restaurant du soir', '🍽️', 21600, byName('Charlie'), null, '2026-08-23'],
+    ['Location de kayaks', '🎟️', 12000, byName('Nina'), [byName('Nina'), byName('Jack'), byName('Said'), byName('Martin')], '2026-08-23'],
+    ['Bar après la rando', '🍻', 4350, byName('Said'), null, '2026-08-23'],
+    ['Courses d’appoint', '🛒', 3280, byName('Kejian'), null, '2026-08-24'],
+    ['Péage', '🛣️', 2740, byName('Matthew'), null, '2026-08-24'],
+  ]
+
+  const expenses: Expense[] = spend.map(([title, emoji, amountCents, payerId, forWhom, date], i) => ({
+    id: `x${i + 1}`,
+    groupId: GROUP_ID,
+    title,
+    emoji,
+    amountCents,
+    payerId,
+    participantIds: forWhom ?? all,
+    date,
+    receipt: null,
+    createdBy: payerId,
+    createdAt: `${date}T12:0${i}:00.000Z`,
+  }))
   const entries: Entry[] = []
 
   function validate(taskId: string, doerIds: string[], at: string) {
@@ -197,6 +223,7 @@ export function seedData(): AppData {
         kind: 'vacances',
         name: 'Gorges du Verdon',
         emoji: '⛰️',
+        photo: null,
         color: '#ff6a3d',
         startDate: TRIP_START,
         endDate: TRIP_END,
@@ -210,5 +237,6 @@ export function seedData(): AppData {
     memberships,
     tasks,
     entries,
+    expenses,
   }
 }

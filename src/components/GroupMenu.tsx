@@ -1,4 +1,4 @@
-import { Pencil, Share2, Trash2, LogOut } from 'lucide-react'
+import { Pencil, Share2, Trash2, LogOut, Flag } from 'lucide-react'
 import { useGroup } from '../state'
 import { Sheet } from './ui'
 
@@ -8,11 +8,13 @@ export function GroupMenu({
   onEdit,
   onShare,
   onLeave,
+  onClosing,
 }: {
   onClose: () => void
   onEdit: () => void
   onShare: () => void
   onLeave: () => void
+  onClosing: () => void
 }) {
   const { state, isChef, isHost, t } = useGroup()
 
@@ -25,6 +27,11 @@ export function GroupMenu({
             <span>{t('editGroup')}</span>
           </button>
         )}
+
+        <button type="button" className="menu-row" onClick={onClosing}>
+          <Flag size={18} />
+          <span>{t('closingTitle')}</span>
+        </button>
 
         <button type="button" className="menu-row" onClick={onShare}>
           <Share2 size={18} />
