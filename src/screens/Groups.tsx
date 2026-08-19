@@ -1,14 +1,17 @@
 import { useState } from 'react'
 import type { ReactNode } from 'react'
+import { Plus, Ticket } from 'lucide-react'
 import { useApp } from '../state'
 import { CreateGroup } from './CreateGroup'
 import { InstallButton } from '../components/InstallButton'
-import { GroupMark } from '../components/ui'
+import { GroupMark, Sheet } from '../components/ui'
 import { formatRange } from '../lib/i18n'
 
 export function Groups({ header }: { header: ReactNode }) {
   const { myGroups, data, lang, t, selectGroup, joinByCode } = useApp()
   const [creating, setCreating] = useState(false)
+  // La feuille du bas : d'abord le choix, puis la saisie du code si besoin.
+  const [sheet, setSheet] = useState<'closed' | 'choice' | 'code'>('closed')
   const [code, setCode] = useState('')
   const [error, setError] = useState('')
 
@@ -18,10 +21,11 @@ export function Groups({ header }: { header: ReactNode }) {
     const result = await joinByCode(code)
     if (!result.ok) {
       setError(result.error === 'unknownCode' ? t('errUnknownCode') : t('errServer'))
-    } else {
-      setCode('')
-      setError('')
+      return
     }
+    setCode('')
+    setError('')
+    setSheet('closed')
   }
 
   return (
@@ -48,18 +52,56 @@ export function Groups({ header }: { header: ReactNode }) {
         })}
       </div>
 
+      <InstallButton />
 
-      <div className="section-title">{t('joinWithCode')}</div>
-      <div className="card">
-        <p className="sheet-sub" style={{ marginTop: 0 }}>
-          {t('joinWithCodeHelp')}
-        </p>
-        <div className="row" style={{ gap: 8 }}>
+      {/* Le geste principal reste sous le pouce, quelle que soit la longueur
+          de la liste. La page lui reserve sa hauteur plus bas. */}
+      <div className="bottom-action">
+        <div className="bottom-action-inner">
+          <button type="button" className="btn btn-primary btn-block" onClick={() => setSheet('choice')}>
+            <Plus size={18} />
+            {t('createOrJoin')}
+          </button>
+        </div>
+      </div>
+
+      {sheet === 'choice' && (
+        <Sheet title={t('createOrJoin')} onClose={() => setSheet('closed')}>
+          <div className="stack">
+            <button
+              type="button"
+              className="menu-row"
+              onClick={() => {
+                setSheet('closed')
+                setCreating(true)
+              }}
+            >
+              <Plus size={18} />
+              <span style={{ flex: 1 }}>
+                {t('createGroup')}
+                <span className="menu-sub">{t('createGroupHelp')}</span>
+              </span>
+            </button>
+
+            <button type="button" className="menu-row" onClick={() => setSheet('code')}>
+              <Ticket size={18} />
+              <span style={{ flex: 1 }}>
+                {t('joinWithCode')}
+                <span className="menu-sub">{t('joinWithCodeHelp')}</span>
+              </span>
+            </button>
+          </div>
+        </Sheet>
+      )}
+
+      {sheet === 'code' && (
+        <Sheet title={t('joinWithCode')} subtitle={t('joinWithCodeHelp')} onClose={() => setSheet('closed')}>
           <input
             className="input invite-input"
             value={code}
             placeholder="ABC123"
             maxLength={8}
+            autoFocus
             onChange={(e) => {
               setCode(e.target.value.toUpperCase())
               setError('')
@@ -68,29 +110,23 @@ export function Groups({ header }: { header: ReactNode }) {
               if (e.key === 'Enter' && code.trim().length >= 4) void join()
             }}
           />
-          <button
-            type="button"
-            className={`btn ${code.trim().length >= 4 ? 'btn-primary' : ''}`}
-            disabled={code.trim().length < 4}
-            onClick={() => void join()}
-          >
-            {t('join')}
-          </button>
-        </div>
-        {error && <p className="form-error" style={{ margin: '12px 0 0' }}>{error}</p>}
-      </div>
+          {error && <p className="form-error" style={{ margin: '12px 0 0' }}>{error}</p>}
 
-      <InstallButton />
-
-      {/* Le geste principal reste sous le pouce, quelle que soit la longueur
-          de la liste. La page lui reserve sa hauteur plus bas. */}
-      <div className="bottom-action">
-        <div className="bottom-action-inner">
-          <button type="button" className="btn btn-primary btn-block" onClick={() => setCreating(true)}>
-            ＋ {t('createGroup')}
-          </button>
-        </div>
-      </div>
+          <div className="stack" style={{ marginTop: 14 }}>
+            <button
+              type="button"
+              className="btn btn-primary btn-block"
+              disabled={code.trim().length < 4}
+              onClick={() => void join()}
+            >
+              {t('join')}
+            </button>
+            <button type="button" className="btn btn-block" onClick={() => setSheet('choice')}>
+              {t('back')}
+            </button>
+          </div>
+        </Sheet>
+      )}
     </>
   )
 }

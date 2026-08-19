@@ -1454,3 +1454,36 @@ button {
 .app.has-bottom-action {
   padding-bottom: calc(env(safe-area-inset-bottom) + 92px);
 }
+
+/* ---------- en-tete fixe de la liste ---------- */
+
+.app-header.is-fixed {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  z-index: 45;
+  display: block;
+  padding: calc(env(safe-area-inset-top) + 20px) 16px 14px;
+  background: linear-gradient(
+    to bottom,
+    var(--bg) 70%,
+    color-mix(in srgb, var(--bg) 60%, transparent) 88%,
+    transparent
+  );
+  pointer-events: none;
+}
+
+.app-header-inner {
+  max-width: 540px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  pointer-events: auto;
+}
+
+/* La liste commence sous l'en-tete plutot que derriere. */
+.app.has-fixed-header {
+  padding-top: calc(env(safe-area-inset-top) + 88px);
+}
