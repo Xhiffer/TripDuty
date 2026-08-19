@@ -331,6 +331,7 @@ const fr: Dict = {
   installNow: 'Installer',
   installIosStep1: 'Appuie sur le bouton Partager',
   installIosStep2: 'Choisis « Sur l’écran d’accueil »',
+  installOtherStep1: 'Ouvre le menu de ton navigateur',
   later: 'Plus tard',
   deactivateAccount: 'Désactiver mon compte',
   deactivateHelp:
@@ -651,6 +652,7 @@ const en: Dict = {
   installNow: 'Install',
   installIosStep1: 'Tap the Share button',
   installIosStep2: 'Choose "Add to Home Screen"',
+  installOtherStep1: 'Open your browser menu',
   later: 'Later',
   deactivateAccount: 'Deactivate my account',
   deactivateHelp:

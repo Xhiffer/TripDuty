@@ -1487,3 +1487,9 @@ button {
 .app.has-fixed-header {
   padding-top: calc(env(safe-area-inset-top) + 88px);
 }
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}

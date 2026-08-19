@@ -12,6 +12,7 @@ import { Closing } from './screens/Closing'
 import { Expenses } from './screens/Expenses'
 import { GroupSettings } from './screens/GroupSettings'
 import { Avatar, GroupMark } from './components/ui'
+import { InstallButton } from './components/InstallButton'
 import { GroupMenu } from './components/GroupMenu'
 import { ShareSheet } from './components/ShareSheet'
 import { LeaveGroupSheet } from './components/LeaveGroupSheet'
@@ -114,14 +115,17 @@ export function App() {
               <div className="app-header is-fixed">
                 <div className="app-header-inner">
                   <span className="app-wordmark">Trip Duty</span>
-                  <button
-                    type="button"
-                    className="header-avatar"
-                    onClick={() => setOuterTab('profile')}
-                    aria-label={t('navProfile')}
-                  >
-                    <Avatar member={accountAsPerson} size={38} />
-                  </button>
+                  <span className="header-actions">
+                    <InstallButton variant="icon" />
+                    <button
+                      type="button"
+                      className="header-avatar"
+                      onClick={() => setOuterTab('profile')}
+                      aria-label={t('navProfile')}
+                    >
+                      <Avatar member={accountAsPerson} size={38} />
+                    </button>
+                  </span>
                 </div>
               </div>
             }

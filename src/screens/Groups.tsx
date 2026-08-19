@@ -3,7 +3,6 @@ import type { ReactNode } from 'react'
 import { Plus, Ticket } from 'lucide-react'
 import { useApp } from '../state'
 import { CreateGroup } from './CreateGroup'
-import { InstallButton } from '../components/InstallButton'
 import { GroupMark, Sheet } from '../components/ui'
 import { formatRange } from '../lib/i18n'
 
@@ -51,8 +50,6 @@ export function Groups({ header }: { header: ReactNode }) {
           )
         })}
       </div>
-
-      <InstallButton />
 
       {/* Le geste principal reste sous le pouce, quelle que soit la longueur
           de la liste. La page lui reserve sa hauteur plus bas. */}
