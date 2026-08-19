@@ -15,7 +15,15 @@ import { createClient } from '@supabase/supabase-js'
 const url = import.meta.env.VITE_SUPABASE_URL?.trim()
 const key = import.meta.env.VITE_SUPABASE_ANON_KEY?.trim()
 
-export const hasSupabase = Boolean(url && key)
+/**
+ * Mode demonstration : `?demo=1` dans l'adresse coupe la base en ligne et
+ * fait tourner l'application sur un groupe de dix personnes deja rempli.
+ * Sert a regarder l'application vivante sans toucher aux vraies donnees.
+ */
+export const demoMode =
+  typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('demo') === '1'
+
+export const hasSupabase = Boolean(url && key) && !demoMode
 
 export const supabase = hasSupabase
   ? createClient(url as string, key as string, {

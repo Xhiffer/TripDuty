@@ -82,7 +82,6 @@ export const localStore: Store = {
  * Le magasin en vigueur.
  *
  * Sans variables d'environnement on reste sur le telephone : une application
- * qui fonctionne seule vaut mieux qu'un ecran blanc, et la demonstration doit
- * pouvoir tourner sans base. Voir supabaseClient.ts.
+ * qui fonctionne seule vaut mieux qu'un ecran blanc. Voir supabaseClient.ts.
  */
 export const store: Store = hasSupabase ? supabaseStore : localStore

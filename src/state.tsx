@@ -134,7 +134,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [accountId, setAccountId] = useState<string | null>(() =>
     hasSupabase ? null : localStorage.getItem(SESSION_KEY),
   )
-  const [groupId, setGroupId] = useState<string | null>(() => localStorage.getItem(GROUP_KEY))
+  // A chaque ouverture on repart de la liste des groupes : revenir sur
+  // l'application ne doit pas replonger dans le dernier groupe ouvert.
+  const [groupId, setGroupId] = useState<string | null>(null)
   const [conceptSeen, setConceptSeen] = useState(() => localStorage.getItem(CONCEPT_KEY) === '1')
   const [lang, setLangState] = useState<Lang>(() => (localStorage.getItem(LANG_KEY) as Lang) || 'fr')
   const [theme, setThemeState] = useState<Theme>(() => (localStorage.getItem(THEME_KEY) as Theme) || 'dark')

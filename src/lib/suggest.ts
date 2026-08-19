@@ -20,10 +20,7 @@ export function suggestFor(
   const beneficiaries = new Set(beneficiariesOf(task, state.members))
   const total = Math.round(task.points * CENTI)
 
-  const candidates = rows.filter((row) => {
-    if (task.needsLicense && !row.member.hasLicense) return false
-    return true
-  })
+  const candidates = rows
   if (candidates.length === 0) return []
 
   const scored = candidates.map((candidate) => {

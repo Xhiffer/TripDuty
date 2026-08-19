@@ -42,7 +42,6 @@ export function Closing() {
                   </span>
                   <span className="rank-sub">
                     +{task.points} {t('points')}
-                    {task.needsLicense ? ' · 🔑' : ''}
                   </span>
                 </span>
                 {isChef && (

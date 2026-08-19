@@ -5,11 +5,11 @@ import type { Balance } from './ledger'
 export const CLOSING_CATALOG = [
   { key: 'final_clean', emoji: '🧽', points: 40, needsLicense: false, fr: 'Le grand ménage du départ', en: 'The big departure clean' },
   { key: 'round_drinks', emoji: '🍻', points: 30, needsLicense: false, fr: 'La tournée au bar', en: 'A round at the bar' },
-  { key: 'return_fuel', emoji: '⛽', points: 25, needsLicense: true, fr: "Le plein d'essence du retour", en: 'Fill the tank for the way back' },
+  { key: 'return_fuel', emoji: '⛽', points: 25, needsLicense: false, fr: "Le plein d'essence du retour", en: 'Fill the tank for the way back' },
   { key: 'empty_fridge', emoji: '🧊', points: 20, needsLicense: false, fr: 'Vider et nettoyer le frigo', en: 'Empty and clean the fridge' },
   { key: 'last_dishes', emoji: '🍽️', points: 20, needsLicense: false, fr: 'La vaisselle du dernier soir', en: 'Wash up on the last night' },
   { key: 'hand_keys', emoji: '🔑', points: 15, needsLicense: false, fr: "Rendre les clés et faire l'état des lieux", en: 'Hand back the keys and check out' },
-  { key: 'return_toll', emoji: '🛣️', points: 15, needsLicense: true, fr: 'Le péage du retour', en: 'The toll on the way back' },
+  { key: 'return_toll', emoji: '🛣️', points: 15, needsLicense: false, fr: 'Le péage du retour', en: 'The toll on the way back' },
 ]
 
 export interface ClosingMatch {

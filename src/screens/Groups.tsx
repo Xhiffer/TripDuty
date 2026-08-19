@@ -4,7 +4,7 @@ import { CreateGroup } from './CreateGroup'
 import { formatDay } from '../lib/i18n'
 
 export function Groups() {
-  const { account, myGroups, data, lang, t, selectGroup, joinByCode, signOut } = useApp()
+  const { account, myGroups, data, lang, t, selectGroup, joinByCode } = useApp()
   const [creating, setCreating] = useState(false)
   const [code, setCode] = useState('')
   const [error, setError] = useState('')
@@ -22,7 +22,7 @@ export function Groups() {
   }
 
   return (
-    <div className="app">
+    <>
       <div className="topbar">
         <div className="brand">
           <span className="brand-mark">⛰️</span>
@@ -31,9 +31,6 @@ export function Groups() {
             <div className="trip-meta">{account?.firstName}</div>
           </span>
         </div>
-        <button type="button" className="btn btn-sm" onClick={signOut}>
-          {t('signOut')}
-        </button>
       </div>
 
       <div className="stack" style={{ marginTop: 8 }}>
@@ -65,22 +62,35 @@ export function Groups() {
       </button>
 
       <div className="section-title">{t('joinWithCode')}</div>
-      <div className="row" style={{ gap: 8 }}>
-        <input
-          className="input"
-          value={code}
-          placeholder="ABC123"
-          style={{ textTransform: 'uppercase' }}
-          onChange={(e) => {
-            setCode(e.target.value)
-            setError('')
-          }}
-        />
-        <button type="button" className="btn" disabled={code.trim().length < 4} onClick={join}>
-          {t('join')}
-        </button>
+      <div className="card">
+        <p className="sheet-sub" style={{ marginTop: 0 }}>
+          {t('joinWithCodeHelp')}
+        </p>
+        <div className="row" style={{ gap: 8 }}>
+          <input
+            className="input invite-input"
+            value={code}
+            placeholder="ABC123"
+            maxLength={8}
+            onChange={(e) => {
+              setCode(e.target.value.toUpperCase())
+              setError('')
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && code.trim().length >= 4) void join()
+            }}
+          />
+          <button
+            type="button"
+            className="btn btn-primary"
+            disabled={code.trim().length < 4}
+            onClick={() => void join()}
+          >
+            {t('join')}
+          </button>
+        </div>
+        {error && <p className="form-error" style={{ margin: '12px 0 0' }}>{error}</p>}
       </div>
-      {error && <p className="form-error">{error}</p>}
-    </div>
+    </>
   )
 }

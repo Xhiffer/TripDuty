@@ -19,7 +19,7 @@ export function TaskSheet({ task, onClose }: { task: Task; onClose: () => void }
   const [scope, setScope] = useState<'all' | 'some'>(task.beneficiaryIds === null ? 'all' : 'some')
   const [beneficiaries, setBeneficiaries] = useState<string[]>(() => beneficiariesOf(task, state.members))
 
-  const eligible = state.members.filter((m) => !task.needsLicense || m.hasLicense)
+  const eligible = state.members
   const finalBeneficiaries = scope === 'all' ? everyone : beneficiaries
   const preview =
     doers.length > 0 && finalBeneficiaries.length > 0

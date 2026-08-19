@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { useApp } from '../state'
 import type { Group, GroupKind } from '../types'
 import { GROUP_COLORS, GROUP_EMOJIS, inviteLink, isEmail } from '../lib/identity'
-import { Toggle } from '../components/ui'
 
 function plusDays(days: number): string {
   const d = new Date()
@@ -27,7 +26,7 @@ export function CreateGroup({ onDone }: { onDone: () => void }) {
   const [color, setColor] = useState(GROUP_COLORS[0])
   const [startDate, setStartDate] = useState(plusDays(0))
   const [endDate, setEndDate] = useState(plusDays(7))
-  const [hasLicense, setHasLicense] = useState(false)
+  const hasLicense = false
   const [error, setError] = useState('')
   const [group, setGroup] = useState<Group | null>(null)
   const [invite, setInvite] = useState('')
@@ -62,7 +61,7 @@ export function CreateGroup({ onDone }: { onDone: () => void }) {
 
   if (step === 'kind') {
     return (
-      <div className="app app-centered">
+      <>
         <div className="hero">
           <h1 className="hero-title">{t('createGroup')}</h1>
           <p className="hero-sub">{t('chooseKind')}</p>
@@ -91,13 +90,13 @@ export function CreateGroup({ onDone }: { onDone: () => void }) {
         <button type="button" className="btn btn-block" style={{ marginTop: 18 }} onClick={onDone}>
           {t('cancel')}
         </button>
-      </div>
+      </>
     )
   }
 
   if (step === 'details') {
     return (
-      <div className="app app-centered">
+      <>
         <div className="hero">
           <h1 className="hero-title">{t(`kind_${kind}`)}</h1>
           <p className="hero-sub">{t('groupDetailsSub')}</p>
@@ -160,10 +159,6 @@ export function CreateGroup({ onDone }: { onDone: () => void }) {
             </div>
           </div>
 
-          <div style={{ marginBottom: 14 }}>
-            <Toggle checked={hasLicense} onChange={setHasLicense} label={t('hasLicense')} />
-          </div>
-
           {error && <p className="form-error">{error}</p>}
 
           <button type="button" className="btn btn-primary btn-block" onClick={submitDetails}>
@@ -174,14 +169,14 @@ export function CreateGroup({ onDone }: { onDone: () => void }) {
         <button type="button" className="btn btn-block" style={{ marginTop: 12 }} onClick={() => setStep('kind')}>
           {t('back')}
         </button>
-      </div>
+      </>
     )
   }
 
   const link = group ? inviteLink(group.inviteCode) : ''
 
   return (
-    <div className="app app-centered">
+    <>
       <div className="hero">
         <span className="hero-mark" style={{ background: group?.color }}>
           {group?.emoji}
@@ -268,6 +263,6 @@ export function CreateGroup({ onDone }: { onDone: () => void }) {
       >
         {t('goToGroup')}
       </button>
-    </div>
+    </>
   )
 }

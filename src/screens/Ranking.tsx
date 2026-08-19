@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { useGroup, useBalances } from '../state'
 import { formatBalance, settlements, toPoints } from '../lib/ledger'
-import { Avatar } from '../components/ui'
+import { Avatar, MedalAvatar } from '../components/ui'
 
 const MEDALS = ['🥇', '🥈', '🥉']
 
@@ -9,12 +9,35 @@ export function Ranking() {
   const { state, me, t } = useGroup()
   const rows = useBalances()
   const transfers = useMemo(() => settlements(rows), [rows])
+  const top3 = rows.slice(0, 3)
+  const order: Array<0 | 1 | 2> = [1, 0, 2] // argent, or, bronze
 
   return (
     <>
       <div className="section-title" style={{ marginTop: 18 }}>
-        {t('rankingTitle')}
+        {t('podium')}
       </div>
+      <div className="card">
+        <div className="podium">
+          {order.map((i) => {
+            const row = top3[i]
+            if (!row) return <div key={i} />
+            const place = (i + 1) as 1 | 2 | 3
+            return (
+              <div key={row.member.id} className={`podium-slot podium-${place} pop`}>
+                <MedalAvatar member={row.member} place={place} size={place === 1 ? 62 : 50} />
+                <div style={{ minWidth: 0, width: '100%' }}>
+                  <div className="podium-name">{row.member.name}</div>
+                  <div className="podium-score">{formatBalance(row.centi)}</div>
+                </div>
+                <div className="podium-block">{place === 1 ? '🥇' : place === 2 ? '🥈' : '🥉'}</div>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+
+      <div className="section-title">{t('rankingTitle')}</div>
       <p style={{ color: 'var(--muted)', fontSize: 13, margin: '-6px 0 14px', lineHeight: 1.45 }}>{t('balanceHelp')}</p>
 
       <div className="stack">
@@ -28,7 +51,6 @@ export function Ranking() {
             <span style={{ flex: 1, minWidth: 0 }}>
               <span className="rank-name">
                 {row.member.name}
-                {row.member.hasLicense && <span title="permis">🔑</span>}
               </span>
               <span className="rank-sub">
                 {row.tasksDone} {row.tasksDone > 1 ? t('tasksDone') : t('taskDoneOne')} ·{' '}

@@ -4,6 +4,7 @@ import { Auth } from './screens/Auth'
 import { ProfileSetup } from './screens/ProfileSetup'
 import { Concept } from './screens/Concept'
 import { Groups } from './screens/Groups'
+import { Account } from './screens/Account'
 import { Home } from './screens/Home'
 import { Ranking } from './screens/Ranking'
 import { Planning } from './screens/Planning'
@@ -15,12 +16,14 @@ import { Splash } from './components/Splash'
 import { formatDay } from './lib/i18n'
 
 type Tab = 'home' | 'ranking' | 'planning' | 'closing' | 'me'
+type OuterTab = 'groups' | 'profile'
 
 export function App() {
   const { account, view, me, conceptSeen, lang, t, joinByCode } = useApp()
   const rows = useBalances()
   const [tab, setTab] = useState<Tab>('home')
   const [splashDone, setSplashDone] = useState(false)
+  const [outerTab, setOuterTab] = useState<OuterTab>('groups')
   // L'etape photo est passee une fois par appareil, une fois le compte cree.
   const [profileDone, setProfileDone] = useState(false)
 
@@ -47,14 +50,12 @@ export function App() {
     setProfileDone(true)
   }
 
-  // Avant d'etre dans un groupe, il n'y a pas de barre de navigation en bas :
+  // Avant d'avoir un compte complet, il n'y a pas de barre de navigation :
   // l'invitation a installer se cale plus bas.
-  if (!account || needsProfile || !conceptSeen || !view || !me) {
+  if (!account || needsProfile || !conceptSeen) {
     let screen = <Auth />
-    if (!account) screen = <Auth />
-    else if (needsProfile) screen = <ProfileSetup onDone={finishProfile} />
-    else if (!conceptSeen) screen = <Concept />
-    else screen = <Groups />
+    if (needsProfile) screen = <ProfileSetup onDone={finishProfile} />
+    else if (account && !conceptSeen) screen = <Concept />
     return (
       <>
         {screen}
@@ -62,6 +63,37 @@ export function App() {
           <InstallPrompt />
         </div>
       </>
+    )
+  }
+
+  // Connecte mais pas encore dans un groupe : la liste et le profil du compte.
+  if (!view || !me) {
+    const outerTabs: Array<{ id: OuterTab; icon: string; label: string }> = [
+      { id: 'groups', icon: '🧭', label: t('navGroups') },
+      { id: 'profile', icon: '👤', label: t('navProfile') },
+    ]
+    return (
+      <div className="app">
+        {outerTab === 'groups' ? <Groups /> : <Account />}
+
+        <nav className="nav">
+          <div className="nav-inner">
+            {outerTabs.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                className={outerTab === item.id ? 'is-on' : ''}
+                onClick={() => setOuterTab(item.id)}
+              >
+                <span className="nav-icon">{item.icon}</span>
+                <span>{item.label}</span>
+              </button>
+            ))}
+          </div>
+        </nav>
+
+        <InstallPrompt />
+      </div>
     )
   }
 

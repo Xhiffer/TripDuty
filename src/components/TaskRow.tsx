@@ -78,7 +78,6 @@ export function TaskRow({
           )}
           {task.status === 'todo' && !assignee && !suggested && <span className="pill">{t('free')}</span>}
           <ForWhom task={task} state={state} t={t} />
-          {task.needsLicense && <span className="pill">🔑</span>}
         </span>
       </span>
       <span className="task-points">

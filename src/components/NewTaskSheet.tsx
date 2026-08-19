@@ -13,7 +13,7 @@ export function NewTaskSheet({ closing = false, onClose }: { closing?: boolean; 
   const [points, setPoints] = useState(15)
   const [date, setDate] = useState(closing ? state.group.endDate : activeDate)
   const [time, setTime] = useState('19:00')
-  const [needsLicense, setNeedsLicense] = useState(false)
+  const needsLicense = false
   const [isClosing, setIsClosing] = useState(closing)
   const [scope, setScope] = useState<'all' | 'some'>('all')
   const [beneficiaries, setBeneficiaries] = useState<string[]>(me ? [me.id] : [])
@@ -120,11 +120,6 @@ export function NewTaskSheet({ closing = false, onClose }: { closing?: boolean; 
               <span className="task-emoji">{c.emoji}</span>
               <span style={{ flex: 1, minWidth: 0 }}>
                 <span className="task-title">{lang === 'en' ? c.en : c.fr}</span>
-                {c.needsLicense && (
-                  <span className="task-sub">
-                    <span className="pill">🔑 {t('licenseNeeded')}</span>
-                  </span>
-                )}
               </span>
               <span className="task-points">+{c.points}</span>
             </button>
@@ -167,10 +162,6 @@ export function NewTaskSheet({ closing = false, onClose }: { closing?: boolean; 
               onChange={(e) => setPoints(Number(e.target.value))}
             />
           </label>
-
-          <div style={{ marginBottom: 16 }}>
-            <Toggle checked={needsLicense} onChange={setNeedsLicense} label={t('licenseNeeded')} />
-          </div>
 
           <button
             type="button"

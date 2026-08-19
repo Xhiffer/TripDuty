@@ -24,6 +24,7 @@ const PEOPLE: Array<[string, string, string, boolean, 'host' | 'chef' | 'member'
   ['Jack', 'Nguyen', '1997-07-30', false, 'member'],
   ['Victor', 'Petit', '1994-12-05', false, 'member'],
   ['Charlie', 'Girard', '1998-03-17', false, 'member'],
+  ['Nina', 'Costa', '1996-05-24', false, 'member'],
 ]
 
 function entry(key: string) {
@@ -62,31 +63,47 @@ export function seedData(): AppData {
     time: string
     forWhom?: string[] | null
     takenBy?: string | null
+    /** Qui l'a faite. Renseigne, la tache est validee et compte des points. */
+    doneBy?: string[]
+    at?: string
   }
 
   const planned: Plan[] = [
-    { key: 'breakfast', date: TRIP_START, time: '08:30', takenBy: byName('Lola') },
-    { key: 'big_groceries', date: TRIP_START, time: '10:00', takenBy: byName('Ismaël') },
-    { key: 'cook_meal', date: TRIP_START, time: '19:00', takenBy: byName('Said') },
-    { key: 'dishes_dinner', date: TRIP_START, time: '21:00', takenBy: byName('Kejian') },
+    // --- samedi 22, l'arrivee
+    { key: 'big_groceries', date: TRIP_START, time: '10:00', takenBy: byName('Ismaël'), doneBy: [byName('Ismaël'), byName('Nina')], at: '2026-08-22T11:30:00.000Z' },
+    { key: 'cook_meal', date: TRIP_START, time: '19:00', takenBy: byName('Said'), doneBy: [byName('Said'), byName('Charlie')], at: '2026-08-22T20:10:00.000Z' },
+    { key: 'dishes_dinner', date: TRIP_START, time: '21:00', takenBy: byName('Kejian'), doneBy: [byName('Kejian')], at: '2026-08-22T21:40:00.000Z' },
     { key: 'bins', date: TRIP_START, time: '21:30', takenBy: byName('Victor') },
-    // Petit-dejeuner tardif prepare par Jack pour quatre personnes seulement.
+    { key: 'breakfast', date: TRIP_START, time: '08:30', takenBy: byName('Lola'), doneBy: [byName('Lola')], at: '2026-08-22T09:10:00.000Z' },
+    { key: 'table', date: TRIP_START, time: '18:45', takenBy: null },
+    { key: 'host_game', date: TRIP_START, time: '22:00', takenBy: byName('Martin'), doneBy: [byName('Martin')], at: '2026-08-22T23:30:00.000Z' },
+
+    // --- dimanche 23
+    { key: 'breakfast', date: '2026-08-23', time: '08:30', takenBy: byName('Nina'), doneBy: [byName('Nina')], at: '2026-08-23T08:55:00.000Z' },
+    // Petit-dejeuner tardif prepare par Jack, pour ceux qui se sont leves tard.
     {
       key: 'breakfast',
       date: '2026-08-23',
       time: '10:30',
       forWhom: [byName('Jack'), byName('Kejian'), byName('Said'), byName('Martin')],
       takenBy: byName('Jack'),
+      doneBy: [byName('Jack')],
+      at: '2026-08-23T10:50:00.000Z',
     },
-    { key: 'drive_long', date: '2026-08-23', time: '11:00', takenBy: byName('Matthew') },
-    { key: 'plan_outing', date: '2026-08-23', time: '12:00', takenBy: byName('Martin') },
-    { key: 'cook_meal', date: '2026-08-23', time: '19:00', takenBy: byName('Lola') },
-    // Ismael arrive tard et se fait son sandwich tout seul : personne ne bouge.
-    { key: 'cook_meal', date: '2026-08-23', time: '23:00', forWhom: [byName('Ismaël')], takenBy: byName('Ismaël') },
-    { key: 'dishes_dinner', date: '2026-08-23', time: '21:00', takenBy: null },
+    { key: 'drive_long', date: '2026-08-23', time: '11:00', takenBy: byName('Matthew'), doneBy: [byName('Matthew')], at: '2026-08-23T12:00:00.000Z' },
+    { key: 'plan_outing', date: '2026-08-23', time: '12:00', takenBy: byName('Martin'), doneBy: [byName('Martin')], at: '2026-08-23T11:45:00.000Z' },
+    { key: 'cook_meal', date: '2026-08-23', time: '19:00', takenBy: byName('Lola'), doneBy: [byName('Lola'), byName('Charlie')], at: '2026-08-23T20:15:00.000Z' },
+    { key: 'dishes_dinner', date: '2026-08-23', time: '21:00', takenBy: byName('Nina'), doneBy: [byName('Nina')], at: '2026-08-23T21:30:00.000Z' },
+    { key: 'bathroom', date: '2026-08-23', time: '17:00', takenBy: byName('Charlie'), doneBy: [byName('Charlie')], at: '2026-08-23T17:40:00.000Z' },
+    // Ismael rentre tard et se fait son sandwich tout seul : personne ne bouge.
+    { key: 'cook_meal', date: '2026-08-23', time: '23:00', forWhom: [byName('Ismaël')], takenBy: byName('Ismaël'), doneBy: [byName('Ismaël')], at: '2026-08-23T23:20:00.000Z' },
+
+    // --- lundi 24, rien n'est encore pris
     { key: 'bread', date: '2026-08-24', time: '08:00', takenBy: null },
     { key: 'tidy_kitchen', date: '2026-08-24', time: '14:00', takenBy: null },
     { key: 'deep_clean', date: '2026-08-24', time: '16:00', takenBy: null },
+    { key: 'laundry', date: '2026-08-24', time: '17:00', takenBy: null },
+    { key: 'small_groceries', date: '2026-08-24', time: '18:00', takenBy: null },
     { key: 'host_game', date: '2026-08-24', time: '21:00', takenBy: null },
     { key: 'suggest_activity', date: '2026-08-24', time: '22:00', takenBy: null },
   ]
@@ -152,23 +169,17 @@ export function seedData(): AppData {
     })
   }
 
-  validate('t1', [byName('Lola')], '2026-08-22T09:10:00.000Z')
-  validate('t2', [byName('Ismaël'), byName('Martin')], '2026-08-22T11:30:00.000Z')
-  validate('t3', [byName('Said'), byName('Jack')], '2026-08-22T20:10:00.000Z')
-  validate('t4', [byName('Kejian')], '2026-08-22T21:40:00.000Z')
-  validate('t6', [byName('Jack')], '2026-08-23T09:50:00.000Z')
-  validate('t7', [byName('Matthew')], '2026-08-23T12:00:00.000Z')
-  validate('t8', [byName('Martin')], '2026-08-23T11:45:00.000Z')
-  validate('t9', [byName('Lola'), byName('Charlie')], '2026-08-23T20:15:00.000Z')
-  validate('t10', [byName('Ismaël')], '2026-08-23T23:20:00.000Z')
+  planned.forEach((plan, i) => {
+    if (plan.doneBy) validate(`t${i + 1}`, plan.doneBy, plan.at ?? '2026-08-22T12:00:00.000Z')
+  })
 
   // Victor s'etait engage sur les poubelles et ne les a pas sorties.
-  const missed = tasks.find((t) => t.id === 't5')!
+  const missed = tasks.find((t) => t.titleKey === 'bins')!
   missed.status = 'missed'
   entries.push({
     id: `e${entries.length + 1}`,
     groupId: GROUP_ID,
-    taskId: 't5',
+    taskId: missed.id,
     kind: 'penalty',
     doerIds: [],
     beneficiaryIds: all,

@@ -570,7 +570,9 @@ button {
   margin: 0 auto;
   width: 100%;
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  /* Autant de colonnes que d'onglets : cinq dans un groupe, deux en dehors. */
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
 }
 
 .nav button {
@@ -1137,4 +1139,10 @@ button {
   font-weight: 600;
   line-height: 1.45;
   margin: 0 0 12px;
+}
+
+.invite-input {
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-weight: 700;
 }

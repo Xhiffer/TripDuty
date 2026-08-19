@@ -22,7 +22,6 @@ export function Me() {
     selectGroup,
     updateGroup,
     setRole,
-    setLicense,
     inviteByEmail,
     toggleRecurring,
     shared,
@@ -70,20 +69,9 @@ export function Me() {
             </span>
             <span className="rank-sub">
               {roleLabel(me.role)}
-              {me.hasLicense ? ' · 🔑' : ''}
             </span>
             <span className="rank-sub">{account.email}</span>
           </span>
-        </div>
-        <div style={{ marginTop: 14 }}>
-          <Segmented
-            value={me.hasLicense ? 'yes' : 'no'}
-            onChange={(v) => setLicense(me.id, v === 'yes')}
-            options={[
-              { value: 'yes', label: `🔑 ${t('licenseYes')}` },
-              { value: 'no', label: t('licenseNo') },
-            ]}
-          />
         </div>
       </div>
 
