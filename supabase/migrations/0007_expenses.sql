@@ -38,7 +38,7 @@ create policy expenses_read on expenses
   for select using (
     exists (
       select 1 from memberships m
-      where m.group_id = expenses.group_id and m.account_id = auth.uid()
+      where m.group_id = expenses.group_id and m.profile_id = auth.uid()
     )
   );
 
@@ -47,12 +47,12 @@ create policy expenses_write on expenses
   for all using (
     exists (
       select 1 from memberships m
-      where m.group_id = expenses.group_id and m.account_id = auth.uid()
+      where m.group_id = expenses.group_id and m.profile_id = auth.uid()
     )
   )
   with check (
     exists (
       select 1 from memberships m
-      where m.group_id = expenses.group_id and m.account_id = auth.uid()
+      where m.group_id = expenses.group_id and m.profile_id = auth.uid()
     )
   );

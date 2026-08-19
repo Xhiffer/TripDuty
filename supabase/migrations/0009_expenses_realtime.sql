@@ -32,7 +32,7 @@ create policy photos_write on storage.objects for insert to authenticated
     bucket_id = 'photos'
     and exists (
       select 1 from memberships m
-      where m.account_id = auth.uid()
+      where m.profile_id = auth.uid()
         and m.group_id::text = (storage.foldername(name))[1]
     )
   );
@@ -43,7 +43,7 @@ create policy photos_replace on storage.objects for update to authenticated
     bucket_id = 'photos'
     and exists (
       select 1 from memberships m
-      where m.account_id = auth.uid()
+      where m.profile_id = auth.uid()
         and m.group_id::text = (storage.foldername(name))[1]
     )
   );
