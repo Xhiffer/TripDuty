@@ -42,6 +42,7 @@ function toAccount(row: Row, myId: string | null, myEmail: string): Account {
     // n'existe que parce que le type local le reclame ; rien ne le lit ici.
     passwordHash: '',
     firstName: str(row.first_name),
+    nickname: str(row.nickname),
     lastName: str(row.last_name),
     birthDate: str(row.birth_date),
     photo: row.photo_url ? str(row.photo_url) : null,
@@ -156,6 +157,7 @@ function profilePatch(patch: Partial<Account>): Row {
   const out: Row = {}
   if (patch.firstName !== undefined) out.first_name = patch.firstName
   if (patch.lastName !== undefined) out.last_name = patch.lastName
+  if (patch.nickname !== undefined) out.nickname = patch.nickname
   if (patch.birthDate !== undefined) out.birth_date = patch.birthDate || null
   if (patch.photo !== undefined) out.photo_url = patch.photo
   if (patch.color !== undefined) out.color = patch.color

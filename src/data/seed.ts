@@ -40,6 +40,7 @@ export function seedData(): AppData {
     passwordHash: DEMO_HASH,
     firstName,
     lastName,
+    nickname: '',
     birthDate,
     photo: null,
     color: AVATAR_COLORS[i % AVATAR_COLORS.length],

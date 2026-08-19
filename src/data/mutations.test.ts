@@ -8,6 +8,7 @@ function account(id: string): Account {
     email: `${id}@demo.fr`,
     passwordHash: 'x',
     firstName: id,
+    nickname: '',
     lastName: '',
     birthDate: '1996-04-12',
     photo: null,

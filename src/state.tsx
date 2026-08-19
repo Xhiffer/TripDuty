@@ -231,7 +231,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           if (!person) return null
           return {
             id: person.id,
-            name: person.firstName || person.email,
+            name: person.nickname?.trim() || person.firstName || person.email,
             photo: person.photo,
             color: person.color || colorFor(person.id),
             hasLicense: m.hasLicense,
@@ -303,6 +303,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           email: clean,
           passwordHash: await hashPassword(password),
           firstName: '',
+          nickname: '',
           lastName: '',
           birthDate: '',
           photo: null,

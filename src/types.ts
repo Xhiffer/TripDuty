@@ -8,6 +8,8 @@ export interface Account {
   passwordHash: string
   firstName: string
   lastName: string
+  /** Ce que les autres voient dans un groupe. Vide, on affiche le prenom. */
+  nickname: string
   birthDate: string // AAAA-MM-JJ
   photo: string | null // dataURL, remplace par une URL distante plus tard
   color: string // couleur de la pastille quand il n'y a pas de photo

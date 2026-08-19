@@ -2,7 +2,9 @@ import { useRef, useState } from 'react'
 import { useApp } from '../state'
 import { AVATAR_COLORS, initialsOf } from '../lib/identity'
 import { Segmented, Sheet } from '../components/ui'
-import { Bell, Info, HelpCircle, LogOut, Trash2, ChevronRight } from 'lucide-react'
+import { Bell, Info, HelpCircle, LogOut, Trash2, ChevronRight, History } from 'lucide-react'
+import { Faq } from './Faq'
+import { formatDay } from '../lib/i18n'
 
 /** Reduit la photo pour qu'elle reste legere une fois stockee. */
 async function shrinkImage(file: File): Promise<string> {
@@ -26,11 +28,22 @@ export function Account() {
   const { account, lang, theme, t, setLang, setTheme, updateProfile, signOut, shared, deactivateAccount } = useApp()
   const [deactivating, setDeactivating] = useState(false)
   const [error, setError] = useState('')
-  const [sheet, setSheet] = useState<'about' | 'faq' | null>(null)
+  const [sheet, setSheet] = useState<'about' | 'changes' | null>(null)
+  const [showFaq, setShowFaq] = useState(false)
+  const [confirmWord, setConfirmWord] = useState('')
+
+  // Les noms des comptes qui poussent le code, tels qu'on les reconnait.
+  const AUTHORS: Record<string, string> = { ismoou: 'Ismaël' }
+  const who = (name: string) => AUTHORS[name] ?? name
+
+  const changes = __RECENT_CHANGES__
+  const last = changes[0]
   const fileRef = useRef<HTMLInputElement>(null)
   if (!account) return null
 
   const initials = initialsOf(account.firstName, account.lastName)
+
+  if (showFaq) return <Faq onClose={() => setShowFaq(false)} />
 
   return (
     <>
@@ -94,6 +107,20 @@ export function Account() {
         </div>
 
         <label className="field" style={{ marginTop: 14, marginBottom: 0 }}>
+          <span className="field-label">{t('nickname')}</span>
+          <input
+            className="input"
+            value={account.nickname}
+            maxLength={24}
+            placeholder={account.firstName}
+            onChange={(e) => updateProfile({ nickname: e.target.value })}
+          />
+          <span className="hint" style={{ textAlign: 'left', display: 'block' }}>
+            {t('nicknameHelp')}
+          </span>
+        </label>
+
+        <label className="field" style={{ marginTop: 14, marginBottom: 0 }}>
           <span className="field-label">{t('email')}</span>
           <input className="input" value={account.email} readOnly disabled />
         </label>
@@ -154,11 +181,24 @@ export function Account() {
           <span style={{ flex: 1 }}>{t('about')}</span>
           <ChevronRight size={17} />
         </button>
-        <button type="button" className="menu-row" onClick={() => setSheet('faq')}>
+        <button type="button" className="menu-row" onClick={() => setShowFaq(true)}>
           <HelpCircle size={18} />
           <span style={{ flex: 1 }}>{t('faq')}</span>
           <ChevronRight size={17} />
         </button>
+
+        {last && (
+          <button type="button" className="menu-row" onClick={() => setSheet('changes')}>
+            <History size={18} />
+            <span style={{ flex: 1 }}>
+              {t('lastUpdate')}
+              <span className="menu-sub">
+                {who(last.author)} · {formatDay(last.date, lang)}
+              </span>
+            </span>
+            <ChevronRight size={17} />
+          </button>
+        )}
       </div>
 
       <button type="button" className="menu-row" style={{ marginTop: 24 }} onClick={signOut}>
@@ -171,14 +211,24 @@ export function Account() {
           <div className="section-title">{t('deleteAccount')}</div>
           <div className="card">
             <p className="sheet-sub" style={{ marginTop: 0 }}>
-              {t('deactivateHelp')}
+              {t('deleteAccountWarning')}
             </p>
             {error && <p className="form-error">{error}</p>}
             {deactivating ? (
               <div className="stack">
+                <label className="field" style={{ marginBottom: 0 }}>
+                  <span className="field-label">{t('deleteAccountType')}</span>
+                  <input
+                    className="input"
+                    value={confirmWord}
+                    placeholder={t('deleteAccountWord')}
+                    onChange={(e) => setConfirmWord(e.target.value.toUpperCase())}
+                  />
+                </label>
                 <button
                   type="button"
                   className="btn btn-danger btn-block"
+                  disabled={confirmWord.trim() !== t('deleteAccountWord')}
                   onClick={async () => {
                     setError('')
                     const result = await deactivateAccount()
@@ -194,7 +244,14 @@ export function Account() {
                 >
                   {t('deactivateConfirm')}
                 </button>
-                <button type="button" className="btn btn-block" onClick={() => setDeactivating(false)}>
+                <button
+                  type="button"
+                  className="btn btn-block"
+                  onClick={() => {
+                    setDeactivating(false)
+                    setConfirmWord('')
+                  }}
+                >
                   {t('cancel')}
                 </button>
               </div>
@@ -208,6 +265,25 @@ export function Account() {
         </>
       )}
 
+      {sheet === 'changes' && (
+        <Sheet title={t('changesTitle')} onClose={() => setSheet(null)}>
+          <div className="stack">
+            {changes.map((change, i) => (
+              <div key={i} className="rank-row">
+                <span style={{ flex: 1, minWidth: 0 }}>
+                  <span className="rank-name" style={{ fontSize: 14 }}>
+                    {change.subject}
+                  </span>
+                  <span className="rank-sub">
+                    {who(change.author)} · {formatDay(change.date, lang)}
+                  </span>
+                </span>
+              </div>
+            ))}
+          </div>
+        </Sheet>
+      )}
+
       {sheet === 'about' && (
         <Sheet title={t('about')} onClose={() => setSheet(null)}>
           <p className="sheet-body">{t('aboutBody')}</p>
@@ -215,18 +291,6 @@ export function Account() {
         </Sheet>
       )}
 
-      {sheet === 'faq' && (
-        <Sheet title={t('faq')} onClose={() => setSheet(null)}>
-          {[1, 2, 3, 4].map((n) => (
-            <div key={n} style={{ marginBottom: 18 }}>
-              <p className="faq-question">{t(`faq${n}Q`)}</p>
-              <p className="sheet-body" style={{ margin: 0 }}>
-                {t(`faq${n}A`)}
-              </p>
-            </div>
-          ))}
-        </Sheet>
-      )}
     </>
   )
 }
