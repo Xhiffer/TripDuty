@@ -25,8 +25,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          # L'écran « dernière mise à jour » lit les douze derniers commits.
-          fetch-depth: 20
+          # Historique complet : le numéro de version se compte à partir du
+          # nombre total d'envois. Tronqué, il repartirait en arrière.
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: 20
