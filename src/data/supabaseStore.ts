@@ -457,6 +457,7 @@ export const supabaseStore = {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'memberships' }, refresh)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, refresh)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'entries' }, refresh)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'expenses' }, refresh)
       .subscribe()
 
     return () => {
