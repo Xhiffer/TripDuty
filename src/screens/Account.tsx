@@ -155,10 +155,14 @@ export function Account() {
         value={theme}
         onChange={setTheme}
         options={[
-          { value: 'dark', label: `🌙 ${t('themeDark')}` },
-          { value: 'light', label: `☀️ ${t('themeLight')}` },
+          { value: 'system' as const, label: t('themeSystem') },
+          { value: 'light' as const, label: t('themeLight') },
+          { value: 'dark' as const, label: t('themeDark') },
         ]}
       />
+      <p className="hint" style={{ textAlign: 'left' }}>
+        {t('themeHelp')}
+      </p>
 
       <div className="section-title">{t('notifications')}</div>
       <div className="menu-row is-quiet">

@@ -130,4 +130,12 @@ export interface GroupView {
 }
 
 export type Lang = 'fr' | 'en'
+/** Le theme reellement applique. */
 export type Theme = 'dark' | 'light'
+
+/**
+ * Le choix de la personne. « system » suit le reglage du telephone,
+ * et c'est le reglage par defaut : l'application se fond dans l'appareil
+ * plutot que d'imposer une couleur.
+ */
+export type ThemeChoice = 'system' | 'light' | 'dark'

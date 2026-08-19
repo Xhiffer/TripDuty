@@ -1,6 +1,19 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
-import type { Account, AppData, Expense, Group, GroupKind, GroupView, Lang, Person, Role, Task, Theme } from './types'
+import type {
+  Account,
+  AppData,
+  Expense,
+  Group,
+  GroupKind,
+  GroupView,
+  Lang,
+  Person,
+  Role,
+  Task,
+  Theme,
+  ThemeChoice,
+} from './types'
 import type { Mutation } from './data/mutations'
 import { applyMutation } from './data/mutations'
 import { store } from './data/store'
@@ -79,11 +92,14 @@ interface Ctx {
   myGroups: Group[]
   conceptSeen: boolean
   lang: Lang
-  theme: Theme
+  /** Le choix de la personne : suivre le systeme, clair ou sombre. */
+  theme: ThemeChoice
+  /** Ce qui est reellement affiche, une fois le systeme consulte. */
+  resolvedTheme: Theme
   t: (key: string) => string
   activeDate: string
   setLang: (l: Lang) => void
-  setTheme: (th: Theme) => void
+  setTheme: (th: ThemeChoice) => void
   // compte
   signUp: (email: string, password: string) => Promise<Result>
   signIn: (email: string, password: string) => Promise<Result>
@@ -160,7 +176,23 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [groupId, setGroupId] = useState<string | null>(null)
   const [conceptSeen, setConceptSeen] = useState(() => localStorage.getItem(CONCEPT_KEY) === '1')
   const [lang, setLangState] = useState<Lang>(() => (localStorage.getItem(LANG_KEY) as Lang) || 'fr')
-  const [theme, setThemeState] = useState<Theme>(() => (localStorage.getItem(THEME_KEY) as Theme) || 'dark')
+  // Par defaut on suit le telephone. Le clair est la base quand il ne dit rien.
+  const [theme, setThemeState] = useState<ThemeChoice>(
+    () => (localStorage.getItem(THEME_KEY) as ThemeChoice) || 'system',
+  )
+  const [systemTheme, setSystemTheme] = useState<Theme>(() =>
+    window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light',
+  )
+
+  // Le reglage du telephone peut changer pendant qu'on regarde l'application.
+  useEffect(() => {
+    const query = window.matchMedia('(prefers-color-scheme: dark)')
+    const onChange = (e: MediaQueryListEvent) => setSystemTheme(e.matches ? 'dark' : 'light')
+    query.addEventListener('change', onChange)
+    return () => query.removeEventListener('change', onChange)
+  }, [])
+
+  const resolvedTheme: Theme = theme === 'system' ? systemTheme : theme
 
   // L'etat le plus recent, lisible immediatement. `useState` ne rend la nouvelle
   // valeur qu'au rendu suivant : deux gestes rapproches liraient sinon le meme
@@ -197,9 +229,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [receive])
 
   useEffect(() => {
-    document.documentElement.dataset.theme = theme
+    document.documentElement.dataset.theme = resolvedTheme
     document.documentElement.lang = lang
-  }, [theme, lang])
+  }, [resolvedTheme, lang])
 
   /**
    * Traduit un geste en mutation, l'affiche aussitot, puis l'envoie au magasin.
@@ -291,6 +323,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       conceptSeen,
       lang,
       theme,
+      resolvedTheme,
       t,
       activeDate: group ? activeDateFor(group) : todayISO(),
       setLang: (l) => {
@@ -775,7 +808,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         })
       },
     }
-  }, [data, accountId, groupId, conceptSeen, lang, theme, t, dispatch])
+  }, [data, accountId, groupId, conceptSeen, lang, theme, resolvedTheme, t, dispatch])
 
   if (!value) return null
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>
