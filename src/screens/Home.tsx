@@ -31,6 +31,32 @@ export function Home({ goRanking }: { goRanking: () => void }) {
     <>
       {!shared && <div className="banner">{t('demoBanner')}</div>}
 
+      {mine && (
+        <>
+          <div className="section-title">{t('balance')}</div>
+          <div className={`rank-row is-me ${mine.centi < 0 ? 'is-last' : ''}`}>
+            <span className="rank-num">{mine.rank}</span>
+            <Avatar member={mine.member} size={40} />
+            <span style={{ flex: 1, minWidth: 0 }}>
+              <span className="rank-name">{mine.member.name}</span>
+              <span className="rank-sub">
+                {mine.tasksDone} {mine.tasksDone > 1 ? t('tasksDone') : t('taskDoneOne')}
+              </span>
+            </span>
+            <span className="rank-score" style={{ color: mine.centi < 0 ? 'var(--danger)' : 'var(--good)' }}>
+              {formatBalance(mine.centi)}
+            </span>
+          </div>
+          <p style={{ color: 'var(--muted)', fontSize: 12, margin: '8px 2px 0', lineHeight: 1.45 }}>
+            {t('balanceHelp')}
+          </p>
+        </>
+      )}
+
+      <button type="button" className="btn btn-block" style={{ marginTop: 16 }} onClick={goRanking}>
+        {t('seeAll')} →
+      </button>
+
       <div className="section-title">
         {t('todayTasks')} · {formatDay(activeDate, lang)}
       </div>
@@ -70,32 +96,6 @@ export function Home({ goRanking }: { goRanking: () => void }) {
           </p>
         </>
       )}
-
-      {mine && (
-        <>
-          <div className="section-title">{t('balance')}</div>
-          <div className={`rank-row is-me ${mine.centi < 0 ? 'is-last' : ''}`}>
-            <span className="rank-num">{mine.rank}</span>
-            <Avatar member={mine.member} size={40} />
-            <span style={{ flex: 1, minWidth: 0 }}>
-              <span className="rank-name">{mine.member.name}</span>
-              <span className="rank-sub">
-                {mine.tasksDone} {mine.tasksDone > 1 ? t('tasksDone') : t('taskDoneOne')}
-              </span>
-            </span>
-            <span className="rank-score" style={{ color: mine.centi < 0 ? 'var(--danger)' : 'var(--good)' }}>
-              {formatBalance(mine.centi)}
-            </span>
-          </div>
-          <p style={{ color: 'var(--muted)', fontSize: 12, margin: '8px 2px 0', lineHeight: 1.45 }}>
-            {t('balanceHelp')}
-          </p>
-        </>
-      )}
-
-      <button type="button" className="btn btn-block" style={{ marginTop: 16 }} onClick={goRanking}>
-        {t('seeAll')} →
-      </button>
 
       {openTask && <TaskSheet task={openTask} onClose={() => setOpenTask(null)} />}
     </>

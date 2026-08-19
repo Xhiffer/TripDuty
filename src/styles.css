@@ -91,10 +91,79 @@ button {
 /* ---------- entete ---------- */
 
 .topbar {
+  display: grid;
+  grid-template-columns: 40px 1fr 40px;
+  align-items: center;
+  gap: 8px;
+  padding: 18px 0 14px;
+}
+
+.topbar-title {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.topbar-name {
+  font-weight: 800;
+  font-size: 17px;
+  letter-spacing: -0.02em;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.topbar-dates {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.icon-button {
+  width: 40px;
+  height: 40px;
+  border-radius: 13px;
+  display: grid;
+  place-items: center;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.icon-button.is-ghost {
+  background: none;
+  border-color: transparent;
+}
+
+.group-mark.is-small {
+  width: 34px;
+  height: 34px;
+  border-radius: 11px;
+  font-size: 17px;
+}
+
+/* Une ligne de menu dans la feuille des trois points. */
+.menu-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 22px 0 14px;
+  gap: 12px;
+  width: 100%;
+  text-align: left;
+  padding: 15px 14px;
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--text);
+}
+
+.menu-row.is-danger {
+  color: var(--danger);
+  border-color: color-mix(in srgb, var(--danger) 35%, transparent);
 }
 
 .brand {
@@ -580,7 +649,7 @@ button {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 3px;
+  gap: 4px;
   font-size: 11px;
   font-weight: 700;
   color: var(--muted);
@@ -591,9 +660,8 @@ button {
   color: var(--accent);
 }
 
-.nav-icon {
-  font-size: 20px;
-  line-height: 1;
+.nav button svg {
+  display: block;
 }
 
 .nav-dot {
@@ -1145,4 +1213,22 @@ button {
   text-transform: uppercase;
   letter-spacing: 0.14em;
   font-weight: 700;
+}
+
+.menu-row.is-quiet {
+  background: var(--surface-2);
+}
+
+.sheet-body {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.6;
+  margin: 0 0 14px;
+}
+
+.faq-question {
+  font-weight: 700;
+  font-size: 14.5px;
+  margin: 0 0 5px;
+  line-height: 1.4;
 }

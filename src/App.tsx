@@ -9,21 +9,28 @@ import { Home } from './screens/Home'
 import { Ranking } from './screens/Ranking'
 import { Planning } from './screens/Planning'
 import { Closing } from './screens/Closing'
-import { Me } from './screens/Me'
-import { Avatar } from './components/ui'
+import { GroupSettings } from './screens/GroupSettings'
 import { InstallPrompt } from './components/InstallPrompt'
+import { GroupMenu } from './components/GroupMenu'
+import { ShareSheet } from './components/ShareSheet'
+import { LeaveGroupSheet } from './components/LeaveGroupSheet'
+import { ArrowLeft, MoreHorizontal, House, Trophy, CalendarDays, Flag, Compass, CircleUser } from 'lucide-react'
 import { Splash } from './components/Splash'
 import { formatDay } from './lib/i18n'
 
-type Tab = 'home' | 'ranking' | 'planning' | 'closing' | 'me'
+type Tab = 'home' | 'ranking' | 'planning' | 'closing'
 type OuterTab = 'groups' | 'profile'
 
 export function App() {
-  const { account, view, me, conceptSeen, lang, t, joinByCode } = useApp()
+  const { account, view, me, conceptSeen, lang, t, joinByCode, selectGroup } = useApp()
   const rows = useBalances()
   const [tab, setTab] = useState<Tab>('home')
   const [splashDone, setSplashDone] = useState(false)
   const [outerTab, setOuterTab] = useState<OuterTab>('groups')
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [sharing, setSharing] = useState(false)
+  const [leaving, setLeaving] = useState(false)
+  const [editing, setEditing] = useState(false)
   // L'etape photo est passee une fois par appareil, une fois le compte cree.
   const [profileDone, setProfileDone] = useState(false)
 
@@ -68,9 +75,9 @@ export function App() {
 
   // Connecte mais pas encore dans un groupe : la liste et le profil du compte.
   if (!view || !me) {
-    const outerTabs: Array<{ id: OuterTab; icon: string; label: string }> = [
-      { id: 'groups', icon: '🧭', label: t('navGroups') },
-      { id: 'profile', icon: '👤', label: t('navProfile') },
+    const outerTabs = [
+      { id: 'groups' as OuterTab, Icon: Compass, label: t('navGroups') },
+      { id: 'profile' as OuterTab, Icon: CircleUser, label: t('navProfile') },
     ]
     return (
       <div className="app">
@@ -85,7 +92,7 @@ export function App() {
                 className={outerTab === item.id ? 'is-on' : ''}
                 onClick={() => setOuterTab(item.id)}
               >
-                <span className="nav-icon">{item.icon}</span>
+                <item.Icon size={21} strokeWidth={outerTab === item.id ? 2.4 : 1.9} />
                 <span>{item.label}</span>
               </button>
             ))}
@@ -100,30 +107,38 @@ export function App() {
   const mine = rows.find((r) => r.member.id === me.id)
   const owes = !!mine && mine.centi < 0
 
-  const tabs: Array<{ id: Tab; icon: string; label: string; dot?: boolean }> = [
-    { id: 'home', icon: '🏠', label: t('navHome'), dot: owes },
-    { id: 'ranking', icon: '🏆', label: t('navRanking') },
-    { id: 'planning', icon: '📅', label: t('navPlanning') },
-    { id: 'closing', icon: '🏁', label: t('navClosing'), dot: view.group.closingOpen },
-    { id: 'me', icon: '👤', label: t('navMe') },
+  const tabs = [
+    { id: 'home' as Tab, Icon: House, label: t('navHome'), dot: owes },
+    { id: 'ranking' as Tab, Icon: Trophy, label: t('navRanking'), dot: false },
+    { id: 'planning' as Tab, Icon: CalendarDays, label: t('navPlanning'), dot: false },
+    { id: 'closing' as Tab, Icon: Flag, label: t('navClosing'), dot: view.group.closingOpen },
   ]
+
+  if (editing) {
+    return (
+      <div className="app">
+        <GroupSettings onClose={() => setEditing(false)} />
+      </div>
+    )
+  }
 
   return (
     <div className="app">
       <div className="topbar">
-        <div className="brand">
-          <span className="brand-mark" style={{ background: view.group.color }}>
+        <button type="button" className="icon-button" onClick={() => selectGroup(null)} aria-label={t('backToGroups')}>
+          <ArrowLeft size={20} />
+        </button>
+        <div className="topbar-title">
+          <span className="group-mark is-small" style={{ background: view.group.color }}>
             {view.group.emoji}
           </span>
-          <span>
-            {view.group.name}
-            <div className="trip-meta">
-              {formatDay(view.group.startDate, lang)} {t('to')} {formatDay(view.group.endDate, lang)}
-            </div>
+          <span className="topbar-name">{view.group.name}</span>
+          <span className="topbar-dates">
+            {formatDay(view.group.startDate, lang)} {t('to')} {formatDay(view.group.endDate, lang)}
           </span>
         </div>
-        <button type="button" onClick={() => setTab('me')}>
-          <Avatar member={me} size={38} />
+        <button type="button" className="icon-button" onClick={() => setMenuOpen(true)} aria-label={t('groupMenu')}>
+          <MoreHorizontal size={20} />
         </button>
       </div>
 
@@ -131,7 +146,6 @@ export function App() {
       {tab === 'ranking' && <Ranking />}
       {tab === 'planning' && <Planning />}
       {tab === 'closing' && <Closing />}
-      {tab === 'me' && <Me />}
 
       <nav className="nav">
         <div className="nav-inner">
@@ -142,7 +156,7 @@ export function App() {
               className={tab === item.id ? 'is-on' : ''}
               onClick={() => setTab(item.id)}
             >
-              <span className="nav-icon">{item.icon}</span>
+              <item.Icon size={21} strokeWidth={tab === item.id ? 2.4 : 1.9} />
               <span>{item.label}</span>
               {item.dot && <span className="nav-dot" />}
             </button>
@@ -151,6 +165,26 @@ export function App() {
       </nav>
 
       <InstallPrompt />
+
+      {menuOpen && (
+        <GroupMenu
+          onClose={() => setMenuOpen(false)}
+          onEdit={() => {
+            setMenuOpen(false)
+            setEditing(true)
+          }}
+          onShare={() => {
+            setMenuOpen(false)
+            setSharing(true)
+          }}
+          onLeave={() => {
+            setMenuOpen(false)
+            setLeaving(true)
+          }}
+        />
+      )}
+      {sharing && <ShareSheet onClose={() => setSharing(false)} />}
+      {leaving && <LeaveGroupSheet onClose={() => setLeaving(false)} />}
     </div>
   )
 }

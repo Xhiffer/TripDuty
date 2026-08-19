@@ -1,7 +1,8 @@
 import { useRef, useState } from 'react'
 import { useApp } from '../state'
 import { AVATAR_COLORS, initialsOf } from '../lib/identity'
-import { Segmented } from '../components/ui'
+import { Segmented, Sheet } from '../components/ui'
+import { Bell, Info, HelpCircle, LogOut, Trash2, ChevronRight } from 'lucide-react'
 
 /** Reduit la photo pour qu'elle reste legere une fois stockee. */
 async function shrinkImage(file: File): Promise<string> {
@@ -25,6 +26,7 @@ export function Account() {
   const { account, lang, theme, t, setLang, setTheme, updateProfile, signOut, shared, deactivateAccount } = useApp()
   const [deactivating, setDeactivating] = useState(false)
   const [error, setError] = useState('')
+  const [sheet, setSheet] = useState<'about' | 'faq' | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
   if (!account) return null
 
@@ -50,10 +52,6 @@ export function Account() {
               initials
             )}
           </button>
-          <span className="rank-name" style={{ fontSize: 18 }}>
-            {account.firstName} {account.lastName}
-          </span>
-          <span className="rank-sub">{account.email}</span>
           <div className="row" style={{ gap: 8, marginTop: 4 }}>
             <button type="button" className="btn btn-sm" onClick={() => fileRef.current?.click()}>
               {account.photo ? t('changePhoto') : t('addPhoto')}
@@ -75,6 +73,30 @@ export function Account() {
             }}
           />
         </div>
+
+        <div className="row" style={{ gap: 10, marginTop: 18 }}>
+          <label className="field" style={{ flex: 1, marginBottom: 0 }}>
+            <span className="field-label">{t('firstName')}</span>
+            <input
+              className="input"
+              value={account.firstName}
+              onChange={(e) => updateProfile({ firstName: e.target.value })}
+            />
+          </label>
+          <label className="field" style={{ flex: 1, marginBottom: 0 }}>
+            <span className="field-label">{t('lastName')}</span>
+            <input
+              className="input"
+              value={account.lastName}
+              onChange={(e) => updateProfile({ lastName: e.target.value })}
+            />
+          </label>
+        </div>
+
+        <label className="field" style={{ marginTop: 14, marginBottom: 0 }}>
+          <span className="field-label">{t('email')}</span>
+          <input className="input" value={account.email} readOnly disabled />
+        </label>
 
         {!account.photo && (
           <div className="field" style={{ marginTop: 18, marginBottom: 0 }}>
@@ -115,13 +137,38 @@ export function Account() {
         ]}
       />
 
-      <button type="button" className="btn btn-block" style={{ marginTop: 24 }} onClick={signOut}>
-        {t('signOut')}
+      <div className="section-title">{t('notifications')}</div>
+      <div className="menu-row is-quiet">
+        <Bell size={18} />
+        <span style={{ flex: 1 }}>{t('notifications')}</span>
+        <span className="pill">{t('comingSoon')}</span>
+      </div>
+      <p className="hint" style={{ textAlign: 'left' }}>
+        {t('notificationsHelp')}
+      </p>
+
+      <div className="section-title">{t('about')}</div>
+      <div className="stack">
+        <button type="button" className="menu-row" onClick={() => setSheet('about')}>
+          <Info size={18} />
+          <span style={{ flex: 1 }}>{t('about')}</span>
+          <ChevronRight size={17} />
+        </button>
+        <button type="button" className="menu-row" onClick={() => setSheet('faq')}>
+          <HelpCircle size={18} />
+          <span style={{ flex: 1 }}>{t('faq')}</span>
+          <ChevronRight size={17} />
+        </button>
+      </div>
+
+      <button type="button" className="menu-row" style={{ marginTop: 24 }} onClick={signOut}>
+        <LogOut size={18} />
+        <span style={{ flex: 1 }}>{t('signOut')}</span>
       </button>
 
       {shared && (
         <>
-          <div className="section-title">{t('deactivateAccount')}</div>
+          <div className="section-title">{t('deleteAccount')}</div>
           <div className="card">
             <p className="sheet-sub" style={{ marginTop: 0 }}>
               {t('deactivateHelp')}
@@ -152,12 +199,33 @@ export function Account() {
                 </button>
               </div>
             ) : (
-              <button type="button" className="btn btn-block" onClick={() => setDeactivating(true)}>
-                {t('deactivateAccount')}
+              <button type="button" className="menu-row is-danger" onClick={() => setDeactivating(true)}>
+                <Trash2 size={18} />
+                <span style={{ flex: 1 }}>{t('deleteAccount')}</span>
               </button>
             )}
           </div>
         </>
+      )}
+
+      {sheet === 'about' && (
+        <Sheet title={t('about')} onClose={() => setSheet(null)}>
+          <p className="sheet-body">{t('aboutBody')}</p>
+          <p className="sheet-body">{t('aboutVersion')}</p>
+        </Sheet>
+      )}
+
+      {sheet === 'faq' && (
+        <Sheet title={t('faq')} onClose={() => setSheet(null)}>
+          {[1, 2, 3, 4].map((n) => (
+            <div key={n} style={{ marginBottom: 18 }}>
+              <p className="faq-question">{t(`faq${n}Q`)}</p>
+              <p className="sheet-body" style={{ margin: 0 }}>
+                {t(`faq${n}A`)}
+              </p>
+            </div>
+          ))}
+        </Sheet>
       )}
     </>
   )
