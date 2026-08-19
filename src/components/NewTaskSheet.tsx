@@ -67,7 +67,7 @@ export function NewTaskSheet({ closing = false, onClose }: { closing?: boolean; 
         />
       </div>
 
-      <div className="row" style={{ gap: 10, marginBottom: 14 }}>
+      <div className="field-row" style={{ marginBottom: 14 }}>
         <label className="field" style={{ flex: 1, marginBottom: 0 }}>
           <span className="field-label">{t('taskDate')}</span>
           <select className="input" value={date} onChange={(e) => setDate(e.target.value)}>
@@ -78,7 +78,7 @@ export function NewTaskSheet({ closing = false, onClose }: { closing?: boolean; 
             ))}
           </select>
         </label>
-        <label className="field" style={{ width: 118, marginBottom: 0 }}>
+        <label className="field" style={{ marginBottom: 0 }}>
           <span className="field-label">{t('taskTime')}</span>
           <input className="input" type="time" value={time} onChange={(e) => setTime(e.target.value)} />
         </label>

@@ -117,7 +117,6 @@ export function App() {
                 <div className="app-header-inner">
                   <span className="app-wordmark">
                     <LogoLong className="app-logo-long" />
-                    {__RECENT_CHANGES__[0] && <span className="version-tag">{__RECENT_CHANGES__[0].version}</span>}
                   </span>
                   <span className="header-actions">
                     <InstallButton variant="icon" />

@@ -83,7 +83,7 @@ export function Account() {
           />
         </div>
 
-        <div className="row" style={{ gap: 10, marginTop: 18 }}>
+        <div className="field-row" style={{ marginTop: 18 }}>
           <label className="field" style={{ flex: 1, marginBottom: 0 }}>
             <span className="field-label">{t('firstName')}</span>
             <input

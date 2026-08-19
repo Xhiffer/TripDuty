@@ -106,7 +106,7 @@ export function NewExpenseSheet({ expense, onClose }: { expense?: Expense; onClo
         </div>
       </div>
 
-      <div className="row" style={{ gap: 10 }}>
+      <div className="field-row">
         <label className="field" style={{ flex: 1 }}>
           <span className="field-label">{t('amount')}</span>
           <input

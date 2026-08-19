@@ -111,7 +111,7 @@ export function ProfileSetup({ onDone }: { onDone: () => void }) {
 
         {missingIdentity && (
           <>
-            <div className="row" style={{ gap: 10 }}>
+            <div className="field-row">
               <label className="field" style={{ flex: 1 }}>
                 <span className="field-label">{t('firstName')}</span>
                 <input

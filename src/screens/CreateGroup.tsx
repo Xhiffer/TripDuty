@@ -1,9 +1,10 @@
 import { useRef, useState } from 'react'
 import { useApp } from '../state'
 import type { Group, GroupKind } from '../types'
-import { GROUP_COLORS, GROUP_EMOJIS, inviteLink, isEmail } from '../lib/identity'
+import { GROUP_COLORS, inviteLink, isEmail } from '../lib/identity'
 import { Camera, Trash2 } from 'lucide-react'
 import { Toggle } from '../components/ui'
+import { IconPicker } from '../components/IconPicker'
 
 /** Reduit la photo du groupe pour qu'elle reste legere. */
 async function shrinkGroupPhoto(file: File): Promise<string> {
@@ -37,7 +38,7 @@ export function CreateGroup({ onDone }: { onDone: () => void }) {
   const [step, setStep] = useState<'kind' | 'details' | 'invite'>('kind')
   const [kind, setKind] = useState<GroupKind>('vacances')
   const [name, setName] = useState('')
-  const [emoji, setEmoji] = useState('⛰️')
+  const [emoji, setEmoji] = useState('lucide:mountain')
   const [photo, setPhoto] = useState<string | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
   const [color, setColor] = useState(GROUP_COLORS[0])
@@ -101,7 +102,9 @@ export function CreateGroup({ onDone }: { onDone: () => void }) {
               className="kind-card"
               onClick={() => {
                 setKind(option.kind)
-                setEmoji(option.kind === 'couple' ? '❤️' : option.kind === 'potes' ? '🍻' : '⛰️')
+                setEmoji(
+                  option.kind === 'couple' ? 'lucide:heart' : option.kind === 'potes' ? 'lucide:beer' : 'lucide:mountain',
+                )
                 setStep('details')
               }}
             >
@@ -143,7 +146,7 @@ export function CreateGroup({ onDone }: { onDone: () => void }) {
             />
           </label>
 
-          <div className="row" style={{ gap: 10 }}>
+          <div className="field-row">
             <label className="field" style={{ flex: 1 }}>
               <span className="field-label">{t('from')}</span>
               <input className="input" type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
@@ -191,21 +194,7 @@ export function CreateGroup({ onDone }: { onDone: () => void }) {
             />
           </div>
 
-          <div className="field">
-            <span className="field-label">{t('groupIcon')}</span>
-            <div className="emoji-grid">
-              {GROUP_EMOJIS.map((e) => (
-                <button
-                  key={e}
-                  type="button"
-                  className={`emoji-btn ${emoji === e ? 'is-on' : ''}`}
-                  onClick={() => setEmoji(e)}
-                >
-                  {e}
-                </button>
-              ))}
-            </div>
-          </div>
+          <IconPicker value={emoji} color={color} onChange={setEmoji} />
 
           <div className="field">
             <span className="field-label">{t('groupColor')}</span>

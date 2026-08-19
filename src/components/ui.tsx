@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import type { Group, Person } from '../types'
+import { iconFor, solidColor } from '../lib/groupIcons'
 
 /** Pastille de profil : la photo si elle existe, sinon les initiales sur la couleur du compte. */
 export function Avatar({ member, size = 40 }: { member: Person | null; size?: number }) {
@@ -26,11 +27,29 @@ export function Avatar({ member, size = 40 }: { member: Person | null; size?: nu
   )
 }
 
-/** La vignette d'un groupe : sa photo si elle existe, sinon son icone. */
+/**
+ * La vignette d'un groupe : sa photo, sinon son icone.
+ *
+ * Sans photo, l'icone se pose nue, a la couleur du groupe : une pastille
+ * coloree derriere un trait deja colore faisait double emploi.
+ */
 export function GroupMark({ group, small = false }: { group: Group; small?: boolean }) {
+  if (group.photo) {
+    return (
+      <span className={`group-mark has-photo ${small ? 'is-small' : ''}`}>
+        <img src={group.photo} alt="" className="group-photo" />
+      </span>
+    )
+  }
+
+  const Icon = iconFor(group.emoji)
   return (
-    <span className={`group-mark ${small ? 'is-small' : ''}`} style={{ background: group.color }}>
-      {group.photo ? <img src={group.photo} alt="" className="group-photo" /> : group.emoji}
+    <span className={`group-mark ${small ? 'is-small' : ''}`}>
+      {Icon ? (
+        <Icon size={small ? 36 : 40} strokeWidth={1.9} color={solidColor(group.color)} />
+      ) : (
+        <span className="group-emoji">{group.emoji}</span>
+      )}
     </span>
   )
 }

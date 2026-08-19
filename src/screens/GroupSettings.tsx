@@ -79,7 +79,7 @@ export function GroupSettings({ onClose }: { onClose: () => void }) {
               <input className="input" value={state.group.name} onChange={(e) => updateGroup({ name: e.target.value })} />
             </label>
 
-            <div className="row" style={{ gap: 10 }}>
+            <div className="field-row">
               <label className="field" style={{ flex: 1 }}>
                 <span className="field-label">{t('from')}</span>
                 <input

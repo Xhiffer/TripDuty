@@ -55,6 +55,9 @@ export function Groups({ header }: { header: ReactNode }) {
           de la liste. La page lui reserve sa hauteur plus bas. */}
       <div className="bottom-action">
         <div className="bottom-action-inner">
+          {__RECENT_CHANGES__[0] && (
+            <span className="version-line">{__RECENT_CHANGES__[0].version}</span>
+          )}
           <button type="button" className="btn btn-primary btn-block" onClick={() => setSheet('choice')}>
             <Plus size={18} />
             {t('createOrJoin')}
