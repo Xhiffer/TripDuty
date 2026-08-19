@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useApp } from '../state'
 import { CreateGroup } from './CreateGroup'
+import { InstallButton } from '../components/InstallButton'
 import { formatDay } from '../lib/i18n'
 
 export function Groups() {
@@ -23,9 +24,8 @@ export function Groups() {
 
   return (
     <>
-      {/* Rien d'autre que le logo : la page se presente d'elle-meme. */}
       <div className="app-header">
-        <span className="app-logo">⛰️</span>
+        <span className="app-wordmark">Trip Duty</span>
       </div>
 
       <div className="stack" style={{ marginTop: 8 }}>
@@ -55,6 +55,8 @@ export function Groups() {
       <button type="button" className="btn btn-primary btn-block" style={{ marginTop: 18 }} onClick={() => setCreating(true)}>
         ＋ {t('createGroup')}
       </button>
+
+      <InstallButton />
 
       <div className="section-title">{t('joinWithCode')}</div>
       <div className="card">

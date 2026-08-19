@@ -10,7 +10,6 @@ import { Ranking } from './screens/Ranking'
 import { Planning } from './screens/Planning'
 import { Closing } from './screens/Closing'
 import { GroupSettings } from './screens/GroupSettings'
-import { InstallPrompt } from './components/InstallPrompt'
 import { GroupMenu } from './components/GroupMenu'
 import { ShareSheet } from './components/ShareSheet'
 import { LeaveGroupSheet } from './components/LeaveGroupSheet'
@@ -66,9 +65,6 @@ export function App() {
     return (
       <>
         {screen}
-        <div className="no-nav">
-          <InstallPrompt />
-        </div>
       </>
     )
   }
@@ -99,7 +95,6 @@ export function App() {
           </div>
         </nav>
 
-        <InstallPrompt />
       </div>
     )
   }
@@ -124,22 +119,25 @@ export function App() {
 
   return (
     <div className="app">
+      {/* Les commandes d'abord, l'identite du groupe en dessous. */}
       <div className="topbar">
         <button type="button" className="icon-button" onClick={() => selectGroup(null)} aria-label={t('backToGroups')}>
           <ArrowLeft size={20} />
         </button>
-        <div className="topbar-title">
-          <span className="group-mark is-small" style={{ background: view.group.color }}>
-            {view.group.emoji}
-          </span>
-          <span className="topbar-name">{view.group.name}</span>
-          <span className="topbar-dates">
-            {formatDay(view.group.startDate, lang)} {t('to')} {formatDay(view.group.endDate, lang)}
-          </span>
-        </div>
+        <span />
         <button type="button" className="icon-button" onClick={() => setMenuOpen(true)} aria-label={t('groupMenu')}>
           <MoreHorizontal size={20} />
         </button>
+      </div>
+
+      <div className="group-head">
+        <span className="group-mark is-small" style={{ background: view.group.color }}>
+          {view.group.emoji}
+        </span>
+        <span className="topbar-name">{view.group.name}</span>
+        <span className="topbar-dates">
+          {formatDay(view.group.startDate, lang)} {t('to')} {formatDay(view.group.endDate, lang)}
+        </span>
       </div>
 
       {tab === 'home' && <Home goRanking={() => setTab('ranking')} />}
@@ -164,7 +162,6 @@ export function App() {
         </div>
       </nav>
 
-      <InstallPrompt />
 
       {menuOpen && (
         <GroupMenu
