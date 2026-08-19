@@ -16,9 +16,9 @@ async function shrinkImage(file: File): Promise<string> {
 }
 
 /**
- * Deuxieme temps de l'inscription : la photo et la couleur.
- * Le nom et la date de naissance sont demandes a la creation du compte ;
- * ils ne reapparaissent ici que si le compte est arrive sans eux.
+ * Deuxieme temps de l'inscription : qui tu es, et a quoi tu ressembles.
+ * La creation du compte ne demande que l'adresse et le mot de passe ;
+ * tout le reste se remplit ici.
  */
 export function ProfileSetup({ onDone }: { onDone: () => void }) {
   const { account, t, updateProfile } = useApp()
@@ -52,7 +52,7 @@ export function ProfileSetup({ onDone }: { onDone: () => void }) {
   return (
     <div className="app app-centered">
       <div className="hero">
-        <h1 className="hero-title">{t('photoTitle')}</h1>
+        <h1 className="hero-title">{t(missingIdentity ? 'profileTitle' : 'photoTitle')}</h1>
         <p className="hero-sub">{t('profileSub')}</p>
       </div>
 

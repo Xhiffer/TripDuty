@@ -6,14 +6,11 @@ import { Segmented } from '../components/ui'
 type Mode = 'signin' | 'signup' | 'forgot'
 
 export function Auth() {
-  const { t, signIn, signUp, resetPassword, updateProfile, shared } = useApp()
+  const { t, signIn, signUp, resetPassword, shared } = useApp()
   const [mode, setMode] = useState<Mode>('signin')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
-  const [firstName, setFirstName] = useState('')
-  const [lastName, setLastName] = useState('')
-  const [birthDate, setBirthDate] = useState('')
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
   const [busy, setBusy] = useState(false)
@@ -53,20 +50,14 @@ export function Auth() {
       return
     }
 
-    // Creation de compte : tout est demande ici, il ne restera que la photo.
+    // Creation de compte : rien d'autre que l'adresse et le mot de passe.
+    // Le nom et la date de naissance sont demandes a l'ecran suivant.
     if (password !== confirm) return setError(t('errPasswordMismatch'))
-    if (!firstName.trim()) return setError(t('errFirstNameRequired'))
-    if (!lastName.trim()) return setError(t('errLastNameRequired'))
-    if (!birthDate) return setError(t('errBirthDateRequired'))
 
     setBusy(true)
     const result = await signUp(email, password)
-    if (!result.ok) {
-      setBusy(false)
-      return setError(messages[result.error] ?? t('errServer'))
-    }
-    updateProfile({ firstName: firstName.trim(), lastName: lastName.trim(), birthDate })
     setBusy(false)
+    if (!result.ok) setError(messages[result.error] ?? t('errServer'))
   }
 
   return (
@@ -135,62 +126,23 @@ export function Auth() {
         )}
 
         {mode === 'signup' && (
-          <>
-            <label className="field">
-              <span className="field-label">{t('passwordAgain')}</span>
-              <input
-                className="input"
-                type="password"
-                autoComplete="new-password"
-                value={confirm}
-                placeholder="••••••"
-                onChange={(e) => {
-                  setConfirm(e.target.value)
-                  clear()
-                }}
-              />
-            </label>
-
-            <div className="row" style={{ gap: 10 }}>
-              <label className="field" style={{ flex: 1 }}>
-                <span className="field-label">{t('firstName')}</span>
-                <input
-                  className="input"
-                  autoComplete="given-name"
-                  value={firstName}
-                  onChange={(e) => {
-                    setFirstName(e.target.value)
-                    clear()
-                  }}
-                />
-              </label>
-              <label className="field" style={{ flex: 1 }}>
-                <span className="field-label">{t('lastName')}</span>
-                <input
-                  className="input"
-                  autoComplete="family-name"
-                  value={lastName}
-                  onChange={(e) => {
-                    setLastName(e.target.value)
-                    clear()
-                  }}
-                />
-              </label>
-            </div>
-
-            <label className="field">
-              <span className="field-label">{t('birthDate')}</span>
-              <input
-                className="input"
-                type="date"
-                value={birthDate}
-                onChange={(e) => {
-                  setBirthDate(e.target.value)
-                  clear()
-                }}
-              />
-            </label>
-          </>
+          <label className="field">
+            <span className="field-label">{t('passwordAgain')}</span>
+            <input
+              className="input"
+              type="password"
+              autoComplete="new-password"
+              value={confirm}
+              placeholder="••••••"
+              onChange={(e) => {
+                setConfirm(e.target.value)
+                clear()
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') void submit()
+              }}
+            />
+          </label>
         )}
 
         {error && <p className="form-error">{error}</p>}
