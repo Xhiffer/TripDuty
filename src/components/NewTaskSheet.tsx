@@ -16,13 +16,21 @@ export function NewTaskSheet({ closing = false, onClose }: { closing?: boolean; 
   const needsLicense = false
   const [isClosing, setIsClosing] = useState(closing)
   const [recurring, setRecurring] = useState(false)
-  // Le cas le plus courant est de noter une tache une fois qu'elle est faite :
-  // on vient de sortir les poubelles, on l'ajoute et on la valide d'un geste.
-  const [alreadyDone, setAlreadyDone] = useState(false)
+  // On note presque toujours une tache une fois qu'elle est faite : on vient de
+  // sortir les poubelles, on l'ajoute et c'est fini. Planifier pour plus tard
+  // existe, mais c'est le cas rare — d'ou la position par defaut.
+  const [alreadyDone, setAlreadyDone] = useState(!closing)
+  const [doers, setDoers] = useState<string[]>(me ? [me.id] : [])
   const [scope, setScope] = useState<'all' | 'some'>('all')
   const [beneficiaries, setBeneficiaries] = useState<string[]>(me ? [me.id] : [])
   const days = groupDays(state.group)
   const catalog = closing ? CLOSING_CATALOG : CATALOG
+
+  const finalBeneficiaries = scope === 'all' ? state.members.map((m) => m.id) : beneficiaries
+
+  function toggleIn(list: string[], set: (v: string[]) => void, id: string) {
+    set(list.includes(id) ? list.filter((x) => x !== id) : [...list, id])
+  }
 
   function create(fields: { title: string; titleKey?: string; emoji: string; points: number; needsLicense: boolean }) {
     const common = {
@@ -33,20 +41,15 @@ export function NewTaskSheet({ closing = false, onClose }: { closing?: boolean; 
       recurring,
       isClosing,
     }
-    // Se valider soi-meme suppose s'etre engage : sans cela, la tache serait
-    // validee sans avoir jamais eu de responsable.
-    const assignTo = alreadyDone && me ? me.id : null
-
     // Une tache recurrente est posee sur chaque jour restant : le planning
     // montre alors vraiment ce qui est prevu, plutot qu'une simple etiquette.
     const targets = recurring && !isClosing ? days.filter((d) => d >= date) : [date]
-    const created = targets.map((day) => addTask({ ...common, date: day, assignedTo: assignTo }))
+    const created = targets.map((day) => addTask({ ...common, date: day, assignedTo: null }))
 
     // Seule la tache du jour choisi est validee : les jours suivants d'une
     // tache recurrente n'ont pas encore eu lieu.
-    if (alreadyDone && me && created[0]) {
-      const forWhom = scope === 'all' ? state.members.map((m) => m.id) : beneficiaries
-      validateTask(created[0], [me.id], forWhom)
+    if (alreadyDone && doers.length > 0 && created[0]) {
+      validateTask(created[0], doers, finalBeneficiaries)
     }
     onClose()
   }
@@ -81,6 +84,25 @@ export function NewTaskSheet({ closing = false, onClose }: { closing?: boolean; 
         </label>
       </div>
 
+      {alreadyDone && (
+        <>
+          <div className="field-label">{t('whoDid')}</div>
+          <div className="people-grid" style={{ marginBottom: 16 }}>
+            {state.members.map((m) => (
+              <button
+                key={m.id}
+                type="button"
+                className={`person-chip ${doers.includes(m.id) ? 'is-on' : ''}`}
+                onClick={() => toggleIn(doers, setDoers, m.id)}
+              >
+                <Avatar member={m} size={38} />
+                <span>{m.name}</span>
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+
       <div className="field-label">{t('forWhom')}</div>
       <div style={{ marginBottom: 12 }}>
         <Segmented
@@ -113,7 +135,14 @@ export function NewTaskSheet({ closing = false, onClose }: { closing?: boolean; 
 
       {!closing && (
         <div style={{ marginBottom: 16 }}>
-          <Toggle checked={recurring} onChange={setRecurring} label={t('recurringTask')} />
+          <Toggle
+            checked={recurring}
+            onChange={(on) => {
+              setRecurring(on)
+              if (on) setAlreadyDone(false)
+            }}
+            label={t('recurringTask')}
+          />
           <p className="hint" style={{ textAlign: 'left' }}>
             {t('recurringTaskHelp')}
           </p>
@@ -122,7 +151,14 @@ export function NewTaskSheet({ closing = false, onClose }: { closing?: boolean; 
 
       {me && !closing && (
         <div style={{ marginBottom: 16 }}>
-          <Toggle checked={alreadyDone} onChange={setAlreadyDone} label={t('alreadyDone')} />
+          <Toggle
+            checked={alreadyDone}
+            onChange={(on) => {
+              setAlreadyDone(on)
+              if (on) setRecurring(false)
+            }}
+            label={t('alreadyDone')}
+          />
           <p className="hint" style={{ textAlign: 'left' }}>
             {t('alreadyDoneHelp')}
           </p>
@@ -142,6 +178,9 @@ export function NewTaskSheet({ closing = false, onClose }: { closing?: boolean; 
               key={c.key}
               type="button"
               className="task"
+              // Une tache faite par personne n'a pas de sens : on empeche le
+              // geste plutot que de creer une tache a moitie validee.
+              disabled={alreadyDone && doers.length === 0}
               onClick={() =>
                 create({
                   title: c.fr,
@@ -201,7 +240,11 @@ export function NewTaskSheet({ closing = false, onClose }: { closing?: boolean; 
           <button
             type="button"
             className="btn btn-primary btn-block"
-            disabled={!title.trim() || (scope === 'some' && beneficiaries.length === 0)}
+            disabled={
+              !title.trim() ||
+              (scope === 'some' && beneficiaries.length === 0) ||
+              (alreadyDone && doers.length === 0)
+            }
             onClick={() => create({ title: title.trim(), emoji, points, needsLicense })}
           >
             {t('create')}
