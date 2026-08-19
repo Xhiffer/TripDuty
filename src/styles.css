@@ -1232,3 +1232,23 @@ button {
   margin: 0 0 5px;
   line-height: 1.4;
 }
+
+/* ---------- en-tete de la liste des groupes ---------- */
+
+.app-header {
+  display: flex;
+  justify-content: center;
+  padding: 26px 0 20px;
+}
+
+.app-logo {
+  width: 52px;
+  height: 52px;
+  border-radius: 17px;
+  display: grid;
+  place-items: center;
+  font-size: 27px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  box-shadow: 0 10px 26px color-mix(in srgb, var(--accent) 35%, transparent);
+  flex: none;
+}

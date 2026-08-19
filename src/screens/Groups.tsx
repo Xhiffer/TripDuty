@@ -4,7 +4,7 @@ import { CreateGroup } from './CreateGroup'
 import { formatDay } from '../lib/i18n'
 
 export function Groups() {
-  const { account, myGroups, data, lang, t, selectGroup, joinByCode } = useApp()
+  const { myGroups, data, lang, t, selectGroup, joinByCode } = useApp()
   const [creating, setCreating] = useState(false)
   const [code, setCode] = useState('')
   const [error, setError] = useState('')
@@ -23,14 +23,9 @@ export function Groups() {
 
   return (
     <>
-      <div className="topbar">
-        <div className="brand">
-          <span className="brand-mark">⛰️</span>
-          <span>
-            {t('myGroups')}
-            <div className="trip-meta">{account?.firstName}</div>
-          </span>
-        </div>
+      {/* Rien d'autre que le logo : la page se presente d'elle-meme. */}
+      <div className="app-header">
+        <span className="app-logo">⛰️</span>
       </div>
 
       <div className="stack" style={{ marginTop: 8 }}>
@@ -82,7 +77,7 @@ export function Groups() {
           />
           <button
             type="button"
-            className="btn btn-primary"
+            className={`btn ${code.trim().length >= 4 ? 'btn-primary' : ''}`}
             disabled={code.trim().length < 4}
             onClick={() => void join()}
           >
