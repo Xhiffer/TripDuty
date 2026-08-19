@@ -24,19 +24,36 @@ export function beneficiariesOf(task: Task, members: Person[]): string[] {
  * Ceux qui la font sont credites, ceux pour qui elle est faite sont debites.
  * Celui qui fait la tache est en general aussi beneficiaire, comme celui
  * qui paie le restaurant y mange aussi.
+ *
+ * Les points du catalogue disent ce que vaut la tache quand elle profite au
+ * groupe entier. Ce qui ne bouge jamais, c'est le prix par tete : chaque
+ * beneficiaire est debite de points / taille du groupe, qu'ils soient deux ou
+ * dix. Cuisiner pour cinq dans un groupe de dix rapporte donc la moitie de ce
+ * que rapporte cuisiner pour dix, et se faire a manger pour soi seul ne
+ * rapporte rien du tout — on se debite exactement de ce qu'on se credite.
  */
-export function completionAmounts(points: number, doerIds: string[], beneficiaryIds: string[]) {
-  const total = Math.round(points * CENTI)
+export function completionAmounts(
+  points: number,
+  doerIds: string[],
+  beneficiaryIds: string[],
+  /** Combien de personnes compte le groupe. Par defaut, la tache profite a tous. */
+  groupSize: number = beneficiaryIds.length,
+) {
   const amounts: Record<string, number> = {}
+  if (doerIds.length === 0 || beneficiaryIds.length === 0) return amounts
+
+  // Le prix par tete est arrondi une seule fois, puis multiplie : c'est ce qui
+  // garantit que les debits tombent juste et que la somme fasse zero.
+  const perHead = Math.round((points * CENTI) / Math.max(1, groupSize))
+  const total = perHead * beneficiaryIds.length
 
   const credits = splitExact(total, doerIds.length)
   doerIds.forEach((id, i) => {
     amounts[id] = (amounts[id] ?? 0) + credits[i]
   })
 
-  const debits = splitExact(total, beneficiaryIds.length)
-  beneficiaryIds.forEach((id, i) => {
-    amounts[id] = (amounts[id] ?? 0) - debits[i]
+  beneficiaryIds.forEach((id) => {
+    amounts[id] = (amounts[id] ?? 0) - perHead
   })
 
   return amounts
@@ -62,11 +79,24 @@ export interface Balance {
   member: Person
   /** Solde en centiemes. Positif : la personne a donne plus qu'elle n'a recu. */
   centi: number
-  /** Points bruts apportes au groupe, pour l'anecdote. */
+  /** Ce que la personne a reellement apporte aux autres, sa propre part deduite. */
   givenCenti: number
   tasksDone: number
   lastActiveAt: string | null
   rank: number
+}
+
+/**
+ * Ce que chaque beneficiaire a paye sur une ligne. Le prix par tete est le
+ * meme pour tous, il se relit donc sur n'importe quel beneficiaire qui n'a
+ * pas fait la tache. Quand la tache ne profite qu'a ceux qui l'ont faite,
+ * personne n'a rien recu : il n'y a rien a compter.
+ */
+function debitPerHead(entry: Entry): number {
+  const outside = entry.beneficiaryIds.filter((id) => !entry.doerIds.includes(id))
+  if (outside.length === 0) return 0
+  const paid = outside.reduce((sum, id) => sum + (entry.amounts[id] ?? 0), 0)
+  return Math.round(-paid / outside.length)
 }
 
 export function balances(state: GroupView): Balance[] {
@@ -81,7 +111,10 @@ export function balances(state: GroupView): Balance[] {
       if (amount !== undefined) centi += amount
       if (entry.kind === 'completion' && entry.doerIds.includes(member.id)) {
         tasksDone += 1
-        givenCenti += Math.max(0, amount ?? 0)
+        // Le solde de la ligne est deja net de sa propre part. Ce qu'on veut
+        // afficher ici, c'est le brut : ce qu'elle a apporte aux autres.
+        const own = entry.beneficiaryIds.includes(member.id) ? debitPerHead(entry) : 0
+        givenCenti += Math.max(0, (amount ?? 0) + own)
         if (!lastActiveAt || entry.at > lastActiveAt) lastActiveAt = entry.at
       }
     }
@@ -113,9 +146,13 @@ export function formatBalance(centi: number): string {
 }
 
 /**
- * Qui doit une tache a qui. On ne suit jamais les dettes deux a deux :
- * on part des soldes et on cherche le plus petit nombre d'echanges qui
- * ramene tout le monde a zero, comme les remboursements de Tricount.
+ * L'ecart a rattraper, d'une personne a l'autre.
+ *
+ * Ce n'est pas une dette et l'application ne le presente pas comme telle :
+ * personne ne « doit une tache » a personne, on montre seulement le plus court
+ * chemin qui ramenerait tout le monde a l'equilibre. On part des soldes, jamais
+ * d'un suivi deux a deux, pour la meme raison qu'un Tricount : moins
+ * d'echanges, et aucun historique de reproches.
  */
 export interface Transfer {
   fromId: string

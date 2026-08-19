@@ -141,7 +141,8 @@ interface Ctx {
   setRole: (accountId: string, role: Role) => void
   setLicense: (accountId: string, hasLicense: boolean) => void
   // taches
-  addTask: (task: Omit<Task, 'id' | 'status' | 'groupId'>) => void
+  /** Rend l'identifiant de la tache creee, pour pouvoir enchainer dessus. */
+  addTask: (task: Omit<Task, 'id' | 'status' | 'groupId'>) => string
   takeTask: (taskId: string, accountId: string | null) => void
   validateTask: (taskId: string, doerIds: string[], beneficiaryIds: string[]) => void
   markMissed: (taskId: string) => void
@@ -478,7 +479,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
             photo: row.photo_url ?? null,
             color: row.color,
             startDate: row.start_date,
-            endDate: row.end_date,
+            endDate: row.end_date ?? null,
             hostId: row.host_id,
             inviteCode: row.invite_code,
             penalty: row.penalty,
@@ -699,11 +700,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
       addTask: (task) => {
         const current = requireGroup()
-        if (!current) return
+        if (!current) return ''
+        // L'identifiant est tire ici, pas dans la mutation : celui qui cree la
+        // tache doit pouvoir la valider dans la foulee, sans attendre un
+        // aller-retour avec la base.
+        const id = uid()
         dispatch(() => ({
           type: 'addTask',
-          task: { ...task, id: uid(), groupId: current.id, status: 'todo' },
+          task: { ...task, id, groupId: current.id, status: 'todo' },
         }))
+        return id
       },
 
       takeTask: (taskId, who) => {
@@ -728,7 +734,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
               kind: 'completion',
               doerIds,
               beneficiaryIds,
-              amounts: completionAmounts(task.points, doerIds, beneficiaryIds),
+              amounts: completionAmounts(task.points, doerIds, beneficiaryIds, view?.members.length ?? beneficiaryIds.length),
               validatedBy: account.id,
               at: new Date().toISOString(),
             },

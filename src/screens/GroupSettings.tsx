@@ -89,7 +89,7 @@ export function GroupSettings({ onClose }: { onClose: () => void }) {
                   onChange={(e) => updateGroup({ startDate: e.target.value })}
                 />
               </label>
-              {state.group.endDate !== null && (
+              {state.group.endDate && (
                 <label className="field" style={{ flex: 1 }}>
                   <span className="field-label">{t('to')}</span>
                   <input
@@ -104,7 +104,7 @@ export function GroupSettings({ onClose }: { onClose: () => void }) {
 
             <div style={{ marginBottom: 14 }}>
               <Toggle
-                checked={state.group.endDate === null}
+                checked={!state.group.endDate}
                 onChange={(on) => updateGroup({ endDate: on ? null : state.group.startDate })}
                 label={t('noEndDate')}
               />

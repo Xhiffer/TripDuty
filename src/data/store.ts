@@ -28,7 +28,7 @@ export interface Store {
   subscribe?(onChange: (data: AppData) => void): () => void
 }
 
-const KEY = 'tripduty:data:v3'
+const KEY = 'tripduty:data:v4'
 
 function read(): AppData | null {
   try {

@@ -76,7 +76,7 @@ function toGroup(row: Row): Group {
     photo: row.photo_url ? String(row.photo_url) : null,
     color: str(row.color),
     startDate: str(row.start_date),
-    endDate: str(row.end_date),
+    endDate: row.end_date ? String(row.end_date) : null,
     hostId: str(row.host_id),
     inviteCode: str(row.invite_code),
     penalty: num(row.penalty),

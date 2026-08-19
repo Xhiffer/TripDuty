@@ -65,6 +65,7 @@ export function Ranking() {
       </div>
 
       <div className="section-title">{t('whoOwesWho')}</div>
+      <p style={{ color: 'var(--muted)', fontSize: 12, margin: '-6px 0 12px', lineHeight: 1.45 }}>{t('gapsHelp')}</p>
       <div className="stack">
         {transfers.length === 0 && <div className="empty">{t('allSettled')}</div>}
         {transfers.map((transfer, i) => {
@@ -78,7 +79,9 @@ export function Ranking() {
                 <b>{from.name}</b> <span style={{ color: 'var(--muted)' }}>{t('owesTo')}</span> <b>{to.name}</b>
               </span>
               <Avatar member={to} size={32} />
-              <span className="pill pill-accent">{toPoints(transfer.centi)}</span>
+              <span className="pill pill-accent">
+                {toPoints(transfer.centi)} {toPoints(transfer.centi) > 1 ? t('points') : t('point')}
+              </span>
             </div>
           )
         })}

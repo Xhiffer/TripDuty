@@ -786,6 +786,13 @@ button {
   text-transform: none;
 }
 
+/* Le jour ou l'on est. Pas d'etiquette « aujourd'hui » : la date elle-meme
+   change de couleur et de graisse, ce qui se repere plus vite qu'un mot. */
+.day-head.is-today {
+  color: var(--accent);
+  font-weight: 900;
+}
+
 .people-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));

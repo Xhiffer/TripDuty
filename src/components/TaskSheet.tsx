@@ -23,7 +23,7 @@ export function TaskSheet({ task, onClose }: { task: Task; onClose: () => void }
   const finalBeneficiaries = scope === 'all' ? everyone : beneficiaries
   const preview =
     doers.length > 0 && finalBeneficiaries.length > 0
-      ? completionAmounts(task.points, doers, finalBeneficiaries)
+      ? completionAmounts(task.points, doers, finalBeneficiaries, state.members.length)
       : {}
 
   function toggle(list: string[], setList: (v: string[]) => void, id: string) {

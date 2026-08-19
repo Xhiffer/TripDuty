@@ -18,7 +18,10 @@ export function suggestFor(
   excluded: Set<string> = new Set(),
 ): Suggestion[] {
   const beneficiaries = new Set(beneficiariesOf(task, state.members))
-  const total = Math.round(task.points * CENTI)
+  // Meme bareme que completionAmounts : un prix par tete fixe, un credit qui
+  // suit le nombre de personnes servies.
+  const perHead = Math.round((task.points * CENTI) / Math.max(1, state.members.length))
+  const total = perHead * beneficiaries.size
 
   const candidates = rows
   if (candidates.length === 0) return []
@@ -29,7 +32,7 @@ export function suggestFor(
     const spread = rows.reduce((sum, row) => {
       let next = row.centi
       if (row.member.id === candidate.member.id) next += total
-      if (beneficiaries.has(row.member.id)) next -= Math.round(total / beneficiaries.size)
+      if (beneficiaries.has(row.member.id)) next -= perHead
       return sum + next * next
     }, 0)
     return { memberId: candidate.member.id, centi: candidate.centi, spread }

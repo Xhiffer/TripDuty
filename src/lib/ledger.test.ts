@@ -121,6 +121,33 @@ describe('completionAmounts', () => {
   it('se faire son sandwich tout seul ne rapporte rien', () => {
     expect(completionAmounts(15, ['p1'], ['p1'])).toEqual({ p1: 0 })
   })
+
+  it('le prix par tete ne depend pas du nombre de beneficiaires', () => {
+    const cinq = completionAmounts(30, ['p1'], ['p1', 'p2', 'p3', 'p4', 'p5'], 10)
+    const dix = completionAmounts(30, ['p1'], ['p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7', 'p8', 'p9', 'p10'], 10)
+    expect(cinq.p2).toBe(-3 * CENTI)
+    expect(dix.p2).toBe(-3 * CENTI)
+  })
+
+  it('cuisiner pour dix rapporte le double de cuisiner pour cinq', () => {
+    const cinq = completionAmounts(30, ['p1'], ['p1', 'p2', 'p3', 'p4', 'p5'], 10)
+    const dix = completionAmounts(30, ['p1'], ['p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7', 'p8', 'p9', 'p10'], 10)
+    // Credit brut : 5 x 3 points contre 10 x 3 points, la part personnelle etant
+    // la meme des deux cotes.
+    expect(dix.p1 - cinq.p1).toBe(15 * CENTI)
+    expect(sum(cinq)).toBe(0)
+    expect(sum(dix)).toBe(0)
+  })
+
+  it('se cuisiner pour soi seul dans un groupe de dix ne rapporte toujours rien', () => {
+    expect(completionAmounts(35, ['p1'], ['p1'], 10)).toEqual({ p1: 0 })
+  })
+
+  it('sans taille de groupe, la tache est reputee profiter a tout le monde', () => {
+    expect(completionAmounts(30, ['p1'], ['p1', 'p2', 'p3'])).toEqual(
+      completionAmounts(30, ['p1'], ['p1', 'p2', 'p3'], 3),
+    )
+  })
 })
 
 describe('penaltyAmounts', () => {

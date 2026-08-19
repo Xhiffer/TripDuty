@@ -28,10 +28,14 @@ export function GroupMenu({
           </button>
         )}
 
-        <button type="button" className="menu-row" onClick={onClosing}>
-          <Flag size={18} />
-          <span>{t('closingTitle')}</span>
-        </button>
+        {/* Un groupe sans date de fin ne se cloture pas : une coloc ou un
+            couple n'ont pas de dernier jour, et le bilan y serait vide. */}
+        {state.group.endDate && (
+          <button type="button" className="menu-row" onClick={onClosing}>
+            <Flag size={18} />
+            <span>{t('closingTitle')}</span>
+          </button>
+        )}
 
         <button type="button" className="menu-row" onClick={onShare}>
           <Share2 size={18} />
