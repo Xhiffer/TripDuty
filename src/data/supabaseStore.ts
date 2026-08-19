@@ -411,18 +411,36 @@ async function applyOne(mutation: Mutation): Promise<void> {
   }
 }
 
+/**
+ * Les mutations partent l'une apres l'autre, jamais en parallele.
+ *
+ * dispatch() les envoie sans attendre, pour que l'ecran ne bloque pas. Lachees
+ * telles quelles, elles se doublent : creer une tache puis la valider dans le
+ * meme geste faisait courir un INSERT et un UPDATE en meme temps, et l'UPDATE
+ * arrivait le premier. Il ne trouvait aucune ligne, la tache restait « a
+ * faire », mais l'ecriture comptable, elle, passait — une tache non faite qui
+ * comptait deja des points.
+ *
+ * Une file suffit : une mutation attend que la precedente soit ecrite. C'est
+ * l'ordre du geste, pas celui du reseau, qui fait foi.
+ */
+let queue: Promise<void> = Promise.resolve()
+
 export const supabaseStore = {
   load: () => loadAll(),
 
-  async apply(mutation: Mutation) {
-    try {
-      await applyOne(mutation)
-    } catch (error) {
-      // L'ecran a deja affiche le geste. Le taire donnerait une application qui
-      // ment ; le rejouer tout seul ferait pire. On le signale, et la prochaine
-      // synchronisation remettra l'ecran d'accord avec la base.
-      console.error('[supabase] ecriture refusee', mutation.type, error)
-    }
+  apply(mutation: Mutation) {
+    queue = queue.then(async () => {
+      try {
+        await applyOne(mutation)
+      } catch (error) {
+        // L'ecran a deja affiche le geste. Le taire donnerait une application
+        // qui ment ; le rejouer tout seul ferait pire. On le signale, et la
+        // prochaine synchronisation remettra l'ecran d'accord avec la base.
+        console.error('[supabase] ecriture refusee', mutation.type, error)
+      }
+    })
+    return queue
   },
 
   /**
