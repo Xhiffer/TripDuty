@@ -6,6 +6,7 @@ import { TaskRow } from '../components/TaskRow'
 import { TaskSheet } from '../components/TaskSheet'
 import { NewTaskSheet } from '../components/NewTaskSheet'
 import { formatDay } from '../lib/i18n'
+import { Plus } from 'lucide-react'
 
 export function Planning() {
   const { state, lang, t, activeDate } = useGroup()
@@ -35,9 +36,6 @@ export function Planning() {
         {t('planningTitle')}
       </div>
 
-      <button type="button" className="btn btn-primary btn-block" onClick={() => setCreating(true)}>
-        ＋ {t('addTask')}
-      </button>
 
       {days.map((day) => {
         const dayTasks = state.tasks
@@ -66,6 +64,15 @@ export function Planning() {
           </div>
         )
       })}
+
+      <div className="bottom-action above-nav">
+        <div className="bottom-action-inner is-inline">
+          <button type="button" className="btn btn-primary" onClick={() => setCreating(true)}>
+            <Plus size={18} />
+            {t('addTask')}
+          </button>
+        </div>
+      </div>
 
       {openTask && <TaskSheet task={openTask} onClose={() => setOpenTask(null)} />}
       {creating && <NewTaskSheet onClose={() => setCreating(false)} />}

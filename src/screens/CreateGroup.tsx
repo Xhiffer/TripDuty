@@ -1,23 +1,10 @@
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import { useApp } from '../state'
 import type { Group, GroupKind } from '../types'
 import { GROUP_COLORS, inviteLink, isEmail } from '../lib/identity'
-import { Camera, Trash2 } from 'lucide-react'
 import { Toggle } from '../components/ui'
-import { IconPicker } from '../components/IconPicker'
+import { EmojiField } from '../components/EmojiField'
 
-/** Reduit la photo du groupe pour qu'elle reste legere. */
-async function shrinkGroupPhoto(file: File): Promise<string> {
-  const bitmap = await createImageBitmap(file)
-  const size = 400
-  const canvas = document.createElement('canvas')
-  canvas.width = size
-  canvas.height = size
-  const ctx = canvas.getContext('2d')!
-  const side = Math.min(bitmap.width, bitmap.height)
-  ctx.drawImage(bitmap, (bitmap.width - side) / 2, (bitmap.height - side) / 2, side, side, 0, 0, size, size)
-  return canvas.toDataURL('image/jpeg', 0.72)
-}
 
 function plusDays(days: number): string {
   const d = new Date()
@@ -38,10 +25,9 @@ export function CreateGroup({ onDone }: { onDone: () => void }) {
   const [step, setStep] = useState<'kind' | 'details' | 'invite'>('kind')
   const [kind, setKind] = useState<GroupKind>('vacances')
   const [name, setName] = useState('')
-  const [emoji, setEmoji] = useState('lucide:mountain')
-  const [photo, setPhoto] = useState<string | null>(null)
-  const fileRef = useRef<HTMLInputElement>(null)
-  const [color, setColor] = useState(GROUP_COLORS[0])
+  const [emoji, setEmoji] = useState(KINDS[0].emoji)
+  const photo = null
+  const color = GROUP_COLORS[0]
   const [startDate, setStartDate] = useState(plusDays(0))
   const [endDate, setEndDate] = useState(plusDays(7))
   const [openEnded, setOpenEnded] = useState(false)
@@ -102,9 +88,7 @@ export function CreateGroup({ onDone }: { onDone: () => void }) {
               className="kind-card"
               onClick={() => {
                 setKind(option.kind)
-                setEmoji(
-                  option.kind === 'couple' ? 'lucide:heart' : option.kind === 'potes' ? 'lucide:beer' : 'lucide:mountain',
-                )
+                setEmoji(option.emoji)
                 setStep('details')
               }}
             >
@@ -133,18 +117,21 @@ export function CreateGroup({ onDone }: { onDone: () => void }) {
         </div>
 
         <div className="card">
-          <label className="field">
+          <div className="field">
             <span className="field-label">{t('groupName')}</span>
-            <input
-              className="input"
-              value={name}
-              placeholder={kind === 'vacances' ? 'Gorges du Verdon' : ''}
-              onChange={(e) => {
-                setName(e.target.value)
-                setError('')
-              }}
-            />
-          </label>
+            <div className="row" style={{ gap: 10 }}>
+              <EmojiField value={emoji} onChange={setEmoji} />
+              <input
+                className="input"
+                value={name}
+                placeholder={kind === 'vacances' ? 'Gorges du Verdon' : ''}
+                onChange={(e) => {
+                  setName(e.target.value)
+                  setError('')
+                }}
+              />
+            </div>
+          </div>
 
           <div className="field-row">
             <label className="field" style={{ flex: 1 }}>
@@ -159,57 +146,8 @@ export function CreateGroup({ onDone }: { onDone: () => void }) {
             )}
           </div>
 
-          <div style={{ marginBottom: 14 }}>
+          <div style={{ margin: '16px 0 18px' }}>
             <Toggle checked={openEnded} onChange={setOpenEnded} label={t('noEndDate')} />
-            <p className="hint" style={{ textAlign: 'left' }}>
-              {t('noEndDateHelp')}
-            </p>
-          </div>
-
-          <div className="field">
-            <span className="field-label">{t('groupPhoto')}</span>
-            {photo ? (
-              <div className="receipt-preview">
-                <img src={photo} alt="" />
-                <button type="button" className="btn btn-sm" onClick={() => setPhoto(null)}>
-                  <Trash2 size={15} />
-                  {t('removePhoto')}
-                </button>
-              </div>
-            ) : (
-              <button type="button" className="btn btn-block" onClick={() => fileRef.current?.click()}>
-                <Camera size={17} />
-                {t('addGroupPhoto')}
-              </button>
-            )}
-            <input
-              ref={fileRef}
-              type="file"
-              accept="image/*"
-              hidden
-              onChange={async (e) => {
-                const file = e.target.files?.[0]
-                if (file) setPhoto(await shrinkGroupPhoto(file))
-              }}
-            />
-          </div>
-
-          <IconPicker value={emoji} color={color} onChange={setEmoji} />
-
-          <div className="field">
-            <span className="field-label">{t('groupColor')}</span>
-            <div className="color-grid">
-              {GROUP_COLORS.map((c) => (
-                <button
-                  key={c}
-                  type="button"
-                  className={`color-dot ${color === c ? 'is-on' : ''}`}
-                  style={{ background: c }}
-                  onClick={() => setColor(c)}
-                  aria-label={c}
-                />
-              ))}
-            </div>
           </div>
 
           {error && <p className="form-error">{error}</p>}

@@ -1,14 +1,12 @@
-import { useMemo } from 'react'
 import { useGroup, useBalances } from '../state'
-import { formatBalance, settlements, toPoints } from '../lib/ledger'
+import { formatBalance, toPoints } from '../lib/ledger'
 import { Avatar, MedalAvatar } from '../components/ui'
 
 const MEDALS = ['🥇', '🥈', '🥉']
 
 export function Ranking() {
-  const { state, me, t } = useGroup()
+  const { me, t } = useGroup()
   const rows = useBalances()
-  const transfers = useMemo(() => settlements(rows), [rows])
   const top3 = rows.slice(0, 3)
   const order: Array<0 | 1 | 2> = [1, 0, 2] // argent, or, bronze
 
@@ -38,7 +36,6 @@ export function Ranking() {
       </div>
 
       <div className="section-title">{t('rankingTitle')}</div>
-      <p style={{ color: 'var(--muted)', fontSize: 13, margin: '-6px 0 14px', lineHeight: 1.45 }}>{t('balanceHelp')}</p>
 
       <div className="stack">
         {rows.map((row) => (
@@ -64,28 +61,6 @@ export function Ranking() {
         ))}
       </div>
 
-      <div className="section-title">{t('whoOwesWho')}</div>
-      <p style={{ color: 'var(--muted)', fontSize: 12, margin: '-6px 0 12px', lineHeight: 1.45 }}>{t('gapsHelp')}</p>
-      <div className="stack">
-        {transfers.length === 0 && <div className="empty">{t('allSettled')}</div>}
-        {transfers.map((transfer, i) => {
-          const from = state.members.find((m) => m.id === transfer.fromId)
-          const to = state.members.find((m) => m.id === transfer.toId)
-          if (!from || !to) return null
-          return (
-            <div key={i} className="rank-row">
-              <Avatar member={from} size={32} />
-              <span style={{ flex: 1, minWidth: 0, fontSize: 13.5, lineHeight: 1.35 }}>
-                <b>{from.name}</b> <span style={{ color: 'var(--muted)' }}>{t('owesTo')}</span> <b>{to.name}</b>
-              </span>
-              <Avatar member={to} size={32} />
-              <span className="pill pill-accent">
-                {toPoints(transfer.centi)} {toPoints(transfer.centi) > 1 ? t('points') : t('point')}
-              </span>
-            </div>
-          )
-        })}
-      </div>
     </>
   )
 }

@@ -1,31 +1,18 @@
-import { useRef } from 'react'
-import { ArrowLeft, Camera, Trash2 } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import { useGroup } from '../state'
 import { formatBalance } from '../lib/ledger'
 import { Avatar, Toggle } from '../components/ui'
 import { taskTitle } from '../components/TaskRow'
+import { EmojiField } from '../components/EmojiField'
+import { groupEmoji } from '../lib/identity'
 
 /**
  * Les reglages du groupe, ouverts depuis les trois points.
  * Ce qui concerne la personne est ailleurs : le profil se modifie depuis
  * la liste des groupes, pas depuis l'interieur d'un groupe.
  */
-/** Reduit la photo du groupe pour qu'elle reste legere. */
-async function shrinkGroupPhoto(file: File): Promise<string> {
-  const bitmap = await createImageBitmap(file)
-  const size = 400
-  const canvas = document.createElement('canvas')
-  canvas.width = size
-  canvas.height = size
-  const ctx = canvas.getContext('2d')!
-  const side = Math.min(bitmap.width, bitmap.height)
-  ctx.drawImage(bitmap, (bitmap.width - side) / 2, (bitmap.height - side) / 2, side, side, 0, 0, size, size)
-  return canvas.toDataURL('image/jpeg', 0.72)
-}
-
 export function GroupSettings({ onClose }: { onClose: () => void }) {
   const { state, me, isChef, isHost, lang, t, updateGroup, setRole, toggleRecurring } = useGroup()
-  const fileRef = useRef<HTMLInputElement>(null)
   if (!me) return null
 
   const recurring = state.tasks.filter((task) => task.recurring)
@@ -47,37 +34,16 @@ export function GroupSettings({ onClose }: { onClose: () => void }) {
         <>
           <div className="card">
             <div className="field">
-              <span className="field-label">{t('groupPhoto')}</span>
-              {state.group.photo ? (
-                <div className="receipt-preview">
-                  <img src={state.group.photo} alt="" />
-                  <button type="button" className="btn btn-sm" onClick={() => updateGroup({ photo: null })}>
-                    <Trash2 size={15} />
-                    {t('removePhoto')}
-                  </button>
-                </div>
-              ) : (
-                <button type="button" className="btn btn-block" onClick={() => fileRef.current?.click()}>
-                  <Camera size={17} />
-                  {t('addGroupPhoto')}
-                </button>
-              )}
-              <input
-                ref={fileRef}
-                type="file"
-                accept="image/*"
-                hidden
-                onChange={async (e) => {
-                  const file = e.target.files?.[0]
-                  if (file) updateGroup({ photo: await shrinkGroupPhoto(file) })
-                }}
-              />
-            </div>
-
-            <label className="field">
               <span className="field-label">{t('groupName')}</span>
-              <input className="input" value={state.group.name} onChange={(e) => updateGroup({ name: e.target.value })} />
-            </label>
+              <div className="row" style={{ gap: 10 }}>
+                <EmojiField value={groupEmoji(state.group.emoji)} onChange={(emoji) => updateGroup({ emoji })} />
+                <input
+                  className="input"
+                  value={state.group.name}
+                  onChange={(e) => updateGroup({ name: e.target.value })}
+                />
+              </div>
+            </div>
 
             <div className="field-row">
               <label className="field" style={{ flex: 1 }}>
@@ -102,7 +68,7 @@ export function GroupSettings({ onClose }: { onClose: () => void }) {
               )}
             </div>
 
-            <div style={{ marginBottom: 14 }}>
+            <div style={{ marginBottom: 18 }}>
               <Toggle
                 checked={!state.group.endDate}
                 onChange={(on) => updateGroup({ endDate: on ? null : state.group.startDate })}

@@ -174,25 +174,24 @@ export function App() {
   }
 
   return (
-    <div className="app">
+    <div className="app has-floating-action">
       {/* Les commandes d'abord, l'identite du groupe en dessous. */}
       <div className="topbar">
         <button type="button" className="icon-button" onClick={() => selectGroup(null)} aria-label={t('backToGroups')}>
           <ArrowLeft size={20} />
         </button>
-        <span />
+        <GroupMark group={view.group} small />
         <button type="button" className="icon-button" onClick={() => setMenuOpen(true)} aria-label={t('groupMenu')}>
           <MoreHorizontal size={20} />
         </button>
       </div>
 
       <div className="group-head">
-        <GroupMark group={view.group} small />
         <span className="topbar-name">{view.group.name}</span>
         <span className="topbar-dates">{formatRange(view.group.startDate, view.group.endDate, lang)}</span>
       </div>
 
-      {tab === 'home' && <Home goRanking={() => setTab('ranking')} />}
+      {tab === 'home' && <Home />}
       {tab === 'ranking' && <Ranking />}
       {tab === 'planning' && <Planning />}
       {tab === 'expenses' && <Expenses />}

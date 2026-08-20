@@ -63,10 +63,6 @@ export function Expenses() {
 
       {tab === 'list' ? (
         <>
-          <button type="button" className="btn btn-primary btn-block" onClick={() => setCreating(true)}>
-            <Plus size={18} />
-            {t('addExpense')}
-          </button>
 
           {expenses.length === 0 && <div className="empty">{t('noExpense')}</div>}
 
@@ -148,6 +144,17 @@ export function Expenses() {
             })}
           </div>
         </>
+      )}
+
+      {tab === 'list' && (
+        <div className="bottom-action above-nav">
+          <div className="bottom-action-inner is-inline">
+            <button type="button" className="btn btn-primary" onClick={() => setCreating(true)}>
+              <Plus size={18} />
+              {t('addExpense')}
+            </button>
+          </div>
+        </div>
       )}
 
       {creating && <NewExpenseSheet onClose={() => setCreating(false)} />}

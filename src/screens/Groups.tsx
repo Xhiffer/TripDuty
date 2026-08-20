@@ -7,7 +7,7 @@ import { GroupMark, Sheet } from '../components/ui'
 import { formatRange } from '../lib/i18n'
 
 export function Groups({ header }: { header: ReactNode }) {
-  const { myGroups, data, lang, t, selectGroup, joinByCode } = useApp()
+  const { myGroups, lang, t, selectGroup, joinByCode } = useApp()
   const [creating, setCreating] = useState(false)
   // La feuille du bas : d'abord le choix, puis la saisie du code si besoin.
   const [sheet, setSheet] = useState<'closed' | 'choice' | 'code'>('closed')
@@ -33,22 +33,15 @@ export function Groups({ header }: { header: ReactNode }) {
 
       <div className="stack" style={{ marginTop: 8 }}>
         {myGroups.length === 0 && <div className="empty">{t('noGroupYet')}</div>}
-        {myGroups.map((group) => {
-          const count = data.memberships.filter((m) => m.groupId === group.id).length
-          return (
-            <button key={group.id} type="button" className="group-card" onClick={() => selectGroup(group.id)}>
-              <GroupMark group={group} />
-              <span style={{ flex: 1, minWidth: 0 }}>
-                <span className="group-name">{group.name}</span>
-                <span className="group-meta">
-                  {t(`kind_${group.kind}`)} · {count} {count > 1 ? t('people') : t('personOne')}
-                </span>
-                <span className="group-meta">{formatRange(group.startDate, group.endDate, lang)}</span>
-              </span>
-              <span className="group-arrow">→</span>
-            </button>
-          )
-        })}
+        {myGroups.map((group) => (
+          <button key={group.id} type="button" className="group-card" onClick={() => selectGroup(group.id)}>
+            <GroupMark group={group} />
+            <span style={{ flex: 1, minWidth: 0 }}>
+              <span className="group-name">{group.name}</span>
+              <span className="group-meta">{formatRange(group.startDate, group.endDate, lang)}</span>
+            </span>
+          </button>
+        ))}
       </div>
 
       {/* Le geste principal reste sous le pouce, quelle que soit la longueur

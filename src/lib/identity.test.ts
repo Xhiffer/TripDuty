@@ -101,24 +101,32 @@ describe('ageFrom', () => {
     expect(ageFrom('pas-une-date')).toBeNull()
   })
 
+  /**
+   * toISOString() convertit en temps universel : passe minuit, une date locale
+   * repasse la veille et le test se met a echouer sans que rien n'ait change.
+   * On ecrit donc la date avec les composants locaux.
+   */
+  const jour = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+
   it('calcule un age plausible', () => {
     const naissance = new Date()
     naissance.setFullYear(naissance.getFullYear() - 30)
-    expect(ageFrom(naissance.toISOString().slice(0, 10))).toBe(30)
+    expect(ageFrom(jour(naissance))).toBe(30)
   })
 
   it('ne compte pas l annee tant que l anniversaire n est pas passe', () => {
     const demain = new Date()
     demain.setDate(demain.getDate() + 1)
     demain.setFullYear(demain.getFullYear() - 25)
-    expect(ageFrom(demain.toISOString().slice(0, 10))).toBe(24)
+    expect(ageFrom(jour(demain))).toBe(24)
   })
 
   it('compte l annee une fois l anniversaire passe', () => {
     const hier = new Date()
     hier.setDate(hier.getDate() - 1)
     hier.setFullYear(hier.getFullYear() - 25)
-    expect(ageFrom(hier.toISOString().slice(0, 10))).toBe(25)
+    expect(ageFrom(jour(hier))).toBe(25)
   })
 })
 

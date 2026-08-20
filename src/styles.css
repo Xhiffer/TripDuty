@@ -1683,6 +1683,9 @@ button {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(138px, 1fr));
   gap: 10px;
+  /* Une ligne de champs respire comme un champ seul : sans cela, ce qui suit
+     vient se coller aux dates. */
+  margin-bottom: 14px;
 }
 
 .field-row > .field {
@@ -1708,4 +1711,57 @@ button {
   border-radius: 12px;
   padding: 10px 12px;
   margin: 0 0 14px;
+}
+
+/* Le geste principal d'un ecran de groupe, juste au-dessus de la barre.
+   Le fondu part de plus haut : la liste disparait doucement sous le bouton
+   au lieu d'etre coupee net en plein milieu d'une carte. */
+.bottom-action.above-nav {
+  bottom: calc(var(--nav-h) + env(safe-area-inset-bottom));
+  padding: 34px 16px 12px;
+  background: linear-gradient(to top, var(--bg) 62%, color-mix(in srgb, var(--bg) 55%, transparent) 82%, transparent);
+}
+
+/* Le bouton prend la largeur de son contenu, pas celle de l'ecran. */
+.bottom-action-inner.is-inline {
+  display: flex;
+  justify-content: center;
+}
+
+.bottom-action-inner.is-inline .btn {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
+}
+
+/* Le solde de l'accueil informe, il n'alerte pas. */
+.rank-row.is-quiet {
+  background: var(--surface-2);
+}
+
+/* L'emoji du groupe, saisi comme un champ mais presente comme un bouton. */
+.emoji-field {
+  width: 52px;
+  height: 52px;
+  flex: none;
+  text-align: center;
+  font-size: 26px;
+  line-height: 1;
+  border-radius: 14px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  outline: none;
+  padding: 0;
+}
+
+.emoji-field:focus {
+  border-color: var(--accent);
+}
+
+/* Un ecran de groupe garde de la place sous son bouton flottant. */
+.app.has-floating-action {
+  padding-bottom: calc(var(--nav-h) + env(safe-area-inset-bottom) + 88px);
+}
+
+/* L'icone du groupe se pose au centre de la barre, entre les deux commandes. */
+.topbar > .group-mark {
+  justify-self: center;
 }

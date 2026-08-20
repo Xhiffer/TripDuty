@@ -10,7 +10,7 @@ import { NewTaskSheet } from '../components/NewTaskSheet'
 import { Plus } from 'lucide-react'
 import { formatDay } from '../lib/i18n'
 
-export function Home({ goRanking }: { goRanking: () => void }) {
+export function Home() {
   const { state, me, lang, t, activeDate } = useGroup()
   const rows = useBalances()
   const [openTask, setOpenTask] = useState<Task | null>(null)
@@ -35,8 +35,7 @@ export function Home({ goRanking }: { goRanking: () => void }) {
       {mine && (
         <>
           <div className="section-title">{t('balance')}</div>
-          <div className={`rank-row is-me ${mine.centi < 0 ? 'is-last' : ''}`}>
-            <span className="rank-num">{mine.rank}</span>
+          <div className="rank-row is-quiet">
             <Avatar member={mine.member} size={40} />
             <span style={{ flex: 1, minWidth: 0 }}>
               <span className="rank-name">{mine.member.name}</span>
@@ -44,27 +43,15 @@ export function Home({ goRanking }: { goRanking: () => void }) {
                 {mine.tasksDone} {mine.tasksDone > 1 ? t('tasksDone') : t('taskDoneOne')}
               </span>
             </span>
-            <span className="rank-score" style={{ color: mine.centi < 0 ? 'var(--danger)' : 'var(--good)' }}>
-              {formatBalance(mine.centi)}
-            </span>
+            <span className="rank-score">{formatBalance(mine.centi)}</span>
           </div>
-          <p style={{ color: 'var(--muted)', fontSize: 12, margin: '8px 2px 0', lineHeight: 1.45 }}>
-            {t('balanceHelp')}
-          </p>
         </>
       )}
 
-      <button type="button" className="btn btn-block" style={{ marginTop: 16 }} onClick={goRanking}>
-        {t('seeAll')} →
-      </button>
 
       <div className="section-title">
         {t('todayTasks')} · {formatDay(activeDate, lang)}
       </div>
-      <button type="button" className="btn btn-primary btn-block" style={{ marginBottom: 12 }} onClick={() => setCreating(true)}>
-        <Plus size={18} />
-        {t('addTask')}
-      </button>
 
       <div className="stack">
         {dayTasks.length === 0 && <div className="empty">{t('noTaskToday')}</div>}
@@ -102,6 +89,15 @@ export function Home({ goRanking }: { goRanking: () => void }) {
           </p>
         </>
       )}
+
+      <div className="bottom-action above-nav">
+        <div className="bottom-action-inner is-inline">
+          <button type="button" className="btn btn-primary" onClick={() => setCreating(true)}>
+            <Plus size={18} />
+            {t('addTask')}
+          </button>
+        </div>
+      </div>
 
       {openTask && <TaskSheet task={openTask} onClose={() => setOpenTask(null)} />}
       {creating && <NewTaskSheet onClose={() => setCreating(false)} />}

@@ -87,3 +87,14 @@ export function ageFrom(birthDate: string): number | null {
   if (monthDiff < 0 || (monthDiff === 0 && now.getDate() < born.getDate())) age -= 1
   return age
 }
+
+/**
+ * Les groupes crees avant l'emoji ont garde un identifiant d'icone dessinee
+ * (« lucide:mountain »). Sans traduction, cet identifiant s'afficherait tel
+ * quel en travers de la carte : on le remplace par un emoji neutre.
+ */
+export function groupEmoji(raw: string | null | undefined): string {
+  const value = (raw ?? '').trim()
+  if (!value || value.startsWith('lucide:')) return '\u{1F3DD}\u{FE0F}'
+  return value
+}

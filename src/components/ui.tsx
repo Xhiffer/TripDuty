@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import type { Group, Person } from '../types'
-import { iconFor, solidColor } from '../lib/groupIcons'
+import { groupEmoji } from '../lib/identity'
 
 /** Pastille de profil : la photo si elle existe, sinon les initiales sur la couleur du compte. */
 export function Avatar({ member, size = 40 }: { member: Person | null; size?: number }) {
@@ -42,14 +42,11 @@ export function GroupMark({ group, small = false }: { group: Group; small?: bool
     )
   }
 
-  const Icon = iconFor(group.emoji)
+  // Les icones du groupe appartiennent a ceux qui le creent : ils mettent
+  // l'emoji qu'ils veulent. Les icones dessinees restent pour l'application.
   return (
     <span className={`group-mark ${small ? 'is-small' : ''}`}>
-      {Icon ? (
-        <Icon size={small ? 36 : 40} strokeWidth={1.9} color={solidColor(group.color)} />
-      ) : (
-        <span className="group-emoji">{group.emoji}</span>
-      )}
+      <span className="group-emoji">{groupEmoji(group.emoji)}</span>
     </span>
   )
 }
