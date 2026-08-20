@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { groupDays, useGroup } from '../state'
 import { CATALOG, EMOJI_CHOICES } from '../lib/catalog'
 import { CLOSING_CATALOG } from '../lib/closing'
 import { Avatar, Segmented, Sheet, Toggle } from './ui'
 import { formatDay } from '../lib/i18n'
+import { Search } from 'lucide-react'
 
 export function NewTaskSheet({ closing = false, onClose }: { closing?: boolean; onClose: () => void }) {
   const { state, me, isChef, lang, t, addTask, validateTask, activeDate } = useGroup()
@@ -24,7 +25,22 @@ export function NewTaskSheet({ closing = false, onClose }: { closing?: boolean; 
   const [scope, setScope] = useState<'all' | 'some'>('all')
   const [beneficiaries, setBeneficiaries] = useState<string[]>(me ? [me.id] : [])
   const days = groupDays(state.group)
+  const [query, setQuery] = useState('')
   const catalog = closing ? CLOSING_CATALOG : CATALOG
+
+  // Une liste de vingt et une taches se parcourt encore, mais elle va grandir.
+  // On cherche sans accent : « menage » trouve « ménage ».
+  const fold = (text: string) =>
+    text
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+
+  const shown = useMemo(() => {
+    const needle = fold(query.trim())
+    if (!needle) return catalog
+    return catalog.filter((c) => fold(`${c.fr} ${c.en}`).includes(needle))
+  }, [query, catalog])
 
   const finalBeneficiaries = scope === 'all' ? state.members.map((m) => m.id) : beneficiaries
 
@@ -172,8 +188,20 @@ export function NewTaskSheet({ closing = false, onClose }: { closing?: boolean; 
       )}
 
       {tab === 'catalog' ? (
+        <>
+        <div className="search-field" style={{ marginBottom: 12 }}>
+          <Search size={17} />
+          <input
+            className="search-input"
+            value={query}
+            placeholder={t('searchTask')}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+        </div>
+
         <div className="stack">
-          {catalog.map((c) => (
+          {shown.length === 0 && <div className="empty">{t('noTaskFound')}</div>}
+          {shown.map((c) => (
             <button
               key={c.key}
               type="button"
@@ -199,6 +227,7 @@ export function NewTaskSheet({ closing = false, onClose }: { closing?: boolean; 
             </button>
           ))}
         </div>
+        </>
       ) : (
         <>
           <label className="field">
