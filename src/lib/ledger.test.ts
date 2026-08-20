@@ -122,21 +122,31 @@ describe('completionAmounts', () => {
     expect(completionAmounts(15, ['p1'], ['p1'])).toEqual({ p1: 0 })
   })
 
-  it('le prix par tete ne depend pas du nombre de beneficiaires', () => {
+  it('servir moins de monde coute un peu plus cher par tete', () => {
     const cinq = completionAmounts(30, ['p1'], ['p1', 'p2', 'p3', 'p4', 'p5'], 10)
     const dix = completionAmounts(30, ['p1'], ['p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7', 'p8', 'p9', 'p10'], 10)
-    expect(cinq.p2).toBe(-3 * CENTI)
+    // Un repas prepare pour cinq revient plus cher par tete qu'un repas
+    // prepare pour dix : c'est le revers de la courbe.
     expect(dix.p2).toBe(-3 * CENTI)
+    expect(cinq.p2).toBe(-396)
+    expect(cinq.p2).toBeLessThan(dix.p2)
   })
 
-  it('cuisiner pour dix rapporte le double de cuisiner pour cinq', () => {
+  it('cuisiner pour dix rapporte moins du double de cuisiner pour cinq', () => {
     const cinq = completionAmounts(30, ['p1'], ['p1', 'p2', 'p3', 'p4', 'p5'], 10)
     const dix = completionAmounts(30, ['p1'], ['p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7', 'p8', 'p9', 'p10'], 10)
-    // Credit brut : 5 x 3 points contre 10 x 3 points, la part personnelle etant
-    // la meme des deux cotes.
-    expect(dix.p1 - cinq.p1).toBe(15 * CENTI)
+    // La division stricte donnait exactement le double, ce qui punissait trop
+    // celui qui cuisine pour la moitie du groupe.
+    expect(dix.p1).toBeLessThan(2 * cinq.p1)
+    expect(dix.p1).toBeGreaterThan(cinq.p1)
     expect(sum(cinq)).toBe(0)
     expect(sum(dix)).toBe(0)
+  })
+
+  it('servir tout le groupe vaut le bareme entier', () => {
+    const amounts = completionAmounts(30, ['p1'], ['p1', 'p2', 'p3', 'p4', 'p5'], 5)
+    expect(sum(amounts)).toBe(0)
+    expect(amounts.p2).toBe(-6 * CENTI)
   })
 
   it('se cuisiner pour soi seul dans un groupe de dix ne rapporte toujours rien', () => {

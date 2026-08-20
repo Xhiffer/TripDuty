@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { groupDays, useGroup } from '../state'
+import { shareOfGroup } from '../lib/ledger'
 import { CATALOG, EMOJI_CHOICES } from '../lib/catalog'
 import { CLOSING_CATALOG } from '../lib/closing'
 import { Avatar, Segmented, Sheet, Toggle } from './ui'
@@ -43,6 +44,17 @@ export function NewTaskSheet({ closing = false, onClose }: { closing?: boolean; 
   }, [query, catalog])
 
   const finalBeneficiaries = scope === 'all' ? state.members.map((m) => m.id) : beneficiaries
+
+  // Ce que la tache rapportera vraiment, une fois le nombre de servis et le
+  // nombre de personnes qui la font pris en compte. On l'affiche avant de
+  // valider : personne ne doit decouvrir le partage apres coup.
+  const groupSize = state.members.length
+  function preview(basePoints: number) {
+    if (finalBeneficiaries.length === 0) return null
+    const total = basePoints * shareOfGroup(finalBeneficiaries.length, groupSize)
+    const each = doers.length > 0 ? total / doers.length : total
+    return { total, each }
+  }
 
   function toggleIn(list: string[], set: (v: string[]) => void, id: string) {
     set(list.includes(id) ? list.filter((x) => x !== id) : [...list, id])
@@ -223,7 +235,7 @@ export function NewTaskSheet({ closing = false, onClose }: { closing?: boolean; 
               <span style={{ flex: 1, minWidth: 0 }}>
                 <span className="task-title">{lang === 'en' ? c.en : c.fr}</span>
               </span>
-              <span className="task-points">+{c.points}</span>
+              <span className="task-points">+{Math.round(preview(c.points)?.each ?? c.points)}</span>
             </button>
           ))}
         </div>
@@ -265,6 +277,15 @@ export function NewTaskSheet({ closing = false, onClose }: { closing?: boolean; 
               onChange={(e) => setPoints(Number(e.target.value))}
             />
           </label>
+
+          {preview(points) && doers.length > 0 && (
+            <p className="earn-preview">
+              {doers.length > 1
+                ? `${t('eachEarns')} +${Math.round(preview(points)!.each)}`
+                : `${t('youEarn')} +${Math.round(preview(points)!.each)}`}
+              {finalBeneficiaries.length < groupSize && ` · ${t('servedCount', )} ${finalBeneficiaries.length}/${groupSize}`}
+            </p>
+          )}
 
           <button
             type="button"

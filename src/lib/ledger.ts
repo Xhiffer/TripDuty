@@ -20,17 +20,36 @@ export function beneficiariesOf(task: Task, members: Person[]): string[] {
 }
 
 /**
+ * Combien la tache coute au groupe, selon le nombre de personnes servies.
+ *
+ * Diviser au prorata punissait trop : cuisiner pour cinq personnes sur dix ne
+ * demande pas la moitie du travail de cuisiner pour dix. On suit donc une
+ * courbe plutot qu'une droite. Sur une tache a 35 points dans un groupe de
+ * dix, servir la moitie du groupe rapporte 23 points au lieu de 17,5.
+ *
+ * L'exposant regle la douceur : 1 redonne la division stricte, 0 rendrait la
+ * tache independante du nombre de servis.
+ */
+const SCALE_EXPONENT = 0.6
+
+export function shareOfGroup(served: number, groupSize: number): number {
+  if (served <= 0 || groupSize <= 0) return 0
+  return Math.min(1, served / groupSize) ** SCALE_EXPONENT
+}
+
+/**
  * Construit la ligne de compte d'une tache faite.
  * Ceux qui la font sont credites, ceux pour qui elle est faite sont debites.
  * Celui qui fait la tache est en general aussi beneficiaire, comme celui
  * qui paie le restaurant y mange aussi.
  *
- * Les points du catalogue disent ce que vaut la tache quand elle profite au
- * groupe entier. Ce qui ne bouge jamais, c'est le prix par tete : chaque
- * beneficiaire est debite de points / taille du groupe, qu'ils soient deux ou
- * dix. Cuisiner pour cinq dans un groupe de dix rapporte donc la moitie de ce
- * que rapporte cuisiner pour dix, et se faire a manger pour soi seul ne
- * rapporte rien du tout — on se debite exactement de ce qu'on se credite.
+ * Le total est fixe par la courbe ci-dessus, puis reparti : ce que gagnent
+ * ceux qui font est exactement ce que doivent ceux pour qui c'est fait, donc
+ * la somme reste nulle et se faire a manger pour soi seul ne rapporte rien.
+ *
+ * Le revers assume : servir peu de monde coute un peu plus cher par tete, de
+ * la meme facon qu'un repas prepare pour deux revient plus cher qu'un repas
+ * prepare pour dix.
  */
 export function completionAmounts(
   points: number,
@@ -42,18 +61,16 @@ export function completionAmounts(
   const amounts: Record<string, number> = {}
   if (doerIds.length === 0 || beneficiaryIds.length === 0) return amounts
 
-  // Le prix par tete est arrondi une seule fois, puis multiplie : c'est ce qui
-  // garantit que les debits tombent juste et que la somme fasse zero.
-  const perHead = Math.round((points * CENTI) / Math.max(1, groupSize))
-  const total = perHead * beneficiaryIds.length
+  const total = Math.round(points * CENTI * shareOfGroup(beneficiaryIds.length, groupSize))
 
   const credits = splitExact(total, doerIds.length)
   doerIds.forEach((id, i) => {
     amounts[id] = (amounts[id] ?? 0) + credits[i]
   })
 
-  beneficiaryIds.forEach((id) => {
-    amounts[id] = (amounts[id] ?? 0) - perHead
+  const debits = splitExact(total, beneficiaryIds.length)
+  beneficiaryIds.forEach((id, i) => {
+    amounts[id] = (amounts[id] ?? 0) - debits[i]
   })
 
   return amounts
