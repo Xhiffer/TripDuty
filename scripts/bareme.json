@@ -1,0 +1,1652 @@
+[
+ {
+  "famille": "Cuisine et repas",
+  "nom": "Préparer le petit-déjeuner",
+  "emoji": "🥐",
+  "duree": 25,
+  "met": 2.0,
+  "corvee": 0,
+  "tete": 0,
+  "points": 12
+ },
+ {
+  "famille": "Cuisine et repas",
+  "nom": "Préparer les cafés du matin",
+  "emoji": "☕",
+  "duree": 10,
+  "met": 2.0,
+  "corvee": 0,
+  "tete": 0,
+  "points": 6
+ },
+ {
+  "famille": "Cuisine et repas",
+  "nom": "Aller chercher le pain",
+  "emoji": "🥖",
+  "duree": 15,
+  "met": 2.3,
+  "corvee": 0,
+  "tete": 0,
+  "points": 8
+ },
+ {
+  "famille": "Cuisine et repas",
+  "nom": "Préparer un déjeuner simple",
+  "emoji": "🥗",
+  "duree": 35,
+  "met": 2.0,
+  "corvee": 0,
+  "tete": 0,
+  "points": 15
+ },
+ {
+  "famille": "Cuisine et repas",
+  "nom": "Cuisiner un vrai repas du soir",
+  "emoji": "🍲",
+  "duree": 75,
+  "met": 2.5,
+  "corvee": 0,
+  "tete": 1,
+  "points": 30
+ },
+ {
+  "famille": "Cuisine et repas",
+  "nom": "Cuisiner pour une grande tablée",
+  "emoji": "🍝",
+  "duree": 100,
+  "met": 2.5,
+  "corvee": 0,
+  "tete": 1,
+  "points": 36
+ },
+ {
+  "famille": "Cuisine et repas",
+  "nom": "Faire le barbecue",
+  "emoji": "🔥",
+  "duree": 60,
+  "met": 3.0,
+  "corvee": 0,
+  "tete": 0,
+  "points": 24
+ },
+ {
+  "famille": "Cuisine et repas",
+  "nom": "Préparer l'apéro",
+  "emoji": "🍻",
+  "duree": 20,
+  "met": 2.0,
+  "corvee": 0,
+  "tete": 0,
+  "points": 10
+ },
+ {
+  "famille": "Cuisine et repas",
+  "nom": "Préparer un dessert",
+  "emoji": "🍰",
+  "duree": 40,
+  "met": 2.0,
+  "corvee": 0,
+  "tete": 0,
+  "points": 16
+ },
+ {
+  "famille": "Cuisine et repas",
+  "nom": "Éplucher et couper les légumes",
+  "emoji": "🔪",
+  "duree": 20,
+  "met": 2.0,
+  "corvee": 0,
+  "tete": 0,
+  "points": 10
+ },
+ {
+  "famille": "Cuisine et repas",
+  "nom": "Préparer le pique-nique de la journée",
+  "emoji": "🧺",
+  "duree": 30,
+  "met": 2.5,
+  "corvee": 0,
+  "tete": 1,
+  "points": 15
+ },
+ {
+  "famille": "Cuisine et repas",
+  "nom": "Faire les sandwichs de la rando",
+  "emoji": "🥪",
+  "duree": 20,
+  "met": 2.0,
+  "corvee": 0,
+  "tete": 0,
+  "points": 10
+ },
+ {
+  "famille": "Cuisine et repas",
+  "nom": "Mettre la table",
+  "emoji": "🍽️",
+  "duree": 8,
+  "met": 2.0,
+  "corvee": 0,
+  "tete": 0,
+  "points": 5
+ },
+ {
+  "famille": "Cuisine et repas",
+  "nom": "Débarrasser la table",
+  "emoji": "🧽",
+  "duree": 10,
+  "met": 2.5,
+  "corvee": 0,
+  "tete": 0,
+  "points": 6
+ },
+ {
+  "famille": "Cuisine et repas",
+  "nom": "Ranger les courses en arrivant",
+  "emoji": "🛍️",
+  "duree": 15,
+  "met": 2.5,
+  "corvee": 0,
+  "tete": 0,
+  "points": 8
+ },
+ {
+  "famille": "Cuisine et repas",
+  "nom": "Surveiller la cuisson pendant que les autres sont dehors",
+  "emoji": "⏲️",
+  "duree": 30,
+  "met": 2.0,
+  "corvee": 1,
+  "tete": 0,
+  "points": 14
+ },
+ {
+  "famille": "Cuisine et repas",
+  "nom": "Sortir la viande à décongeler à temps",
+  "emoji": "🥩",
+  "duree": 5,
+  "met": 2.0,
+  "corvee": 0,
+  "tete": 2,
+  "points": 5
+ },
+ {
+  "famille": "Cuisine et repas",
+  "nom": "Gérer les allergies et les régimes de chacun",
+  "emoji": "🌾",
+  "duree": 15,
+  "met": 2.0,
+  "corvee": 0,
+  "tete": 2,
+  "points": 10
+ },
+ {
+  "famille": "Cuisine et repas",
+  "nom": "Remplir la glacière et faire les glaçons",
+  "emoji": "🧊",
+  "duree": 10,
+  "met": 2.5,
+  "corvee": 0,
+  "tete": 1,
+  "points": 7
+ },
+ {
+  "famille": "Cuisine et repas",
+  "nom": "Préparer le goûter",
+  "emoji": "🍪",
+  "duree": 10,
+  "met": 2.0,
+  "corvee": 0,
+  "tete": 0,
+  "points": 6
+ },
+ {
+  "famille": "Vaisselle et cuisine à nettoyer",
+  "nom": "Faire la vaisselle du soir à la main",
+  "emoji": "🧼",
+  "duree": 40,
+  "met": 2.3,
+  "corvee": 1,
+  "tete": 0,
+  "points": 18
+ },
+ {
+  "famille": "Vaisselle et cuisine à nettoyer",
+  "nom": "Faire la vaisselle du midi",
+  "emoji": "🍴",
+  "duree": 20,
+  "met": 2.3,
+  "corvee": 1,
+  "tete": 0,
+  "points": 11
+ },
+ {
+  "famille": "Vaisselle et cuisine à nettoyer",
+  "nom": "Remplir et lancer le lave-vaisselle",
+  "emoji": "🫧",
+  "duree": 10,
+  "met": 2.3,
+  "corvee": 0,
+  "tete": 0,
+  "points": 6
+ },
+ {
+  "famille": "Vaisselle et cuisine à nettoyer",
+  "nom": "Vider le lave-vaisselle",
+  "emoji": "🥣",
+  "duree": 8,
+  "met": 2.3,
+  "corvee": 1,
+  "tete": 0,
+  "points": 6
+ },
+ {
+  "famille": "Vaisselle et cuisine à nettoyer",
+  "nom": "Récurer les casseroles et le plat du four",
+  "emoji": "🍳",
+  "duree": 20,
+  "met": 2.5,
+  "corvee": 2,
+  "tete": 0,
+  "points": 12
+ },
+ {
+  "famille": "Vaisselle et cuisine à nettoyer",
+  "nom": "Laver les verres à la main",
+  "emoji": "🥂",
+  "duree": 12,
+  "met": 2.3,
+  "corvee": 1,
+  "tete": 0,
+  "points": 7
+ },
+ {
+  "famille": "Vaisselle et cuisine à nettoyer",
+  "nom": "Nettoyer le plan de travail et l'évier",
+  "emoji": "🧴",
+  "duree": 12,
+  "met": 3.0,
+  "corvee": 0,
+  "tete": 0,
+  "points": 7
+ },
+ {
+  "famille": "Vaisselle et cuisine à nettoyer",
+  "nom": "Nettoyer la plaque de cuisson",
+  "emoji": "♨️",
+  "duree": 15,
+  "met": 3.0,
+  "corvee": 1,
+  "tete": 0,
+  "points": 10
+ },
+ {
+  "famille": "Vaisselle et cuisine à nettoyer",
+  "nom": "Nettoyer le four",
+  "emoji": "🔥",
+  "duree": 35,
+  "met": 3.0,
+  "corvee": 2,
+  "tete": 0,
+  "points": 20
+ },
+ {
+  "famille": "Vaisselle et cuisine à nettoyer",
+  "nom": "Ranger la cuisine après le repas",
+  "emoji": "🧹",
+  "duree": 20,
+  "met": 3.0,
+  "corvee": 1,
+  "tete": 0,
+  "points": 12
+ },
+ {
+  "famille": "Courses et intendance",
+  "nom": "Faire les grandes courses de la semaine",
+  "emoji": "🛒",
+  "duree": 90,
+  "met": 2.3,
+  "corvee": 0,
+  "tete": 2,
+  "points": 38
+ },
+ {
+  "famille": "Courses et intendance",
+  "nom": "Faire la liste de courses",
+  "emoji": "📝",
+  "duree": 15,
+  "met": 1.5,
+  "corvee": 0,
+  "tete": 2,
+  "points": 10
+ },
+ {
+  "famille": "Courses et intendance",
+  "nom": "Aller au marché",
+  "emoji": "🥬",
+  "duree": 60,
+  "met": 2.3,
+  "corvee": 0,
+  "tete": 1,
+  "points": 25
+ },
+ {
+  "famille": "Courses et intendance",
+  "nom": "Repartir chercher un oubli",
+  "emoji": "🚙",
+  "duree": 25,
+  "met": 2.3,
+  "corvee": 1,
+  "tete": 0,
+  "points": 13
+ },
+ {
+  "famille": "Courses et intendance",
+  "nom": "Porter et monter les courses",
+  "emoji": "📦",
+  "duree": 15,
+  "met": 3.5,
+  "corvee": 0,
+  "tete": 0,
+  "points": 10
+ },
+ {
+  "famille": "Courses et intendance",
+  "nom": "Surveiller les stocks (papier, sacs, éponges)",
+  "emoji": "🧻",
+  "duree": 10,
+  "met": 2.0,
+  "corvee": 0,
+  "tete": 2,
+  "points": 8
+ },
+ {
+  "famille": "Courses et intendance",
+  "nom": "Avancer l'argent pour le groupe",
+  "emoji": "💶",
+  "duree": 5,
+  "met": 1.5,
+  "corvee": 0,
+  "tete": 1,
+  "points": 4
+ },
+ {
+  "famille": "Courses et intendance",
+  "nom": "Tenir les comptes du séjour",
+  "emoji": "🧮",
+  "duree": 20,
+  "met": 1.5,
+  "corvee": 1,
+  "tete": 2,
+  "points": 14
+ },
+ {
+  "famille": "Courses et intendance",
+  "nom": "Aller chercher le gaz, les bûches ou la glace",
+  "emoji": "⛽",
+  "duree": 30,
+  "met": 3.5,
+  "corvee": 0,
+  "tete": 1,
+  "points": 19
+ },
+ {
+  "famille": "Courses et intendance",
+  "nom": "Réserver le restaurant pour tout le monde",
+  "emoji": "📞",
+  "duree": 15,
+  "met": 1.5,
+  "corvee": 0,
+  "tete": 2,
+  "points": 10
+ },
+ {
+  "famille": "Courses et intendance",
+  "nom": "Gérer les boissons et la cave",
+  "emoji": "🍷",
+  "duree": 15,
+  "met": 2.5,
+  "corvee": 0,
+  "tete": 1,
+  "points": 9
+ },
+ {
+  "famille": "Courses et intendance",
+  "nom": "Acheter les viennoiseries pour tous",
+  "emoji": "🥐",
+  "duree": 20,
+  "met": 2.3,
+  "corvee": 0,
+  "tete": 0,
+  "points": 10
+ },
+ {
+  "famille": "Ménage",
+  "nom": "Passer le balai dans la pièce de vie",
+  "emoji": "🧹",
+  "duree": 15,
+  "met": 3.3,
+  "corvee": 0,
+  "tete": 0,
+  "points": 9
+ },
+ {
+  "famille": "Ménage",
+  "nom": "Passer l'aspirateur dans toute la maison",
+  "emoji": "🌀",
+  "duree": 40,
+  "met": 3.5,
+  "corvee": 1,
+  "tete": 0,
+  "points": 22
+ },
+ {
+  "famille": "Ménage",
+  "nom": "Passer la serpillière",
+  "emoji": "🪣",
+  "duree": 30,
+  "met": 3.5,
+  "corvee": 1,
+  "tete": 0,
+  "points": 18
+ },
+ {
+  "famille": "Ménage",
+  "nom": "Ranger le salon",
+  "emoji": "🛋️",
+  "duree": 15,
+  "met": 2.5,
+  "corvee": 0,
+  "tete": 0,
+  "points": 8
+ },
+ {
+  "famille": "Ménage",
+  "nom": "Faire la poussière",
+  "emoji": "🪶",
+  "duree": 20,
+  "met": 2.5,
+  "corvee": 1,
+  "tete": 0,
+  "points": 11
+ },
+ {
+  "famille": "Ménage",
+  "nom": "Nettoyer les vitres",
+  "emoji": "🪟",
+  "duree": 35,
+  "met": 3.0,
+  "corvee": 1,
+  "tete": 0,
+  "points": 18
+ },
+ {
+  "famille": "Ménage",
+  "nom": "Nettoyer la table extérieure",
+  "emoji": "🪑",
+  "duree": 10,
+  "met": 3.0,
+  "corvee": 0,
+  "tete": 0,
+  "points": 6
+ },
+ {
+  "famille": "Ménage",
+  "nom": "Secouer les tapis et les paillassons",
+  "emoji": "🧶",
+  "duree": 10,
+  "met": 3.0,
+  "corvee": 0,
+  "tete": 0,
+  "points": 6
+ },
+ {
+  "famille": "Ménage",
+  "nom": "Ranger les affaires que les autres ont laissées",
+  "emoji": "🧦",
+  "duree": 15,
+  "met": 2.5,
+  "corvee": 2,
+  "tete": 1,
+  "points": 11
+ },
+ {
+  "famille": "Ménage",
+  "nom": "Faire son lit et ranger sa chambre",
+  "emoji": "🛏️",
+  "duree": 10,
+  "met": 2.0,
+  "corvee": 0,
+  "tete": 0,
+  "points": 6
+ },
+ {
+  "famille": "Ménage",
+  "nom": "Changer les draps d'une chambre",
+  "emoji": "🧷",
+  "duree": 15,
+  "met": 2.0,
+  "corvee": 1,
+  "tete": 0,
+  "points": 9
+ },
+ {
+  "famille": "Ménage",
+  "nom": "Aérer et ranger les chambres communes",
+  "emoji": "🌬️",
+  "duree": 15,
+  "met": 2.5,
+  "corvee": 0,
+  "tete": 0,
+  "points": 8
+ },
+ {
+  "famille": "Ménage",
+  "nom": "Nettoyer l'entrée et les chaussures",
+  "emoji": "👟",
+  "duree": 10,
+  "met": 3.0,
+  "corvee": 0,
+  "tete": 0,
+  "points": 6
+ },
+ {
+  "famille": "Ménage",
+  "nom": "Nettoyer le frigo",
+  "emoji": "🧊",
+  "duree": 25,
+  "met": 3.0,
+  "corvee": 2,
+  "tete": 0,
+  "points": 16
+ },
+ {
+  "famille": "Ménage",
+  "nom": "Ranger le cellier et la réserve",
+  "emoji": "🗄️",
+  "duree": 20,
+  "met": 3.0,
+  "corvee": 0,
+  "tete": 0,
+  "points": 11
+ },
+ {
+  "famille": "Ménage",
+  "nom": "Balayer la terrasse",
+  "emoji": "🍂",
+  "duree": 15,
+  "met": 4.0,
+  "corvee": 0,
+  "tete": 0,
+  "points": 10
+ },
+ {
+  "famille": "Ménage",
+  "nom": "Nettoyer après la soirée",
+  "emoji": "🎉",
+  "duree": 45,
+  "met": 3.0,
+  "corvee": 2,
+  "tete": 0,
+  "points": 24
+ },
+ {
+  "famille": "Ménage",
+  "nom": "Rentrer et ranger les affaires de plage",
+  "emoji": "🩴",
+  "duree": 15,
+  "met": 3.0,
+  "corvee": 1,
+  "tete": 0,
+  "points": 10
+ },
+ {
+  "famille": "Salle de bain et toilettes",
+  "nom": "Nettoyer les toilettes",
+  "emoji": "🚽",
+  "duree": 12,
+  "met": 2.5,
+  "corvee": 3,
+  "tete": 0,
+  "points": 9
+ },
+ {
+  "famille": "Salle de bain et toilettes",
+  "nom": "Nettoyer la salle de bain en entier",
+  "emoji": "🛁",
+  "duree": 30,
+  "met": 3.2,
+  "corvee": 2,
+  "tete": 0,
+  "points": 18
+ },
+ {
+  "famille": "Salle de bain et toilettes",
+  "nom": "Nettoyer la douche",
+  "emoji": "🚿",
+  "duree": 20,
+  "met": 3.2,
+  "corvee": 2,
+  "tete": 0,
+  "points": 13
+ },
+ {
+  "famille": "Salle de bain et toilettes",
+  "nom": "Déboucher la bonde de douche",
+  "emoji": "🪠",
+  "duree": 10,
+  "met": 2.5,
+  "corvee": 3,
+  "tete": 0,
+  "points": 8
+ },
+ {
+  "famille": "Salle de bain et toilettes",
+  "nom": "Nettoyer le lavabo et le miroir",
+  "emoji": "🪞",
+  "duree": 10,
+  "met": 2.5,
+  "corvee": 1,
+  "tete": 0,
+  "points": 6
+ },
+ {
+  "famille": "Salle de bain et toilettes",
+  "nom": "Passer un coup après les douches de tout le monde",
+  "emoji": "💧",
+  "duree": 15,
+  "met": 3.2,
+  "corvee": 2,
+  "tete": 0,
+  "points": 11
+ },
+ {
+  "famille": "Salle de bain et toilettes",
+  "nom": "Changer les serviettes",
+  "emoji": "🧻",
+  "duree": 8,
+  "met": 1.5,
+  "corvee": 0,
+  "tete": 1,
+  "points": 6
+ },
+ {
+  "famille": "Salle de bain et toilettes",
+  "nom": "Remettre du papier toilette et du savon",
+  "emoji": "🧼",
+  "duree": 5,
+  "met": 2.0,
+  "corvee": 0,
+  "tete": 2,
+  "points": 5
+ },
+ {
+  "famille": "Linge",
+  "nom": "Lancer une machine",
+  "emoji": "🧺",
+  "duree": 8,
+  "met": 1.5,
+  "corvee": 0,
+  "tete": 1,
+  "points": 6
+ },
+ {
+  "famille": "Linge",
+  "nom": "Étendre le linge",
+  "emoji": "👕",
+  "duree": 15,
+  "met": 1.5,
+  "corvee": 1,
+  "tete": 0,
+  "points": 9
+ },
+ {
+  "famille": "Linge",
+  "nom": "Ramasser et plier le linge",
+  "emoji": "🧦",
+  "duree": 20,
+  "met": 1.5,
+  "corvee": 1,
+  "tete": 0,
+  "points": 11
+ },
+ {
+  "famille": "Linge",
+  "nom": "Laver les serviettes de plage",
+  "emoji": "🏖️",
+  "duree": 12,
+  "met": 2.0,
+  "corvee": 0,
+  "tete": 1,
+  "points": 8
+ },
+ {
+  "famille": "Linge",
+  "nom": "Laver les torchons",
+  "emoji": "🧽",
+  "duree": 8,
+  "met": 2.0,
+  "corvee": 1,
+  "tete": 0,
+  "points": 6
+ },
+ {
+  "famille": "Linge",
+  "nom": "Repasser",
+  "emoji": "👔",
+  "duree": 25,
+  "met": 2.3,
+  "corvee": 2,
+  "tete": 0,
+  "points": 14
+ },
+ {
+  "famille": "Linge",
+  "nom": "Trier le linge sale commun",
+  "emoji": "🗑️",
+  "duree": 10,
+  "met": 2.0,
+  "corvee": 1,
+  "tete": 1,
+  "points": 7
+ },
+ {
+  "famille": "Déchets",
+  "nom": "Sortir les poubelles",
+  "emoji": "🗑️",
+  "duree": 6,
+  "met": 3.0,
+  "corvee": 2,
+  "tete": 0,
+  "points": 6
+ },
+ {
+  "famille": "Déchets",
+  "nom": "Changer le sac poubelle",
+  "emoji": "♻️",
+  "duree": 4,
+  "met": 2.5,
+  "corvee": 1,
+  "tete": 0,
+  "points": 3
+ },
+ {
+  "famille": "Déchets",
+  "nom": "Descendre le verre au conteneur",
+  "emoji": "🍾",
+  "duree": 15,
+  "met": 3.5,
+  "corvee": 1,
+  "tete": 0,
+  "points": 11
+ },
+ {
+  "famille": "Déchets",
+  "nom": "Faire le tri, et refaire celui des autres",
+  "emoji": "🥫",
+  "duree": 12,
+  "met": 2.5,
+  "corvee": 2,
+  "tete": 1,
+  "points": 10
+ },
+ {
+  "famille": "Déchets",
+  "nom": "Nettoyer la poubelle",
+  "emoji": "🪰",
+  "duree": 12,
+  "met": 3.0,
+  "corvee": 3,
+  "tete": 0,
+  "points": 10
+ },
+ {
+  "famille": "Déchets",
+  "nom": "Emmener les cartons à la déchetterie",
+  "emoji": "📦",
+  "duree": 40,
+  "met": 3.5,
+  "corvee": 1,
+  "tete": 1,
+  "points": 26
+ },
+ {
+  "famille": "Route et voitures",
+  "nom": "Conduire moins d'une heure",
+  "emoji": "🚗",
+  "duree": 45,
+  "met": 2.0,
+  "corvee": 1,
+  "tete": 1,
+  "points": 22
+ },
+ {
+  "famille": "Route et voitures",
+  "nom": "Conduire entre 1 h et 3 h",
+  "emoji": "🛣️",
+  "duree": 120,
+  "met": 2.0,
+  "corvee": 1,
+  "tete": 1,
+  "points": 46
+ },
+ {
+  "famille": "Route et voitures",
+  "nom": "Conduire plus de 3 h",
+  "emoji": "🚐",
+  "duree": 240,
+  "met": 2.0,
+  "corvee": 1,
+  "tete": 2,
+  "points": 61
+ },
+ {
+  "famille": "Route et voitures",
+  "nom": "Conduire de nuit",
+  "emoji": "🌙",
+  "duree": 90,
+  "met": 2.0,
+  "corvee": 2,
+  "tete": 1,
+  "points": 42
+ },
+ {
+  "famille": "Route et voitures",
+  "nom": "Faire le plein",
+  "emoji": "⛽",
+  "duree": 15,
+  "met": 2.5,
+  "corvee": 0,
+  "tete": 1,
+  "points": 9
+ },
+ {
+  "famille": "Route et voitures",
+  "nom": "Charger le coffre pour tout le monde",
+  "emoji": "🧳",
+  "duree": 25,
+  "met": 6.0,
+  "corvee": 1,
+  "tete": 1,
+  "points": 21
+ },
+ {
+  "famille": "Route et voitures",
+  "nom": "Décharger les voitures",
+  "emoji": "📤",
+  "duree": 20,
+  "met": 6.0,
+  "corvee": 0,
+  "tete": 0,
+  "points": 14
+ },
+ {
+  "famille": "Route et voitures",
+  "nom": "Nettoyer l'habitacle",
+  "emoji": "🧽",
+  "duree": 25,
+  "met": 3.0,
+  "corvee": 1,
+  "tete": 0,
+  "points": 14
+ },
+ {
+  "famille": "Route et voitures",
+  "nom": "Aller chercher quelqu'un en voiture",
+  "emoji": "🚕",
+  "duree": 40,
+  "met": 2.0,
+  "corvee": 1,
+  "tete": 1,
+  "points": 21
+ },
+ {
+  "famille": "Route et voitures",
+  "nom": "Gérer l'essence et les péages pour tous",
+  "emoji": "🎫",
+  "duree": 10,
+  "met": 1.5,
+  "corvee": 0,
+  "tete": 2,
+  "points": 8
+ },
+ {
+  "famille": "Organisation et charge mentale",
+  "nom": "Organiser la journée de demain",
+  "emoji": "🗺️",
+  "duree": 20,
+  "met": 1.5,
+  "corvee": 0,
+  "tete": 2,
+  "points": 13
+ },
+ {
+  "famille": "Organisation et charge mentale",
+  "nom": "Réserver une activité pour le groupe",
+  "emoji": "🎟️",
+  "duree": 25,
+  "met": 1.5,
+  "corvee": 0,
+  "tete": 2,
+  "points": 15
+ },
+ {
+  "famille": "Organisation et charge mentale",
+  "nom": "Trouver le logement et gérer la réservation",
+  "emoji": "🏡",
+  "duree": 90,
+  "met": 1.5,
+  "corvee": 1,
+  "tete": 2,
+  "points": 42
+ },
+ {
+  "famille": "Organisation et charge mentale",
+  "nom": "Faire le planning des repas de la semaine",
+  "emoji": "📅",
+  "duree": 30,
+  "met": 1.5,
+  "corvee": 0,
+  "tete": 2,
+  "points": 17
+ },
+ {
+  "famille": "Organisation et charge mentale",
+  "nom": "Relancer tout le monde pour l'heure du départ",
+  "emoji": "⏰",
+  "duree": 10,
+  "met": 1.5,
+  "corvee": 2,
+  "tete": 2,
+  "points": 10
+ },
+ {
+  "famille": "Organisation et charge mentale",
+  "nom": "Rappeler au groupe les tâches à faire",
+  "emoji": "📣",
+  "duree": 10,
+  "met": 1.5,
+  "corvee": 3,
+  "tete": 2,
+  "points": 11
+ },
+ {
+  "famille": "Organisation et charge mentale",
+  "nom": "Gérer un imprévu (panne, pluie, blessure)",
+  "emoji": "🚨",
+  "duree": 45,
+  "met": 2.0,
+  "corvee": 2,
+  "tete": 2,
+  "points": 29
+ },
+ {
+  "famille": "Organisation et charge mentale",
+  "nom": "Répartir les chambres et les lits",
+  "emoji": "🗝️",
+  "duree": 20,
+  "met": 2.0,
+  "corvee": 1,
+  "tete": 2,
+  "points": 14
+ },
+ {
+  "famille": "Organisation et charge mentale",
+  "nom": "Accueillir et faire visiter à l'arrivée",
+  "emoji": "👋",
+  "duree": 20,
+  "met": 2.0,
+  "corvee": 0,
+  "tete": 1,
+  "points": 11
+ },
+ {
+  "famille": "Organisation et charge mentale",
+  "nom": "Gérer la pharmacie et les petits bobos",
+  "emoji": "🩹",
+  "duree": 15,
+  "met": 2.0,
+  "corvee": 1,
+  "tete": 2,
+  "points": 11
+ },
+ {
+  "famille": "Organisation et charge mentale",
+  "nom": "S'occuper des enfants pendant que les autres soufflent",
+  "emoji": "🧸",
+  "duree": 60,
+  "met": 3.0,
+  "corvee": 1,
+  "tete": 2,
+  "points": 34
+ },
+ {
+  "famille": "Organisation et charge mentale",
+  "nom": "Gérer la musique et l'enceinte",
+  "emoji": "🎸",
+  "duree": 10,
+  "met": 1.5,
+  "corvee": 0,
+  "tete": 0,
+  "points": 6
+ },
+ {
+  "famille": "Organisation et charge mentale",
+  "nom": "Trier et partager les photos du séjour",
+  "emoji": "📸",
+  "duree": 40,
+  "met": 1.5,
+  "corvee": 0,
+  "tete": 1,
+  "points": 19
+ },
+ {
+  "famille": "Dehors et vacances",
+  "nom": "Monter le parasol et sortir les transats",
+  "emoji": "⛱️",
+  "duree": 15,
+  "met": 3.5,
+  "corvee": 0,
+  "tete": 0,
+  "points": 10
+ },
+ {
+  "famille": "Dehors et vacances",
+  "nom": "Nettoyer la piscine",
+  "emoji": "🏊",
+  "duree": 25,
+  "met": 3.5,
+  "corvee": 1,
+  "tete": 1,
+  "points": 18
+ },
+ {
+  "famille": "Dehors et vacances",
+  "nom": "Allumer et entretenir le feu",
+  "emoji": "🪵",
+  "duree": 20,
+  "met": 3.0,
+  "corvee": 0,
+  "tete": 0,
+  "points": 11
+ },
+ {
+  "famille": "Dehors et vacances",
+  "nom": "Préparer le matériel de rando",
+  "emoji": "🎒",
+  "duree": 25,
+  "met": 2.5,
+  "corvee": 0,
+  "tete": 1,
+  "points": 13
+ },
+ {
+  "famille": "Dehors et vacances",
+  "nom": "Porter le sac commun pendant la rando",
+  "emoji": "⛰️",
+  "duree": 90,
+  "met": 7.0,
+  "corvee": 1,
+  "tete": 0,
+  "points": 47
+ },
+ {
+  "famille": "Dehors et vacances",
+  "nom": "Sortir le chien",
+  "emoji": "🐕",
+  "duree": 30,
+  "met": 3.0,
+  "corvee": 0,
+  "tete": 1,
+  "points": 17
+ },
+ {
+  "famille": "Dehors et vacances",
+  "nom": "Arroser les plantes",
+  "emoji": "🪴",
+  "duree": 10,
+  "met": 2.5,
+  "corvee": 0,
+  "tete": 1,
+  "points": 7
+ },
+ {
+  "famille": "Dehors et vacances",
+  "nom": "Ranger le matériel de plage en fin de journée",
+  "emoji": "🏄",
+  "duree": 15,
+  "met": 3.0,
+  "corvee": 1,
+  "tete": 0,
+  "points": 10
+ },
+ {
+  "famille": "Tâches de clôture (dernier jour)",
+  "nom": "Grand ménage de la maison",
+  "emoji": "🧹",
+  "duree": 120,
+  "met": 3.0,
+  "corvee": 2,
+  "tete": 1,
+  "points": 57
+ },
+ {
+  "famille": "Tâches de clôture (dernier jour)",
+  "nom": "Passer l'aspirateur partout",
+  "emoji": "🌀",
+  "duree": 60,
+  "met": 3.5,
+  "corvee": 1,
+  "tete": 0,
+  "points": 30
+ },
+ {
+  "famille": "Tâches de clôture (dernier jour)",
+  "nom": "Nettoyer toutes les salles de bain",
+  "emoji": "🛁",
+  "duree": 60,
+  "met": 3.2,
+  "corvee": 2,
+  "tete": 0,
+  "points": 30
+ },
+ {
+  "famille": "Tâches de clôture (dernier jour)",
+  "nom": "Vider et nettoyer le frigo",
+  "emoji": "🧊",
+  "duree": 40,
+  "met": 3.0,
+  "corvee": 2,
+  "tete": 1,
+  "points": 26
+ },
+ {
+  "famille": "Tâches de clôture (dernier jour)",
+  "nom": "Sortir toutes les poubelles et le verre",
+  "emoji": "🗑️",
+  "duree": 30,
+  "met": 3.5,
+  "corvee": 2,
+  "tete": 0,
+  "points": 21
+ },
+ {
+  "famille": "Tâches de clôture (dernier jour)",
+  "nom": "Défaire tous les lits et regrouper le linge",
+  "emoji": "🛏️",
+  "duree": 35,
+  "met": 2.0,
+  "corvee": 1,
+  "tete": 0,
+  "points": 16
+ },
+ {
+  "famille": "Tâches de clôture (dernier jour)",
+  "nom": "Nettoyer le barbecue et la plancha",
+  "emoji": "🔥",
+  "duree": 30,
+  "met": 3.0,
+  "corvee": 3,
+  "tete": 0,
+  "points": 20
+ },
+ {
+  "famille": "Tâches de clôture (dernier jour)",
+  "nom": "Charger les voitures pour le retour",
+  "emoji": "🧳",
+  "duree": 40,
+  "met": 6.0,
+  "corvee": 1,
+  "tete": 1,
+  "points": 30
+ },
+ {
+  "famille": "Tâches de clôture (dernier jour)",
+  "nom": "Faire l'état des lieux avec le propriétaire",
+  "emoji": "📋",
+  "duree": 30,
+  "met": 1.5,
+  "corvee": 1,
+  "tete": 2,
+  "points": 19
+ },
+ {
+  "famille": "Tâches de clôture (dernier jour)",
+  "nom": "Rendre les clés et attendre le propriétaire",
+  "emoji": "🗝️",
+  "duree": 30,
+  "met": 1.5,
+  "corvee": 2,
+  "tete": 1,
+  "points": 19
+ },
+ {
+  "famille": "Tâches de clôture (dernier jour)",
+  "nom": "Solder les comptes du séjour",
+  "emoji": "🧮",
+  "duree": 30,
+  "met": 1.5,
+  "corvee": 1,
+  "tete": 2,
+  "points": 19
+ },
+ {
+  "famille": "Tâches de clôture (dernier jour)",
+  "nom": "Rendre à chacun ce qu'il a oublié",
+  "emoji": "🎒",
+  "duree": 20,
+  "met": 2.0,
+  "corvee": 1,
+  "tete": 2,
+  "points": 14
+ },
+ {
+  "famille": "Arrivée et installation",
+  "nom": "Faire tous les lits à l'arrivée",
+  "emoji": "🛏️",
+  "duree": 40,
+  "met": 2.0,
+  "corvee": 1,
+  "tete": 0,
+  "points": 18
+ },
+ {
+  "famille": "Arrivée et installation",
+  "nom": "Monter les valises de tout le monde",
+  "emoji": "🧳",
+  "duree": 25,
+  "met": 6.0,
+  "corvee": 1,
+  "tete": 0,
+  "points": 18
+ },
+ {
+  "famille": "Arrivée et installation",
+  "nom": "Faire les courses d'arrivée",
+  "emoji": "🛒",
+  "duree": 60,
+  "met": 2.3,
+  "corvee": 0,
+  "tete": 2,
+  "points": 28
+ },
+ {
+  "famille": "Arrivée et installation",
+  "nom": "Comprendre et expliquer les équipements de la maison",
+  "emoji": "🔌",
+  "duree": 30,
+  "met": 1.5,
+  "corvee": 1,
+  "tete": 2,
+  "points": 19
+ },
+ {
+  "famille": "Arrivée et installation",
+  "nom": "Repérer les commerces et leurs horaires",
+  "emoji": "🗺️",
+  "duree": 20,
+  "met": 1.5,
+  "corvee": 0,
+  "tete": 2,
+  "points": 13
+ },
+ {
+  "famille": "Enfants",
+  "nom": "Occuper les enfants pendant le trajet",
+  "emoji": "🚸",
+  "duree": 60,
+  "met": 2.0,
+  "corvee": 2,
+  "tete": 1,
+  "points": 31
+ },
+ {
+  "famille": "Enfants",
+  "nom": "Surveiller les enfants à la piscine ou à la plage",
+  "emoji": "🏊",
+  "duree": 60,
+  "met": 2.0,
+  "corvee": 1,
+  "tete": 2,
+  "points": 31
+ },
+ {
+  "famille": "Enfants",
+  "nom": "Coucher les enfants",
+  "emoji": "🌜",
+  "duree": 30,
+  "met": 2.0,
+  "corvee": 2,
+  "tete": 1,
+  "points": 19
+ },
+ {
+  "famille": "Enfants",
+  "nom": "Gérer un réveil en pleine nuit",
+  "emoji": "😴",
+  "duree": 30,
+  "met": 2.0,
+  "corvee": 3,
+  "tete": 1,
+  "points": 21
+ },
+ {
+  "famille": "Enfants",
+  "nom": "Donner le bain aux enfants",
+  "emoji": "🛁",
+  "duree": 25,
+  "met": 3.0,
+  "corvee": 1,
+  "tete": 1,
+  "points": 16
+ },
+ {
+  "famille": "Enfants",
+  "nom": "Préparer les repas des enfants",
+  "emoji": "🍼",
+  "duree": 25,
+  "met": 2.0,
+  "corvee": 0,
+  "tete": 1,
+  "points": 13
+ },
+ {
+  "famille": "Enfants",
+  "nom": "Changer une couche",
+  "emoji": "🧷",
+  "duree": 6,
+  "met": 2.5,
+  "corvee": 3,
+  "tete": 0,
+  "points": 6
+ },
+ {
+  "famille": "Animaux",
+  "nom": "Nourrir les animaux",
+  "emoji": "🐈",
+  "duree": 8,
+  "met": 2.0,
+  "corvee": 0,
+  "tete": 1,
+  "points": 6
+ },
+ {
+  "famille": "Animaux",
+  "nom": "Ramasser les crottes du chien",
+  "emoji": "💩",
+  "duree": 8,
+  "met": 3.0,
+  "corvee": 3,
+  "tete": 0,
+  "points": 8
+ },
+ {
+  "famille": "Soirée et lendemain",
+  "nom": "Être le conducteur sobre de la soirée",
+  "emoji": "🔑",
+  "duree": 180,
+  "met": 2.0,
+  "corvee": 2,
+  "tete": 1,
+  "points": 61
+ },
+ {
+  "famille": "Soirée et lendemain",
+  "nom": "S'occuper de quelqu'un qui a trop bu",
+  "emoji": "🤢",
+  "duree": 45,
+  "met": 2.5,
+  "corvee": 3,
+  "tete": 1,
+  "points": 29
+ },
+ {
+  "famille": "Soirée et lendemain",
+  "nom": "Ramasser les verres au réveil",
+  "emoji": "🥂",
+  "duree": 20,
+  "met": 2.5,
+  "corvee": 2,
+  "tete": 0,
+  "points": 12
+ },
+ {
+  "famille": "Soirée et lendemain",
+  "nom": "Préparer le petit-déjeuner du lendemain de fête",
+  "emoji": "🍳",
+  "duree": 30,
+  "met": 2.0,
+  "corvee": 1,
+  "tete": 1,
+  "points": 17
+ },
+ {
+  "famille": "Soirée et lendemain",
+  "nom": "Ranger la sono et les enceintes",
+  "emoji": "🔊",
+  "duree": 15,
+  "met": 3.0,
+  "corvee": 0,
+  "tete": 0,
+  "points": 9
+ },
+ {
+  "famille": "Soirée et lendemain",
+  "nom": "Ramasser les mégots et les déchets de la terrasse",
+  "emoji": "🚬",
+  "duree": 15,
+  "met": 3.0,
+  "corvee": 2,
+  "tete": 0,
+  "points": 11
+ },
+ {
+  "famille": "Pannes et imprévus",
+  "nom": "Déboucher un évier ou des toilettes",
+  "emoji": "🪠",
+  "duree": 25,
+  "met": 3.0,
+  "corvee": 3,
+  "tete": 1,
+  "points": 20
+ },
+ {
+  "famille": "Pannes et imprévus",
+  "nom": "Réparer ou remplacer quelque chose de cassé",
+  "emoji": "🔧",
+  "duree": 45,
+  "met": 3.0,
+  "corvee": 2,
+  "tete": 2,
+  "points": 32
+ },
+ {
+  "famille": "Pannes et imprévus",
+  "nom": "Gérer une panne d'eau, d'électricité ou de wifi",
+  "emoji": "⚡",
+  "duree": 40,
+  "met": 2.0,
+  "corvee": 2,
+  "tete": 2,
+  "points": 26
+ },
+ {
+  "famille": "Pannes et imprévus",
+  "nom": "Emmener quelqu'un chez le médecin",
+  "emoji": "🏥",
+  "duree": 90,
+  "met": 2.0,
+  "corvee": 2,
+  "tete": 2,
+  "points": 48
+ },
+ {
+  "famille": "Pannes et imprévus",
+  "nom": "Prévenir le propriétaire d'une casse",
+  "emoji": "📞",
+  "duree": 15,
+  "met": 1.5,
+  "corvee": 2,
+  "tete": 2,
+  "points": 13
+ },
+ {
+  "famille": "Cuisine, le reste du travail",
+  "nom": "Gérer deux services de petit-déjeuner",
+  "emoji": "⏰",
+  "duree": 45,
+  "met": 2.0,
+  "corvee": 1,
+  "tete": 1,
+  "points": 22
+ },
+ {
+  "famille": "Cuisine, le reste du travail",
+  "nom": "Cuisiner un plat en plus pour les régimes particuliers",
+  "emoji": "🥦",
+  "duree": 30,
+  "met": 2.5,
+  "corvee": 1,
+  "tete": 2,
+  "points": 19
+ },
+ {
+  "famille": "Cuisine, le reste du travail",
+  "nom": "Utiliser les restes pour ne rien jeter",
+  "emoji": "🥡",
+  "duree": 25,
+  "met": 2.5,
+  "corvee": 0,
+  "tete": 2,
+  "points": 15
+ },
+ {
+  "famille": "Cuisine, le reste du travail",
+  "nom": "Préparer les provisions de la journée en mer ou en rando",
+  "emoji": "🎒",
+  "duree": 25,
+  "met": 2.5,
+  "corvee": 0,
+  "tete": 2,
+  "points": 15
+ },
+ {
+  "famille": "Cuisine, le reste du travail",
+  "nom": "Faire le café pour ceux qui se lèvent tard",
+  "emoji": "☕",
+  "duree": 10,
+  "met": 2.0,
+  "corvee": 1,
+  "tete": 0,
+  "points": 6
+ },
+ {
+  "famille": "Dehors, le reste du travail",
+  "nom": "Gréer et amarrer le bateau",
+  "emoji": "⛵",
+  "duree": 40,
+  "met": 4.0,
+  "corvee": 0,
+  "tete": 1,
+  "points": 23
+ },
+ {
+  "famille": "Dehors, le reste du travail",
+  "nom": "Gonfler les paddles et le matériel",
+  "emoji": "🛟",
+  "duree": 25,
+  "met": 4.0,
+  "corvee": 1,
+  "tete": 0,
+  "points": 16
+ },
+ {
+  "famille": "Dehors, le reste du travail",
+  "nom": "Nettoyer le barbecue juste après le repas",
+  "emoji": "🔥",
+  "duree": 25,
+  "met": 3.0,
+  "corvee": 2,
+  "tete": 0,
+  "points": 16
+ },
+ {
+  "famille": "Dehors, le reste du travail",
+  "nom": "Rentrer le linge et les serviettes le soir",
+  "emoji": "🌇",
+  "duree": 10,
+  "met": 1.5,
+  "corvee": 0,
+  "tete": 1,
+  "points": 7
+ },
+ {
+  "famille": "Dehors, le reste du travail",
+  "nom": "Réserver et récupérer le matériel loué",
+  "emoji": "🚵",
+  "duree": 45,
+  "met": 2.3,
+  "corvee": 0,
+  "tete": 2,
+  "points": 23
+ },
+ {
+  "famille": "Vie du groupe (à débattre)",
+  "nom": "Désamorcer une tension entre deux personnes",
+  "emoji": "🕊️",
+  "duree": 30,
+  "met": 1.5,
+  "corvee": 3,
+  "tete": 2,
+  "points": 24
+ },
+ {
+  "famille": "Vie du groupe (à débattre)",
+  "nom": "Écouter quelqu'un qui ne va pas",
+  "emoji": "👂",
+  "duree": 45,
+  "met": 1.5,
+  "corvee": 1,
+  "tete": 1,
+  "points": 22
+ },
+ {
+  "famille": "Vie du groupe (à débattre)",
+  "nom": "Aller chercher celui qui reste dans son coin",
+  "emoji": "🫂",
+  "duree": 30,
+  "met": 1.5,
+  "corvee": 1,
+  "tete": 2,
+  "points": 19
+ },
+ {
+  "famille": "Vie du groupe (à débattre)",
+  "nom": "Organiser un jeu pour tout le monde",
+  "emoji": "🎲",
+  "duree": 45,
+  "met": 2.0,
+  "corvee": 0,
+  "tete": 1,
+  "points": 20
+ },
+ {
+  "famille": "Vie du groupe (à débattre)",
+  "nom": "Prendre les photos du groupe",
+  "emoji": "📷",
+  "duree": 20,
+  "met": 2.0,
+  "corvee": 0,
+  "tete": 1,
+  "points": 11
+ },
+ {
+  "famille": "Vie du groupe (à débattre)",
+  "nom": "Faire les comptes du restaurant à table",
+  "emoji": "🧾",
+  "duree": 15,
+  "met": 1.5,
+  "corvee": 2,
+  "tete": 1,
+  "points": 11
+ }
+]

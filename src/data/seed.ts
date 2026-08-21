@@ -57,7 +57,7 @@ const PEOPLE: Array<[string, string, string, boolean, 'host' | 'chef' | 'member'
 ]
 
 function entry(key: string) {
-  const found = CATALOG.find((c) => c.key === key)
+  const found = CATALOG.find((c) => c.key === key) ?? CLOSING_CATALOG.find((c) => c.key === key)
   if (!found) throw new Error(`Tâche inconnue dans le catalogue : ${key}`)
   return found
 }

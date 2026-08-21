@@ -9,3 +9,4 @@ coverage
 .env
 .env.*
 !.env.example
+scripts/closing_entries.txt

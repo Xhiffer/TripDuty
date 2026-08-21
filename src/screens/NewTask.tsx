@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { groupDays, useGroup } from '../state'
 import { shareOfGroup } from '../lib/ledger'
-import { CATALOG, EMOJI_CHOICES } from '../lib/catalog'
+import { CATALOG, EMOJI_CHOICES, FAMILIES } from '../lib/catalog'
 import { CLOSING_CATALOG } from '../lib/closing'
 import { PageHeader, Toggle } from '../components/ui'
 import { formatDay } from '../lib/i18n'
@@ -158,11 +158,21 @@ export function NewTask({ closing = false, onClose }: { closing?: boolean; onClo
           }}
         >
           <option value="">{t('chooseFromList')}</option>
-          {catalog.map((c) => (
-            <option key={c.key} value={c.key}>
-              {c.emoji} {lang === 'en' ? c.en : c.fr} · {c.points}
-            </option>
-          ))}
+          {closing
+            ? catalog.map((c) => (
+                <option key={c.key} value={c.key}>
+                  {c.emoji} {lang === 'en' ? c.en : c.fr} · {c.points}
+                </option>
+              ))
+            : FAMILIES.map((famille) => (
+                <optgroup key={famille.id} label={lang === 'en' ? famille.en : famille.fr}>
+                  {CATALOG.filter((c) => c.famille === famille.id).map((c) => (
+                    <option key={c.key} value={c.key}>
+                      {c.emoji} {lang === 'en' ? c.en : c.fr} · {c.points}
+                    </option>
+                  ))}
+                </optgroup>
+              ))}
         </select>
       </label>
 
