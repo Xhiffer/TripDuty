@@ -7,6 +7,15 @@ import { PageHeader, Toggle } from '../components/ui'
 import { formatDay } from '../lib/i18n'
 
 /**
+ * Ce que vaut une tache qu'on invente.
+ *
+ * C'est la mediane du bareme. Une tache hors catalogue ne doit etre ni une
+ * bonne affaire ni une punition : sinon on inventerait des taches pour
+ * gagner plus que ce que la liste propose.
+ */
+const POINTS_SUR_MESURE = 13
+
+/**
  * Ajouter une tache occupe une page entiere.
  *
  * Un volet qui monte du bas suppose une application ; dans un navigateur il se
@@ -14,7 +23,7 @@ import { formatDay } from '../lib/i18n'
  * meme fleche retour que le groupe, au meme endroit.
  */
 export function NewTask({ closing = false, onClose }: { closing?: boolean; onClose: () => void }) {
-  const { state, me, isChef, lang, t, addTask, validateTask, activeDate } = useGroup()
+  const { state, me, lang, t, addTask, validateTask, activeDate } = useGroup()
   const catalog = closing ? CLOSING_CATALOG : CATALOG
 
   const [title, setTitle] = useState('')
@@ -22,10 +31,8 @@ export function NewTask({ closing = false, onClose }: { closing?: boolean; onClo
   const [pickingEmoji, setPickingEmoji] = useState(false)
   // La cle de la tache toute faite choisie, vide quand la tache est inventee.
   const [catalogKey, setCatalogKey] = useState('')
-  const [points, setPoints] = useState(15)
   const [date, setDate] = useState(closing ? (state.group.endDate ?? activeDate) : activeDate)
   const [time, setTime] = useState('19:00')
-  const [isClosing, setIsClosing] = useState(closing)
   const [recurring, setRecurring] = useState(false)
   // On note presque toujours une tache une fois qu'elle est faite : on vient de
   // sortir les poubelles, on l'ajoute et c'est fini.
@@ -38,7 +45,7 @@ export function NewTask({ closing = false, onClose }: { closing?: boolean; onClo
 
   const days = groupDays(state.group)
   const chosen = catalog.find((c) => c.key === catalogKey)
-  const finalPoints = chosen ? chosen.points : points
+  const finalPoints = chosen ? chosen.points : POINTS_SUR_MESURE
 
   // Ce que la tache rapportera vraiment, une fois le nombre de servis et le
   // nombre de personnes qui la font pris en compte.
@@ -68,11 +75,11 @@ export function NewTask({ closing = false, onClose }: { closing?: boolean; onClo
       beneficiaryIds: beneficiaries.length === groupSize ? null : beneficiaries,
       createdBy: me?.id ?? '',
       recurring,
-      isClosing,
+      isClosing: closing,
     }
     // Une tache recurrente est posee sur chaque jour restant : le planning
     // montre alors vraiment ce qui est prevu, plutot qu'une simple etiquette.
-    const targets = recurring && !isClosing ? days.filter((d) => d >= date) : [date]
+    const targets = recurring && !closing ? days.filter((d) => d >= date) : [date]
     const created = targets.map((day) => addTask({ ...common, date: day, assignedTo: null }))
 
     // Seule la tache du jour choisi est validee : les jours suivants d'une
@@ -235,27 +242,7 @@ export function NewTask({ closing = false, onClose }: { closing?: boolean; onClo
             label={t('recurringTask')}
           />
         )}
-        {isChef && !closing && <Toggle checked={isClosing} onChange={setIsClosing} label={t('isClosingTask')} />}
       </div>
-
-      {/* Le curseur n'a de sens que pour une tache inventee : celles de la
-          liste ont deja leur valeur, la meme pour tout le groupe. */}
-      {!chosen && (
-        <label className="field">
-          <span className="field-label">
-            {t('taskPoints')} : {points}
-          </span>
-          <input
-            type="range"
-            min={5}
-            max={50}
-            step={5}
-            value={points}
-            style={{ width: '100%', accentColor: 'var(--accent)' }}
-            onChange={(e) => setPoints(Number(e.target.value))}
-          />
-        </label>
-      )}
 
       {beneficiaries.length > 0 && (
         <p className="earn-preview">
