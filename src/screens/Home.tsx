@@ -6,19 +6,21 @@ import { suggestForDay } from '../lib/suggest'
 import { Avatar } from '../components/ui'
 import { TaskRow } from '../components/TaskRow'
 import { TaskSheet } from '../components/TaskSheet'
-import { NewTaskSheet } from '../components/NewTaskSheet'
-import { Plus } from 'lucide-react'
 import { formatDay } from '../lib/i18n'
 
 export function Home() {
   const { state, me, lang, t, activeDate } = useGroup()
   const rows = useBalances()
   const [openTask, setOpenTask] = useState<Task | null>(null)
-  const [creating, setCreating] = useState(false)
 
   const suggestions = useMemo(() => suggestForDay(state, rows, activeDate), [state, rows, activeDate])
 
   const mine = rows.find((r) => r.member.id === me?.id)
+
+  const lowest = rows.length > 0 ? Math.min(...rows.map((r) => r.centi)) : 0
+  const highest = rows.length > 0 ? Math.max(...rows.map((r) => r.centi)) : 0
+  const spread = highest - lowest
+  const position = mine && spread > 0 ? ((mine.centi - lowest) / spread) * 100 : 50
 
   const dayTasks = state.tasks
     .filter((task) => task.date === activeDate && !task.isClosing)
@@ -35,16 +37,23 @@ export function Home() {
       {mine && (
         <>
           <div className="section-title">{t('balance')}</div>
-          <div className="rank-row is-quiet">
-            <Avatar member={mine.member} size={40} />
+          <div className="balance-card">
+            <Avatar member={mine.member} size={44} />
             <span style={{ flex: 1, minWidth: 0 }}>
               <span className="rank-name">{mine.member.name}</span>
               <span className="rank-sub">
                 {mine.tasksDone} {mine.tasksDone > 1 ? t('tasksDone') : t('taskDoneOne')}
               </span>
             </span>
-            <span className="rank-score">{formatBalance(mine.centi)}</span>
+            <span className="balance-figure">{formatBalance(mine.centi)}</span>
           </div>
+          {/* Un solde seul ne dit rien : c'est en voyant ou il tombe entre le
+              plus bas et le plus haut du groupe qu'il devient parlant. */}
+          {spread > 0 && (
+            <div className="balance-bar">
+              <span className="balance-dot" style={{ left: `${position}%` }} />
+            </div>
+          )}
         </>
       )}
 
@@ -90,17 +99,7 @@ export function Home() {
         </>
       )}
 
-      <div className="bottom-action above-nav">
-        <div className="bottom-action-inner is-inline">
-          <button type="button" className="btn btn-primary" onClick={() => setCreating(true)}>
-            <Plus size={18} />
-            {t('addTask')}
-          </button>
-        </div>
-      </div>
-
       {openTask && <TaskSheet task={openTask} onClose={() => setOpenTask(null)} />}
-      {creating && <NewTaskSheet onClose={() => setCreating(false)} />}
     </>
   )
 }

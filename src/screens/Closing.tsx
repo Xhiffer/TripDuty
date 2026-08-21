@@ -6,7 +6,7 @@ import { matchClosing } from '../lib/closing'
 import { Avatar } from '../components/ui'
 import { TaskRow, taskTitle } from '../components/TaskRow'
 import { TaskSheet } from '../components/TaskSheet'
-import { NewTaskSheet } from '../components/NewTaskSheet'
+import { NewTask } from './NewTask'
 
 export function Closing() {
   const { state, me, isChef, lang, t, updateGroup, deleteTask } = useGroup()
@@ -18,6 +18,8 @@ export function Closing() {
   const closingTasks = state.tasks.filter((task) => task.isClosing)
   const mine = rows.find((r) => r.member.id === me?.id)
   const creditors = rows.filter((r) => r.centi > 0)
+
+  if (creating) return <NewTask closing onClose={() => setCreating(false)} />
 
   return (
     <>
@@ -133,7 +135,6 @@ export function Closing() {
       )}
 
       {openTask && <TaskSheet task={openTask} onClose={() => setOpenTask(null)} />}
-      {creating && <NewTaskSheet closing onClose={() => setCreating(false)} />}
     </>
   )
 }

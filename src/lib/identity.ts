@@ -1,25 +1,35 @@
-/** Palette des pastilles de profil, utilisee quand la personne n'a pas de photo. */
 /**
- * Les couleurs de profil et de groupe.
+ * Les couleurs de pastille.
  *
- * Ce ne sont pas des aplats mais des degrades : plusieurs tons d'une meme
- * famille, comme les illustrations. Une couleur unie a cote d'un dessin
- * degrade fait toujours pauvre.
+ * Ce sont des aplats : un degre de plus a lire pour rien, et l'oeil compare
+ * mal deux visages quand chacun se fond dans un fond qui bouge.
  *
  * Ce sont des valeurs CSS completes, stockees telles quelles : la base garde
- * une chaine, et un ancien groupe enregistre en `#ff6a3d` continue de
- * s'afficher, un code hexadecimal etant aussi un fond valable.
+ * une chaine, et un ancien compte enregistre en degrade continue de
+ * s'afficher, ramene a plat a la lecture.
  */
 export const AVATAR_COLORS = [
-  'linear-gradient(135deg, #FFA36B, #FF6F91, #F0559B)',
-  'linear-gradient(135deg, #FFD873, #FFAE4D, #FF8A3D)',
-  'linear-gradient(135deg, #A9E9A4, #4FD9A6, #16BFA6)',
-  'linear-gradient(135deg, #86D2FF, #55A9FF, #5C7DF7)',
-  'linear-gradient(135deg, #CFAcFF, #A87CF6, #7C5CE6)',
-  'linear-gradient(135deg, #FFAEDA, #F77BC2, #E15BA8)',
-  'linear-gradient(135deg, #8FEAE2, #48C9DC, #2FA8CE)',
-  'linear-gradient(135deg, #FF9C9C, #F45A72, #D63A62)',
+  '#ff6f91',
+  '#ffae4d',
+  '#4fd9a6',
+  '#55a9ff',
+  '#a87cf6',
+  '#f77bc2',
+  '#48c9dc',
+  '#f45a72',
 ]
+
+/**
+ * Un fond enregistre avant le passage a l'aplat est un degrade a trois tons :
+ * on garde celui du milieu, qui porte la couleur.
+ */
+export function flatColor(value: string | null | undefined): string | undefined {
+  if (!value) return undefined
+  if (!value.includes('gradient')) return value
+  const tones = value.match(/#[0-9a-f]{3,8}/gi)
+  if (!tones || tones.length === 0) return undefined
+  return tones[Math.floor(tones.length / 2)]
+}
 
 export const GROUP_COLORS = AVATAR_COLORS
 

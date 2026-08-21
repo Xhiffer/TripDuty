@@ -3,7 +3,7 @@ import { Camera, Trash2 } from 'lucide-react'
 import { groupDays, useGroup } from '../state'
 import type { Expense } from '../types'
 import { EXPENSE_CATEGORIES, formatEuros, splitCents } from '../lib/money'
-import { Avatar, Sheet } from './ui'
+import { Avatar, PageHeader } from '../components/ui'
 import { formatDay } from '../lib/i18n'
 
 /** Reduit la photo du ticket pour qu'elle reste legere. */
@@ -26,7 +26,7 @@ function toCents(text: string): number {
   return Math.round(value * 100)
 }
 
-export function NewExpenseSheet({ expense, onClose }: { expense?: Expense; onClose: () => void }) {
+export function NewExpense({ expense, onClose }: { expense?: Expense; onClose: () => void }) {
   const { state, me, lang, t, activeDate, addExpense, updateExpense, deleteExpense } = useGroup()
   const editing = !!expense
 
@@ -39,6 +39,7 @@ export function NewExpenseSheet({ expense, onClose }: { expense?: Expense; onClo
     expense?.participantIds ?? state.members.map((m) => m.id),
   )
   const [receipt, setReceipt] = useState<string | null>(expense?.receipt ?? null)
+  const [pickingEmoji, setPickingEmoji] = useState(false)
   const [error, setError] = useState('')
   const fileRef = useRef<HTMLInputElement>(null)
 
@@ -72,23 +73,35 @@ export function NewExpenseSheet({ expense, onClose }: { expense?: Expense; onClo
   }
 
   return (
-    <Sheet title={editing ? t('editExpense') : t('newExpense')} onClose={onClose}>
-      <label className="field">
-        <span className="field-label">{t('expenseTitle')}</span>
-        <input
-          className="input"
-          value={title}
-          placeholder={t('expenseTitlePlaceholder')}
-          onChange={(e) => {
-            setTitle(e.target.value)
-            setError('')
-          }}
-        />
-      </label>
+    <>
+      <PageHeader title={editing ? t('editExpense') : t('newExpense')} onBack={onClose} backLabel={t('back')} />
 
+      {/* Meme entree en matiere que pour une tache : l'icone, puis le nom. */}
       <div className="field">
-        <span className="field-label">{t('category')}</span>
-        <div className="emoji-grid">
+        <span className="field-label">{t('expenseTitle')}</span>
+        <div className="row" style={{ gap: 10 }}>
+          <button
+            type="button"
+            className="emoji-field"
+            aria-label={t('category')}
+            onClick={() => setPickingEmoji((open) => !open)}
+          >
+            {emoji}
+          </button>
+          <input
+            className="input"
+            value={title}
+            placeholder={t('expenseTitlePlaceholder')}
+            onChange={(e) => {
+              setTitle(e.target.value)
+              setError('')
+            }}
+          />
+        </div>
+      </div>
+
+      {pickingEmoji && (
+        <div className="emoji-grid" style={{ marginBottom: 14 }}>
           {EXPENSE_CATEGORIES.map((c) => (
             <button
               key={c.emoji}
@@ -98,13 +111,14 @@ export function NewExpenseSheet({ expense, onClose }: { expense?: Expense; onClo
               onClick={() => {
                 setEmoji(c.emoji)
                 if (!title.trim()) setTitle(lang === 'en' ? c.en : c.fr)
+                setPickingEmoji(false)
               }}
             >
               {c.emoji}
             </button>
           ))}
         </div>
-      </div>
+      )}
 
       <div className="field-row">
         <label className="field" style={{ flex: 1 }}>
@@ -133,16 +147,15 @@ export function NewExpenseSheet({ expense, onClose }: { expense?: Expense; onClo
       </div>
 
       <div className="field-label">{t('paidBy')}</div>
-      <div className="people-grid" style={{ marginBottom: 18 }}>
+      <div className="chip-row">
         {state.members.map((m) => (
           <button
             key={m.id}
             type="button"
-            className={`person-chip ${payerId === m.id ? 'is-on' : ''}`}
+            className={`chip ${payerId === m.id ? 'is-on' : ''}`}
             onClick={() => setPayerId(m.id)}
           >
-            <Avatar member={m} size={38} />
-            <span>{m.name}</span>
+            {m.name}
           </button>
         ))}
       </div>
@@ -217,6 +230,6 @@ export function NewExpenseSheet({ expense, onClose }: { expense?: Expense; onClo
           </button>
         )}
       </div>
-    </Sheet>
+    </>
   )
 }

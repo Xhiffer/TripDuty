@@ -19,7 +19,7 @@ export function GroupMenu({
   const { state, isChef, isHost, t } = useGroup()
 
   return (
-    <Sheet title={state.group.name} onClose={onClose}>
+    <Sheet title={state.group.name} onClose={onClose} from="top">
       <div className="stack">
         {isChef && (
           <button type="button" className="menu-row" onClick={onEdit}>

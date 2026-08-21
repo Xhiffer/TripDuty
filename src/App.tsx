@@ -11,17 +11,23 @@ import { Planning } from './screens/Planning'
 import { Closing } from './screens/Closing'
 import { Expenses } from './screens/Expenses'
 import { GroupSettings } from './screens/GroupSettings'
+import { NewTask } from './screens/NewTask'
+import { NewExpense } from './screens/NewExpense'
+import type { Expense } from './types'
 import { Avatar, GroupMark } from './components/ui'
 import { LogoLong } from './components/Logo'
 import { InstallButton } from './components/InstallButton'
 import { GroupMenu } from './components/GroupMenu'
 import { ShareSheet } from './components/ShareSheet'
 import { LeaveGroupSheet } from './components/LeaveGroupSheet'
-import { ArrowLeft, MoreHorizontal, House, Trophy, CalendarDays, Wallet } from 'lucide-react'
+import { ArrowLeft, MoreHorizontal, X, Plus, House, Trophy, CalendarDays, Wallet } from 'lucide-react'
 import { Splash } from './components/Splash'
 import { formatRange } from './lib/i18n'
 
 type Tab = 'home' | 'ranking' | 'planning' | 'expenses'
+/* Ajouter quelque chose ouvre une page, pas un volet : on la quitte par la
+   fleche retour, exactement comme on quitte les reglages du groupe. */
+type SubPage = { kind: 'task' } | { kind: 'expense' } | { kind: 'editExpense'; expense: Expense } | null
 type OuterTab = 'groups' | 'profile'
 
 export function App() {
@@ -35,6 +41,7 @@ export function App() {
   const [leaving, setLeaving] = useState(false)
   const [editing, setEditing] = useState(false)
   const [closing, setClosing] = useState(false)
+  const [subPage, setSubPage] = useState<SubPage>(null)
   // L'etape photo est passee une fois par appareil, une fois le compte cree.
   const [profileDone, setProfileDone] = useState(false)
 
@@ -156,6 +163,17 @@ export function App() {
     )
   }
 
+  if (subPage) {
+    const close = () => setSubPage(null)
+    return (
+      <div className="app">
+        {subPage.kind === 'task' && <NewTask onClose={close} />}
+        {subPage.kind === 'expense' && <NewExpense onClose={close} />}
+        {subPage.kind === 'editExpense' && <NewExpense expense={subPage.expense} onClose={close} />}
+      </div>
+    )
+  }
+
   if (closing) {
     return (
       <div className="app">
@@ -181,8 +199,13 @@ export function App() {
           <ArrowLeft size={20} />
         </button>
         <GroupMark group={view.group} small />
-        <button type="button" className="icon-button" onClick={() => setMenuOpen(true)} aria-label={t('groupMenu')}>
-          <MoreHorizontal size={20} />
+        <button
+          type="button"
+          className="icon-button"
+          onClick={() => setMenuOpen((open) => !open)}
+          aria-label={t('groupMenu')}
+        >
+          {menuOpen ? <X size={20} /> : <MoreHorizontal size={20} />}
         </button>
       </div>
 
@@ -194,7 +217,22 @@ export function App() {
       {tab === 'home' && <Home />}
       {tab === 'ranking' && <Ranking />}
       {tab === 'planning' && <Planning />}
-      {tab === 'expenses' && <Expenses />}
+      {tab === 'expenses' && <Expenses onEdit={(expense) => setSubPage({ kind: 'editExpense', expense })} />}
+
+      {tab !== 'ranking' && (
+        <div className="bottom-action above-nav">
+          <div className="bottom-action-inner is-inline">
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={() => setSubPage({ kind: tab === 'expenses' ? 'expense' : 'task' })}
+            >
+              <Plus size={18} />
+              {tab === 'expenses' ? t('addExpense') : t('addTask')}
+            </button>
+          </div>
+        </div>
+      )}
 
       <nav className="nav">
         <div className="nav-inner">

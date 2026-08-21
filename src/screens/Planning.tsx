@@ -4,15 +4,12 @@ import type { Task } from '../types'
 import { suggestForDay, type Suggestion } from '../lib/suggest'
 import { TaskRow } from '../components/TaskRow'
 import { TaskSheet } from '../components/TaskSheet'
-import { NewTaskSheet } from '../components/NewTaskSheet'
 import { formatDay } from '../lib/i18n'
-import { Plus } from 'lucide-react'
 
 export function Planning() {
   const { state, lang, t, activeDate } = useGroup()
   const rows = useBalances()
   const [openTask, setOpenTask] = useState<Task | null>(null)
-  const [creating, setCreating] = useState(false)
   const todayRef = useRef<HTMLDivElement>(null)
 
   const days = groupDays(state.group)
@@ -65,17 +62,7 @@ export function Planning() {
         )
       })}
 
-      <div className="bottom-action above-nav">
-        <div className="bottom-action-inner is-inline">
-          <button type="button" className="btn btn-primary" onClick={() => setCreating(true)}>
-            <Plus size={18} />
-            {t('addTask')}
-          </button>
-        </div>
-      </div>
-
       {openTask && <TaskSheet task={openTask} onClose={() => setOpenTask(null)} />}
-      {creating && <NewTaskSheet onClose={() => setCreating(false)} />}
     </>
   )
 }

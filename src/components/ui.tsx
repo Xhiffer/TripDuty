@@ -1,11 +1,12 @@
 import type { ReactNode } from 'react'
+import { ArrowLeft } from 'lucide-react'
 import type { Group, Person } from '../types'
-import { groupEmoji } from '../lib/identity'
+import { flatColor, groupEmoji } from '../lib/identity'
 
 /** Pastille de profil : la photo si elle existe, sinon les initiales sur la couleur du compte. */
 export function Avatar({ member, size = 40 }: { member: Person | null; size?: number }) {
   const initials = member?.name?.trim().slice(0, 2).toUpperCase() || '?'
-  const background = member?.photo ? undefined : (member?.color ?? 'var(--surface-2)')
+  const background = member?.photo ? undefined : (flatColor(member?.color) ?? 'var(--surface-2)')
   return (
     <div
       className="avatar"
@@ -59,26 +60,55 @@ export function MedalAvatar({ member, place, size = 56 }: { member: Person; plac
   )
 }
 
+/**
+ * L'entete d'une page interne : la fleche retour tombe exactement la ou se
+ * trouve celle d'un groupe, pour qu'on la retrouve sans la chercher.
+ */
+export function PageHeader({
+  title,
+  onBack,
+  backLabel,
+}: {
+  title: string
+  onBack: () => void
+  backLabel: string
+}) {
+  return (
+    <div className="topbar">
+      <button type="button" className="icon-button" onClick={onBack} aria-label={backLabel}>
+        <ArrowLeft size={20} />
+      </button>
+      <div className="topbar-title">
+        <span className="topbar-name">{title}</span>
+      </div>
+      <span className="icon-button is-ghost" />
+    </div>
+  )
+}
+
 export function Sheet({
   title,
   subtitle,
   onClose,
+  from = 'bottom',
   children,
 }: {
   title: string
   subtitle?: string
   onClose: () => void
+  /* « top » descend sous l'entete, comme un menu deroulant. */
+  from?: 'bottom' | 'top'
   children: ReactNode
 }) {
   return (
     <div
-      className="sheet-backdrop"
+      className={`sheet-backdrop is-from-${from}`}
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose()
       }}
     >
-      <div className="sheet" role="dialog" aria-modal="true">
-        <div className="sheet-grab" />
+      <div className={`sheet is-from-${from}`} role="dialog" aria-modal="true">
+        {from === 'bottom' && <div className="sheet-grab" />}
         <h2 className="sheet-title">{title}</h2>
         {subtitle && <p className="sheet-sub">{subtitle}</p>}
         {children}

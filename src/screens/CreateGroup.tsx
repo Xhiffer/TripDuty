@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useApp } from '../state'
 import type { Group, GroupKind } from '../types'
-import { GROUP_COLORS, inviteLink, isEmail } from '../lib/identity'
+import { GROUP_COLORS, inviteLink, isEmail, flatColor } from '../lib/identity'
 import { Toggle } from '../components/ui'
 import { EmojiField } from '../components/EmojiField'
 
@@ -169,7 +169,7 @@ export function CreateGroup({ onDone }: { onDone: () => void }) {
   return (
     <>
       <div className="hero">
-        <span className="hero-mark" style={{ background: group?.color }}>
+        <span className="hero-mark" style={{ background: flatColor(group?.color) }}>
           {group?.emoji}
         </span>
         <h1 className="hero-title">{group?.name}</h1>
@@ -228,7 +228,7 @@ export function CreateGroup({ onDone }: { onDone: () => void }) {
               const person = data.accounts.find((a) => a.email === mail)
               return (
                 <div key={mail} className="rank-row">
-                  <span className="task-emoji" style={{ background: person?.color, color: '#fff' }}>
+                  <span className="task-emoji" style={{ background: flatColor(person?.color), color: '#fff' }}>
                     {(person?.firstName ?? mail).slice(0, 1).toUpperCase()}
                   </span>
                   <span style={{ flex: 1, minWidth: 0 }}>

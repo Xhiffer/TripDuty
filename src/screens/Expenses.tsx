@@ -1,17 +1,14 @@
 import { useMemo, useState } from 'react'
-import { Plus, Receipt } from 'lucide-react'
+import { Receipt } from 'lucide-react'
 import { useGroup } from '../state'
 import type { Expense } from '../types'
 import { expenseAmounts, formatEuros, formatSignedEuros, moneyBalances, reimbursements } from '../lib/money'
 import { Avatar, Segmented, Sheet } from '../components/ui'
-import { NewExpenseSheet } from '../components/NewExpenseSheet'
 import { formatDay } from '../lib/i18n'
 
-export function Expenses() {
+export function Expenses({ onEdit }: { onEdit: (expense: Expense) => void }) {
   const { state, me, lang, t } = useGroup()
   const [tab, setTab] = useState<'list' | 'balances'>('list')
-  const [creating, setCreating] = useState(false)
-  const [editing, setEditing] = useState<Expense | null>(null)
   const [detail, setDetail] = useState<Expense | null>(null)
 
   const expenses = useMemo(
@@ -146,20 +143,6 @@ export function Expenses() {
         </>
       )}
 
-      {tab === 'list' && (
-        <div className="bottom-action above-nav">
-          <div className="bottom-action-inner is-inline">
-            <button type="button" className="btn btn-primary" onClick={() => setCreating(true)}>
-              <Plus size={18} />
-              {t('addExpense')}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {creating && <NewExpenseSheet onClose={() => setCreating(false)} />}
-      {editing && <NewExpenseSheet expense={editing} onClose={() => setEditing(null)} />}
-
       {detail && (
         <Sheet
           title={`${detail.emoji}  ${detail.title}`}
@@ -205,7 +188,7 @@ export function Expenses() {
             className="btn btn-block"
             style={{ marginTop: 18 }}
             onClick={() => {
-              setEditing(detail)
+              onEdit(detail)
               setDetail(null)
             }}
           >

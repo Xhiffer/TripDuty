@@ -23,9 +23,9 @@
   --brand-1: #ffc79c;
   --brand-2: #fdb8d2;
   --brand-3: #d8bcf7;
-  --brand-gradient: linear-gradient(105deg, var(--brand-1), var(--brand-2) 52%, var(--brand-3));
-  --brand-ink: #1b1026;
-  --shadow: 0 10px 30px rgba(19, 24, 34, 0.08);
+  --brand: #c9459e;
+  --brand-ink: #ffffff;
+  --shadow: none;
   --radius: 18px;
   --radius-sm: 12px;
   --nav-h: 68px;
@@ -51,8 +51,9 @@
   --brand-1: #ffbe90;
   --brand-2: #fbafcc;
   --brand-3: #cdb0f5;
-  --brand-ink: #170d20;
-  --shadow: 0 12px 34px rgba(0, 0, 0, 0.4);
+  --brand: #db5cae;
+  --brand-ink: #1a0d18;
+  --shadow: none;
   color-scheme: dark;
 }
 
@@ -212,7 +213,7 @@ button {
   border-radius: 11px;
   display: grid;
   place-items: center;
-  background: var(--brand-gradient);
+  background: var(--brand);
   color: var(--brand-ink);
   font-size: 18px;
 }
@@ -267,7 +268,7 @@ button {
   display: grid;
   place-items: center;
   font-weight: 700;
-  background: linear-gradient(140deg, var(--surface-2), var(--bg-soft));
+  background: var(--surface-2);
   border: 1px solid var(--border);
   color: var(--text);
   flex: none;
@@ -319,15 +320,15 @@ button {
 
 .podium-1 .podium-block {
   height: 96px;
-  background: linear-gradient(180deg, var(--gold), #e09b00);
+  background: var(--gold);
 }
 .podium-2 .podium-block {
   height: 72px;
-  background: linear-gradient(180deg, var(--silver), #7d8ba0);
+  background: var(--silver);
 }
 .podium-3 .podium-block {
   height: 58px;
-  background: linear-gradient(180deg, var(--bronze), #a4602f);
+  background: var(--bronze);
 }
 
 .medal-ring {
@@ -336,13 +337,13 @@ button {
   background: var(--border);
 }
 .medal-1 {
-  background: linear-gradient(140deg, var(--gold), #e09b00);
+  background: var(--gold);
 }
 .medal-2 {
-  background: linear-gradient(140deg, var(--silver), #7d8ba0);
+  background: var(--silver);
 }
 .medal-3 {
-  background: linear-gradient(140deg, var(--bronze), #a4602f);
+  background: var(--bronze);
 }
 
 /* ---------- classement ---------- */
@@ -441,7 +442,7 @@ button {
 .callout {
   border-radius: var(--radius);
   padding: 16px;
-  background: linear-gradient(135deg, color-mix(in srgb, var(--danger) 20%, var(--surface)), var(--surface));
+  background: color-mix(in srgb, var(--danger) 12%, var(--surface));
   border: 1px solid color-mix(in srgb, var(--danger) 45%, transparent);
 }
 
@@ -536,7 +537,7 @@ button {
 }
 
 .btn-primary {
-  background: var(--brand-gradient);
+  background: var(--brand);
   color: var(--brand-ink);
   border-color: transparent;
 }
@@ -896,7 +897,7 @@ button {
   display: inline-grid;
   place-items: center;
   font-size: 32px;
-  background: var(--brand-gradient);
+  background: var(--brand);
   margin-bottom: 14px;
 }
 
@@ -1094,7 +1095,6 @@ button {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 14px;
-  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.28);
 }
 
 .install-mark {
@@ -1104,7 +1104,7 @@ button {
   display: grid;
   place-items: center;
   font-size: 20px;
-  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  background: var(--brand);
   flex: none;
 }
 
@@ -1295,8 +1295,7 @@ button {
   display: grid;
   place-items: center;
   font-size: 27px;
-  background: var(--brand-gradient);
-  box-shadow: 0 10px 26px color-mix(in srgb, var(--brand-2) 45%, transparent);
+  background: var(--brand);
   flex: none;
 }
 
@@ -1471,7 +1470,7 @@ button {
   padding: 18px 16px calc(env(safe-area-inset-bottom) + 12px);
   /* Un dégradé plutôt qu'une barre pleine : la liste passe dessous sans
      coupure nette, et le bouton reste lisible. */
-  background: linear-gradient(to top, var(--bg) 72%, color-mix(in srgb, var(--bg) 60%, transparent) 88%, transparent);
+  background: var(--bg);
   pointer-events: none;
 }
 
@@ -1496,12 +1495,7 @@ button {
   z-index: 45;
   display: block;
   padding: calc(env(safe-area-inset-top) + 20px) 16px 14px;
-  background: linear-gradient(
-    to bottom,
-    var(--bg) 70%,
-    color-mix(in srgb, var(--bg) 60%, transparent) 88%,
-    transparent
-  );
+  background: var(--bg);
   pointer-events: none;
 }
 
@@ -1616,7 +1610,7 @@ button {
   font-size: 12.5px;
   font-weight: 800;
   color: var(--brand-ink);
-  background: var(--brand-gradient);
+  background: var(--brand);
   margin-top: 1px;
 }
 
@@ -1719,17 +1713,13 @@ button {
 .bottom-action.above-nav {
   bottom: calc(var(--nav-h) + env(safe-area-inset-bottom));
   padding: 34px 16px 12px;
-  background: linear-gradient(to top, var(--bg) 62%, color-mix(in srgb, var(--bg) 55%, transparent) 82%, transparent);
+  background: var(--bg);
 }
 
 /* Le bouton prend la largeur de son contenu, pas celle de l'ecran. */
 .bottom-action-inner.is-inline {
   display: flex;
   justify-content: center;
-}
-
-.bottom-action-inner.is-inline .btn {
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
 }
 
 /* Le solde de l'accueil informe, il n'alerte pas. */
@@ -1764,4 +1754,110 @@ button {
 /* L'icone du groupe se pose au centre de la barre, entre les deux commandes. */
 .topbar > .group-mark {
   justify-self: center;
+}
+
+
+/* ---------- volet qui descend du haut ---------- */
+
+/*
+ * Le menu du groupe se comporte comme un menu deroulant : il tombe sous
+ * l'entete, qui reste visible avec sa croix. On garde donc la barre du haut
+ * au-dessus du voile, et le panneau demarre juste en dessous.
+ */
+.sheet-backdrop.is-from-top {
+  align-items: flex-start;
+}
+
+.sheet.is-from-top {
+  border-radius: 0 0 22px 22px;
+  margin-top: calc(env(safe-area-inset-top) + 72px);
+  padding: 18px 16px 22px;
+  max-height: calc(100dvh - 120px);
+  animation: drop 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes drop {
+  from {
+    transform: translateY(-14px);
+    opacity: 0;
+  }
+}
+
+/* La barre du haut passe devant le voile : sa croix reste cliquable. */
+.topbar {
+  position: relative;
+  z-index: 55;
+}
+
+/* L'icone d'une tache ou d'une depense : un carre qu'on touche pour en
+   changer, pose juste avant le nom. */
+button.emoji-field {
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+/* Une rangee de noms qu'on coche : a neuf, une grille de pastilles occupait
+   la moitie de l'ecran pour ne dire que des prenoms. */
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.chip {
+  padding: 9px 14px;
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.chip.is-on {
+  color: var(--text);
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface));
+}
+
+/* ---------- solde ---------- */
+
+.balance-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  border-radius: var(--radius);
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+/* Le chiffre est ce qu'on vient chercher : il se lit avant le prenom. */
+.balance-figure {
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+/* La place du solde entre le plus bas et le plus haut du groupe. */
+.balance-bar {
+  position: relative;
+  height: 6px;
+  margin: 10px 4px 0;
+  border-radius: 99px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+
+.balance-dot {
+  position: absolute;
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  margin-left: -6px;
+  border-radius: 50%;
+  background: var(--accent);
+  transform: translateY(-50%);
 }

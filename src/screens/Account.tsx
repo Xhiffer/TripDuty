@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import { useApp } from '../state'
-import { AVATAR_COLORS, initialsOf } from '../lib/identity'
+import { AVATAR_COLORS, initialsOf, flatColor } from '../lib/identity'
 import { Segmented, Sheet } from '../components/ui'
 import { Bell, Info, HelpCircle, LogOut, Trash2, ChevronRight, History } from 'lucide-react'
 import { Faq } from './Faq'
@@ -53,7 +53,7 @@ export function Account() {
             type="button"
             onClick={() => fileRef.current?.click()}
             className="avatar avatar-xl"
-            style={{ background: account.photo ? undefined : account.color, borderColor: 'transparent' }}
+            style={{ background: account.photo ? undefined : flatColor(account.color), borderColor: 'transparent' }}
           >
             {account.photo ? (
               <img src={account.photo} alt="" width={96} height={96} style={{ objectFit: 'cover' }} />
