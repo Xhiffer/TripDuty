@@ -119,8 +119,7 @@ export function CreateGroup({ onDone }: { onDone: () => void }) {
         <div className="card">
           <div className="field">
             <span className="field-label">{t('groupName')}</span>
-            <div className="row" style={{ gap: 10 }}>
-              <EmojiField value={emoji} onChange={setEmoji} />
+            <EmojiField value={emoji} onChange={setEmoji}>
               <input
                 className="input"
                 value={name}
@@ -130,7 +129,7 @@ export function CreateGroup({ onDone }: { onDone: () => void }) {
                   setError('')
                 }}
               />
-            </div>
+            </EmojiField>
           </div>
 
           <div className="field-row">

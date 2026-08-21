@@ -38,3 +38,13 @@ export const EMOJI_CHOICES = [
   '🎲', '🍴', '🧾', '🌀', '🗑️', '🪑', '⛽', '💡', '🥖', '🏊',
   '🔥', '🎸', '📸', '🧊', '☕', '🐕', '🛶', '🎯',
 ]
+
+/**
+ * Les emojis proposes pour un groupe : des lieux et des occasions, pas des
+ * taches. Un groupe se reconnait a l'endroit ou l'on va, ou a ce qu'on y fait.
+ */
+export const GROUP_EMOJIS = [
+  '\u{1F3DD}\u{FE0F}', '\u26F0\uFE0F', '\u{1F3D6}\uFE0F', '\u{1F3E1}', '\u{1F3D5}\uFE0F', '\u26F5', '\u{1F3BF}', '\u{1F334}',
+  '\u{1F3D9}\uFE0F', '\u2708\uFE0F', '\u{1F68C}', '\u{1F697}', '\u{1F3AA}', '\u{1F389}', '\u{1F37B}', '\u{1F35D}',
+  '\u2764\uFE0F', '\u{1F525}', '\u{1F3B8}', '\u{1F3AE}', '\u{1F415}', '\u2600\uFE0F', '\u2744\uFE0F', '\u{1F308}',
+]

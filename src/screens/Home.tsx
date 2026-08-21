@@ -6,7 +6,6 @@ import { suggestForDay } from '../lib/suggest'
 import { Avatar } from '../components/ui'
 import { TaskRow } from '../components/TaskRow'
 import { TaskSheet } from '../components/TaskSheet'
-import { formatDay } from '../lib/i18n'
 
 export function Home() {
   const { state, me, lang, t, activeDate } = useGroup()
@@ -58,9 +57,7 @@ export function Home() {
       )}
 
 
-      <div className="section-title">
-        {t('todayTasks')} · {formatDay(activeDate, lang)}
-      </div>
+      <div className="section-title">{t('todayTasks')}</div>
 
       <div className="stack">
         {dayTasks.length === 0 && <div className="empty">{t('noTaskToday')}</div>}

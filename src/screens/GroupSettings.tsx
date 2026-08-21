@@ -35,14 +35,13 @@ export function GroupSettings({ onClose }: { onClose: () => void }) {
           <div className="card">
             <div className="field">
               <span className="field-label">{t('groupName')}</span>
-              <div className="row" style={{ gap: 10 }}>
-                <EmojiField value={groupEmoji(state.group.emoji)} onChange={(emoji) => updateGroup({ emoji })} />
+              <EmojiField value={groupEmoji(state.group.emoji)} onChange={(emoji) => updateGroup({ emoji })}>
                 <input
                   className="input"
                   value={state.group.name}
                   onChange={(e) => updateGroup({ name: e.target.value })}
                 />
-              </div>
+              </EmojiField>
             </div>
 
             <div className="field-row">

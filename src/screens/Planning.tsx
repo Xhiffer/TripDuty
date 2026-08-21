@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { groupDays, useGroup, useBalances } from '../state'
 import type { Task } from '../types'
 import { suggestForDay, type Suggestion } from '../lib/suggest'
@@ -10,7 +10,6 @@ export function Planning() {
   const { state, lang, t, activeDate } = useGroup()
   const rows = useBalances()
   const [openTask, setOpenTask] = useState<Task | null>(null)
-  const todayRef = useRef<HTMLDivElement>(null)
 
   const days = groupDays(state.group)
   const suggestions = useMemo(() => {
@@ -20,12 +19,6 @@ export function Planning() {
     }
     return map
   }, [state, rows, days])
-
-  // Un sejour de dix jours ouvert sur son premier jour oblige a faire defiler
-  // pour retrouver ou l'on en est. On amene donc le jour courant sous les yeux.
-  useEffect(() => {
-    todayRef.current?.scrollIntoView({ block: 'start' })
-  }, [activeDate])
 
   return (
     <>
@@ -40,7 +33,7 @@ export function Planning() {
           .sort((a, b) => a.time.localeCompare(b.time))
         const isToday = day === activeDate
         return (
-          <div key={day} ref={isToday ? todayRef : undefined} style={{ scrollMarginTop: 12 }}>
+          <div key={day}>
             {/* Le jour courant ne s'annonce pas, il se voit : sa date passe en
                 gras et prend la couleur de l'application. */}
             <div className={`day-head ${isToday ? 'is-today' : ''}`}>{formatDay(day, lang)}</div>
