@@ -1880,3 +1880,62 @@ button.emoji-field {
   top: 0;
   background: var(--bg);
 }
+
+/* ---------- propositions de taches ---------- */
+
+/*
+ * Trois lettres suffisent a retrouver une tache et sa valeur. La liste se
+ * pose sous le champ, dans le flux : un menu flottant se retrouve coupe par
+ * le clavier sur un telephone.
+ */
+.suggestions {
+  list-style: none;
+  margin: 0 0 14px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.suggestion {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  text-align: left;
+  padding: 11px 14px;
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+
+.suggestion:hover,
+.suggestion:focus-visible {
+  border-color: var(--accent);
+  outline: none;
+}
+
+.suggestion-emoji {
+  font-size: 19px;
+  line-height: 1;
+  flex: none;
+}
+
+.suggestion-name {
+  flex: 1;
+  min-width: 0;
+  font-weight: 600;
+  font-size: 15px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.suggestion-points {
+  flex: none;
+  font-weight: 800;
+  font-size: 15px;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}

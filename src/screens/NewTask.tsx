@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { groupDays, useGroup } from '../state'
 import { shareOfGroup } from '../lib/ledger'
-import { CATALOG, EMOJI_CHOICES, FAMILIES } from '../lib/catalog'
+import { CATALOG, EMOJI_CHOICES } from '../lib/catalog'
 import { CLOSING_CATALOG } from '../lib/closing'
 import { PageHeader, Toggle } from '../components/ui'
 import { formatDay } from '../lib/i18n'
@@ -14,6 +14,30 @@ import { formatDay } from '../lib/i18n'
  * gagner plus que ce que la liste propose.
  */
 const POINTS_SUR_MESURE = 13
+
+/** Nombre de propositions affichees sous le champ. Au-dela on ne lit plus. */
+const MAX_SUGGESTIONS = 6
+
+/**
+ * L'heure qu'il est, arrondie a cinq minutes.
+ *
+ * On note presque toujours une tache juste apres l'avoir faite : l'heure
+ * courante est la bonne reponse neuf fois sur dix, et une heure fixe obligeait
+ * a la corriger a chaque fois.
+ */
+function heureCourante() {
+  const d = new Date()
+  d.setMinutes(Math.round(d.getMinutes() / 5) * 5, 0, 0)
+  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+}
+
+/** Comparaison sans accent ni casse : « menage » trouve « ménage ». */
+function fold(text: string) {
+  return text
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+}
 
 /**
  * Ajouter une tache occupe une page entiere.
@@ -31,8 +55,10 @@ export function NewTask({ closing = false, onClose }: { closing?: boolean; onClo
   const [pickingEmoji, setPickingEmoji] = useState(false)
   // La cle de la tache toute faite choisie, vide quand la tache est inventee.
   const [catalogKey, setCatalogKey] = useState('')
+  const [focus, setFocus] = useState(false)
+  const champNom = useRef<HTMLInputElement>(null)
   const [date, setDate] = useState(closing ? (state.group.endDate ?? activeDate) : activeDate)
-  const [time, setTime] = useState('19:00')
+  const [time, setTime] = useState(heureCourante)
   const [recurring, setRecurring] = useState(false)
   // On note presque toujours une tache une fois qu'elle est faite : on vient de
   // sortir les poubelles, on l'ajoute et c'est fini.
@@ -45,6 +71,47 @@ export function NewTask({ closing = false, onClose }: { closing?: boolean; onClo
 
   const days = groupDays(state.group)
   const chosen = catalog.find((c) => c.key === catalogKey)
+
+  // Ce que ce groupe note le plus souvent. Au bout de deux jours, ses habitudes
+  // remontent d'elles-memes : c'est ce qui fait passer l'ajout sous les dix
+  // secondes, plus surement qu'un classement general.
+  const usage = useMemo(() => {
+    const compte = new Map<string, number>()
+    for (const task of state.tasks) {
+      if (task.titleKey) compte.set(task.titleKey, (compte.get(task.titleKey) ?? 0) + 1)
+    }
+    return compte
+  }, [state.tasks])
+
+  const habituelles = useMemo(
+    () => [...catalog].sort((a, b) => (usage.get(b.key) ?? 0) - (usage.get(a.key) ?? 0)).slice(0, MAX_SUGGESTIONS),
+    [catalog, usage],
+  )
+
+  const suggestions = useMemo(() => {
+    const cherche = fold(title.trim())
+    if (!cherche) return habituelles
+    // Un debut de mot passe devant un morceau de mot, et le nom le plus court
+    // devant le plus long : taper « pou » doit proposer les poubelles avant
+    // « cuisiner pour une grande tablee », ou « pour » n'est qu'un mot de
+    // liaison.
+    const trouves = catalog
+      .map((c) => {
+        const nom = fold(lang === 'en' ? c.en : c.fr)
+        const ou = nom.indexOf(cherche)
+        const debutDeMot = ou === 0 || (ou > 0 && !/[a-z0-9]/.test(nom[ou - 1]))
+        return { c, ou, rang: debutDeMot ? 0 : 1 }
+      })
+      .filter((r) => r.ou >= 0)
+      .sort(
+        (a, b) =>
+          a.rang - b.rang ||
+          (usage.get(b.c.key) ?? 0) - (usage.get(a.c.key) ?? 0) ||
+          a.c.fr.length - b.c.fr.length ||
+          b.c.points - a.c.points,
+      )
+    return trouves.slice(0, MAX_SUGGESTIONS).map((r) => r.c)
+  }, [title, catalog, habituelles, usage, lang])
   const finalPoints = chosen ? chosen.points : POINTS_SUR_MESURE
 
   // Ce que la tache rapportera vraiment, une fois le nombre de servis et le
@@ -60,7 +127,7 @@ export function NewTask({ closing = false, onClose }: { closing?: boolean; onClo
   }
 
   function submit() {
-    const name = chosen ? (lang === 'en' ? chosen.en : chosen.fr) : title.trim()
+    const name = title.trim()
     if (!name) return setError(t('errTaskName'))
     if (beneficiaries.length === 0) return setError(t('errNoBeneficiary'))
     if (alreadyDone && doers.length === 0) return setError(t('errNoDoer'))
@@ -68,7 +135,7 @@ export function NewTask({ closing = false, onClose }: { closing?: boolean; onClo
     const common = {
       title: name,
       titleKey: chosen?.key,
-      emoji: chosen ? chosen.emoji : emoji,
+      emoji,
       points: finalPoints,
       needsLicense: chosen?.needsLicense ?? false,
       time,
@@ -106,12 +173,28 @@ export function NewTask({ closing = false, onClose }: { closing?: boolean; onClo
             {chosen ? chosen.emoji : emoji}
           </button>
           <input
+            ref={champNom}
             className="input"
-            value={chosen ? (lang === 'en' ? chosen.en : chosen.fr) : title}
-            placeholder="…"
-            disabled={!!chosen}
+            value={title}
+            placeholder={t('taskNamePlaceholder')}
+            autoFocus
+            autoComplete="off"
+            onFocus={() => setFocus(true)}
+            onBlur={() =>
+              // Le clic sur une proposition doit passer avant la fermeture, et
+              // un champ qui reprend le focus entre-temps ne doit pas la subir.
+              window.setTimeout(() => {
+                if (document.activeElement !== champNom.current) setFocus(false)
+              }, 150)
+            }
             onChange={(e) => {
               setTitle(e.target.value)
+              // Ecrire, c'est chercher : les propositions reviennent meme si
+              // on vient d'en choisir une.
+              setFocus(true)
+              // Et des que le texte bouge, la tache n'est plus celle du
+              // catalogue : elle reprend sa valeur de tache inventee.
+              setCatalogKey('')
               setError('')
             }}
           />
@@ -153,35 +236,36 @@ export function NewTask({ closing = false, onClose }: { closing?: boolean; onClo
         </label>
       </div>
 
-      {/* La liste toute faite evite d'ecrire « vaisselle » chaque soir, et fixe
-          le bareme : une tache choisie ici vaut ce qu'elle vaut pour tous. */}
-      <label className="field">
-        <select
-          className="input"
-          value={catalogKey}
-          onChange={(e) => {
-            setCatalogKey(e.target.value)
-            setError('')
-          }}
-        >
-          <option value="">{t('chooseFromList')}</option>
-          {closing
-            ? catalog.map((c) => (
-                <option key={c.key} value={c.key}>
-                  {c.emoji} {lang === 'en' ? c.en : c.fr} · {c.points}
-                </option>
-              ))
-            : FAMILIES.map((famille) => (
-                <optgroup key={famille.id} label={lang === 'en' ? famille.en : famille.fr}>
-                  {CATALOG.filter((c) => c.famille === famille.id).map((c) => (
-                    <option key={c.key} value={c.key}>
-                      {c.emoji} {lang === 'en' ? c.en : c.fr} · {c.points}
-                    </option>
-                  ))}
-                </optgroup>
-              ))}
-        </select>
-      </label>
+      {/* Ce qu'on a sous la main plutot qu'une liste de cent cinquante lignes :
+          trois lettres suffisent a retrouver une tache et son bareme. */}
+      {focus && suggestions.length > 0 && !chosen && (
+        <ul className="suggestions">
+          {suggestions.map((c) => (
+            <li key={c.key}>
+              <button
+                type="button"
+                className="suggestion"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => {
+                  setCatalogKey(c.key)
+                  setTitle(lang === 'en' ? c.en : c.fr)
+                  setEmoji(c.emoji)
+                  setPickingEmoji(false)
+                  setFocus(false)
+                  setError('')
+                  // Le clavier se referme : le bouton « Créer » revient sous
+                  // le pouce sans avoir a faire defiler.
+                  champNom.current?.blur()
+                }}
+              >
+                <span className="suggestion-emoji">{c.emoji}</span>
+                <span className="suggestion-name">{lang === 'en' ? c.en : c.fr}</span>
+                <span className="suggestion-points">{c.points}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
 
       {alreadyDone && (
         <>
