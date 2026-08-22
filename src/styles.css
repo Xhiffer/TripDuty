@@ -1711,8 +1711,8 @@ button {
    au lieu d'etre coupee net en plein milieu d'une carte. */
 .bottom-action.above-nav {
   bottom: calc(var(--nav-h) + env(safe-area-inset-bottom));
-  padding: 34px 16px 12px;
-  background: var(--bg);
+  padding: 20px 16px 12px;
+  background: none;
 }
 
 /* Le bouton prend la largeur de son contenu, pas celle de l'ecran. */
@@ -1840,25 +1840,88 @@ button.emoji-field {
   letter-spacing: -0.02em;
 }
 
-/* La place du solde entre le plus bas et le plus haut du groupe. */
-.balance-bar {
+/* ---------- volet qui descend du haut ---------- */
+
+/*
+ * Le menu du groupe se comporte comme un menu deroulant : il tombe sous
+ * l'entete, qui reste visible avec sa croix. On garde donc la barre du haut
+ * au-dessus du voile, et le panneau demarre juste en dessous.
+ */
+.sheet-backdrop.is-from-top {
+  align-items: flex-start;
+}
+
+.sheet.is-from-top {
+  border-radius: 0 0 22px 22px;
+  margin-top: calc(env(safe-area-inset-top) + 72px);
+  padding: 18px 16px 22px;
+  max-height: calc(100dvh - 120px);
+  animation: drop 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes drop {
+  from {
+    transform: translateY(-14px);
+    opacity: 0;
+  }
+}
+
+/* La barre du haut passe devant le voile : sa croix reste cliquable. */
+.topbar {
   position: relative;
-  height: 6px;
-  margin: 10px 4px 0;
-  border-radius: 99px;
-  background: var(--surface-2);
+  z-index: 55;
+}
+
+/* L'icone d'une tache ou d'une depense : un carre qu'on touche pour en
+   changer, pose juste avant le nom. */
+button.emoji-field {
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+/* Une rangee de noms qu'on coche : a neuf, une grille de pastilles occupait
+   la moitie de l'ecran pour ne dire que des prenoms. */
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.chip {
+  padding: 9px 14px;
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.chip.is-on {
+  color: var(--text);
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface));
+}
+
+/* ---------- solde ---------- */
+
+.balance-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  border-radius: var(--radius);
+  background: var(--surface);
   border: 1px solid var(--border);
 }
 
-.balance-dot {
-  position: absolute;
-  top: 50%;
-  width: 12px;
-  height: 12px;
-  margin-left: -6px;
-  border-radius: 50%;
-  background: var(--accent);
-  transform: translateY(-50%);
+/* Le chiffre est ce qu'on vient chercher : il se lit avant le prenom. */
+.balance-figure {
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
 }
 
 /* La planche d'emojis d'un groupe : elle s'ouvre sous le carre, sur toute
@@ -1883,18 +1946,35 @@ button.emoji-field {
 
 /* ---------- propositions de taches ---------- */
 
+/* Le champ et sa liste ne font qu'un : la liste se pose par-dessus la suite
+   du formulaire au lieu de la pousser vers le bas. */
+.combo {
+  position: relative;
+  z-index: 20;
+}
+
 /*
- * Trois lettres suffisent a retrouver une tache et sa valeur. La liste se
- * pose sous le champ, dans le flux : un menu flottant se retrouve coupe par
- * le clavier sur un telephone.
+ * Trois lettres suffisent a retrouver une tache et sa valeur. La liste tombe
+ * sous le champ comme un menu deroulant, accrochee a lui : la page ne bouge
+ * pas d'un pixel pendant qu'on tape.
  */
 .suggestions {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
   list-style: none;
-  margin: 0 0 14px;
-  padding: 0;
+  margin: 0;
+  padding: 6px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
+  max-height: 46vh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
 }
 
 .suggestion {
@@ -1903,10 +1983,10 @@ button.emoji-field {
   gap: 12px;
   width: 100%;
   text-align: left;
-  padding: 11px 14px;
+  padding: 11px 12px;
   border-radius: var(--radius-sm);
   background: var(--surface);
-  border: 1px solid var(--border);
+  border: 1px solid transparent;
   color: var(--text);
 }
 

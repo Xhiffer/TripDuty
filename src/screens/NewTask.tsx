@@ -161,7 +161,7 @@ export function NewTask({ closing = false, onClose }: { closing?: boolean; onClo
     <>
       <PageHeader title={closing ? t('addClosingTask') : t('newTask')} onBack={onClose} backLabel={t('back')} />
 
-      <div className="field">
+      <div className="field combo">
         <span className="field-label">{t('taskName')}</span>
         <div className="row" style={{ gap: 10 }}>
           <button
@@ -199,6 +199,37 @@ export function NewTask({ closing = false, onClose }: { closing?: boolean; onClo
             }}
           />
         </div>
+
+        {/* Ce qu'on a sous la main plutot qu'une liste de cent cinquante lignes :
+            trois lettres suffisent a retrouver une tache et son bareme. */}
+        {focus && suggestions.length > 0 && !chosen && (
+          <ul className="suggestions">
+            {suggestions.map((c) => (
+              <li key={c.key}>
+                <button
+                  type="button"
+                  className="suggestion"
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => {
+                    setCatalogKey(c.key)
+                    setTitle(lang === 'en' ? c.en : c.fr)
+                    setEmoji(c.emoji)
+                    setPickingEmoji(false)
+                    setFocus(false)
+                    setError('')
+                    // Le clavier se referme : le bouton « Créer » revient sous
+                    // le pouce sans avoir a faire defiler.
+                    champNom.current?.blur()
+                  }}
+                >
+                  <span className="suggestion-emoji">{c.emoji}</span>
+                  <span className="suggestion-name">{lang === 'en' ? c.en : c.fr}</span>
+                  <span className="suggestion-points">{c.points}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
 
       {pickingEmoji && !chosen && (
@@ -235,37 +266,6 @@ export function NewTask({ closing = false, onClose }: { closing?: boolean; onClo
           <input className="input" type="time" value={time} onChange={(e) => setTime(e.target.value)} />
         </label>
       </div>
-
-      {/* Ce qu'on a sous la main plutot qu'une liste de cent cinquante lignes :
-          trois lettres suffisent a retrouver une tache et son bareme. */}
-      {focus && suggestions.length > 0 && !chosen && (
-        <ul className="suggestions">
-          {suggestions.map((c) => (
-            <li key={c.key}>
-              <button
-                type="button"
-                className="suggestion"
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() => {
-                  setCatalogKey(c.key)
-                  setTitle(lang === 'en' ? c.en : c.fr)
-                  setEmoji(c.emoji)
-                  setPickingEmoji(false)
-                  setFocus(false)
-                  setError('')
-                  // Le clavier se referme : le bouton « Créer » revient sous
-                  // le pouce sans avoir a faire defiler.
-                  champNom.current?.blur()
-                }}
-              >
-                <span className="suggestion-emoji">{c.emoji}</span>
-                <span className="suggestion-name">{lang === 'en' ? c.en : c.fr}</span>
-                <span className="suggestion-points">{c.points}</span>
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
 
       {alreadyDone && (
         <>

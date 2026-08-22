@@ -16,11 +16,6 @@ export function Home() {
 
   const mine = rows.find((r) => r.member.id === me?.id)
 
-  const lowest = rows.length > 0 ? Math.min(...rows.map((r) => r.centi)) : 0
-  const highest = rows.length > 0 ? Math.max(...rows.map((r) => r.centi)) : 0
-  const spread = highest - lowest
-  const position = mine && spread > 0 ? ((mine.centi - lowest) / spread) * 100 : 50
-
   const dayTasks = state.tasks
     .filter((task) => task.date === activeDate && !task.isClosing)
     .sort((a, b) => a.time.localeCompare(b.time))
@@ -47,13 +42,6 @@ export function Home() {
             </span>
             <span className="balance-figure">{formatBalance(mine.centi)}</span>
           </div>
-          {/* Un solde seul ne dit rien : c'est en voyant ou il tombe entre le
-              plus bas et le plus haut du groupe qu'il devient parlant. */}
-          {spread > 0 && (
-            <div className="balance-bar">
-              <span className="balance-dot" style={{ left: `${position}%` }} />
-            </div>
-          )}
         </>
       )}
 
