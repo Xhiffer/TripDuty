@@ -761,7 +761,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
               kind: 'penalty',
               doerIds: [],
               beneficiaryIds,
-              amounts: penaltyAmounts(current.penalty, task.assignedTo, beneficiaryIds),
+              amounts: penaltyAmounts(current.penalty, task.assignedTo),
               validatedBy: account.id,
               at: new Date().toISOString(),
             },

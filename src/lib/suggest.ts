@@ -1,52 +1,39 @@
 import type { Task, GroupView } from '../types'
-import { CENTI, beneficiariesOf, type Balance } from './ledger'
+import { type Balance } from './ledger'
 
 export interface Suggestion {
   memberId: string
-  centi: number // solde actuel, pour afficher la raison
+  centi: number // total actuel, pour afficher la raison
 }
 
 /**
- * Qui aurait interet a faire cette tache ? On simule le resultat pour chaque
- * personne et on garde celles qui rapprochent le plus le groupe de l'equilibre.
+ * Qui aurait interet a faire cette tache ?
+ *
+ * Depuis que les points ne font que monter, la reponse est simple : celui qui
+ * en a le moins. Faire la tache rapporte la meme chose a n'importe qui, donc
+ * ce qui resserre le groupe, c'est de la confier a celui qui ferme la marche.
+ *
  * Ce n'est qu'une suggestion : personne n'est designe ni prevenu.
  */
 export function suggestFor(
-  task: Task,
-  state: GroupView,
+  _task: Task,
+  _state: GroupView,
   rows: Balance[],
   excluded: Set<string> = new Set(),
 ): Suggestion[] {
-  const beneficiaries = new Set(beneficiariesOf(task, state.members))
-  // Meme bareme que completionAmounts : un prix par tete fixe, un credit qui
-  // suit le nombre de personnes servies.
-  const perHead = Math.round((task.points * CENTI) / Math.max(1, state.members.length))
-  const total = perHead * beneficiaries.size
+  if (rows.length === 0) return []
 
-  const candidates = rows
-  if (candidates.length === 0) return []
-
-  const scored = candidates.map((candidate) => {
-    // Les debits tombent sur les beneficiaires quoi qu'il arrive :
-    // seul le credit change selon qui fait la tache.
-    const spread = rows.reduce((sum, row) => {
-      let next = row.centi
-      if (row.member.id === candidate.member.id) next += total
-      if (beneficiaries.has(row.member.id)) next -= perHead
-      return sum + next * next
-    }, 0)
-    return { memberId: candidate.member.id, centi: candidate.centi, spread }
-  })
+  const scored = rows.map((row) => ({ memberId: row.member.id, centi: row.centi }))
 
   scored.sort((a, b) => {
+    // Une personne deja placee en tete d'une autre tache du jour recule.
     const aOut = excluded.has(a.memberId) ? 1 : 0
     const bOut = excluded.has(b.memberId) ? 1 : 0
     if (aOut !== bOut) return aOut - bOut
-    if (a.spread !== b.spread) return a.spread - b.spread
     return a.centi - b.centi
   })
 
-  return scored.slice(0, 3).map(({ memberId, centi }) => ({ memberId, centi }))
+  return scored.slice(0, 3)
 }
 
 /**

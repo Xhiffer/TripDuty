@@ -316,7 +316,7 @@ export function seedData(): AppData {
     kind: 'penalty',
     doerIds: [],
     beneficiaryIds: all,
-    amounts: penaltyAmounts(PENALTY, byName('Victor'), all),
+    amounts: penaltyAmounts(PENALTY, byName('Victor')),
     validatedBy: byName('Ismaël'),
     at: isoAt(-1, '09:00'),
   })

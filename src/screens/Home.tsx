@@ -25,9 +25,10 @@ export function Home() {
     .filter((task) => task.date === activeDate && !task.isClosing)
     .sort((a, b) => a.time.localeCompare(b.time))
 
-  // Les taches ou l'app me place en tete, uniquement si je suis en negatif.
+  // Les taches ou l'app me place en tete, uniquement si je suis dans la
+  // moitie basse du groupe : sinon tout le monde recevrait des suggestions.
   const forMe =
-    mine && mine.centi < 0
+    mine && rows.length > 1 && mine.rank > rows.length / 2
       ? dayTasks.filter((task) => suggestions.get(task.id)?.[0]?.memberId === me?.id)
       : []
 

@@ -165,7 +165,7 @@ export function GroupSettings({ onClose }: { onClose: () => void }) {
                   <span className="rank-sub">{task ? taskTitle(task, lang) : ''}</span>
                 </span>
                 {amount !== 0 && (
-                  <span className={`pill ${amount > 0 ? 'pill-good' : 'pill-danger'}`}>{formatBalance(amount)}</span>
+                  <span className="pill pill-good">{formatBalance(amount)}</span>
                 )}
               </div>
             )

@@ -146,7 +146,9 @@ export function App() {
   }
 
   const mine = rows.find((r) => r.member.id === me.id)
-  const owes = !!mine && mine.centi < 0
+  // La pastille signale qu'on ferme la marche, plus qu'on doit quelque chose :
+  // personne ne doit rien, les points ne font que monter.
+  const owes = !!mine && rows.length > 1 && mine.rank === rows.length
 
   const tabs = [
     { id: 'home' as Tab, Icon: House, label: t('navHome'), dot: owes },

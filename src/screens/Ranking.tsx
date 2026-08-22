@@ -41,7 +41,7 @@ export function Ranking() {
         {rows.map((row) => (
           <div
             key={row.member.id}
-            className={`rank-row ${row.member.id === me?.id ? 'is-me' : ''} ${row.centi < 0 ? 'is-last' : ''}`}
+            className={`rank-row ${row.member.id === me?.id ? 'is-me' : ''} ${row.rank === rows.length && rows.length > 1 ? 'is-last' : ''}`}
           >
             <span className="rank-num">{row.rank <= 3 ? MEDALS[row.rank - 1] : row.rank}</span>
             <Avatar member={row.member} size={40} />
@@ -54,7 +54,7 @@ export function Ranking() {
                 {toPoints(row.givenCenti)} {t('gaveToGroup')}
               </span>
             </span>
-            <span className="rank-score" style={{ color: row.centi < 0 ? 'var(--danger)' : 'var(--good)' }}>
+            <span className="rank-score">
               {formatBalance(row.centi)}
             </span>
           </div>

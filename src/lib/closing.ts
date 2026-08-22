@@ -25,28 +25,30 @@ export interface ClosingMatch {
 }
 
 /**
- * Bilan de fin de sejour : on trie les gens du plus negatif au moins negatif,
+ * Bilan de fin de sejour : on trie les gens du moins fourni au plus fourni,
  * les taches de cloture de la plus lourde a la plus legere, et on apparie.
- * Celui qui doit le plus au groupe herite de la plus grosse.
+ * Celui qui en a le moins fait herite de la plus grosse.
+ *
+ * On ne propose que ceux qui sont sous la moyenne du groupe : au-dessus, la
+ * personne a deja fait sa part, et lui coller le grand menage serait injuste.
  */
 export function matchClosing(state: GroupView, rows: Balance[]): ClosingMatch[] {
   const tasks = state.tasks
     .filter((task) => task.isClosing && task.status === 'todo')
     .sort((a, b) => b.points - a.points)
 
-  // En dessous d'un point de dette, on considere la personne a l'equilibre.
-  const debtors = rows
-    .filter((row) => row.centi <= -100)
-    .sort((a, b) => a.centi - b.centi)
+  if (rows.length === 0) return tasks.map((task) => ({ task, memberId: null, centi: 0 }))
+  const moyenne = rows.reduce((sum, row) => sum + row.centi, 0) / rows.length
+  const enRetard = rows.filter((row) => row.centi < moyenne).sort((a, b) => a.centi - b.centi)
 
   return tasks.map((task, i) => {
-    const debtor = debtors[i]
-    if (!debtor) return { task, memberId: null, centi: 0 }
-    if (task.needsLicense && !debtor.member.hasLicense) {
-      const fallback = debtors.slice(i).find((d) => d.member.hasLicense)
+    const candidat = enRetard[i]
+    if (!candidat) return { task, memberId: null, centi: 0 }
+    if (task.needsLicense && !candidat.member.hasLicense) {
+      const fallback = enRetard.slice(i).find((d) => d.member.hasLicense)
       if (fallback) return { task, memberId: fallback.member.id, centi: fallback.centi }
       return { task, memberId: null, centi: 0 }
     }
-    return { task, memberId: debtor.member.id, centi: debtor.centi }
+    return { task, memberId: candidat.member.id, centi: candidat.centi }
   })
 }

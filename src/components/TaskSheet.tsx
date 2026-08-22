@@ -53,7 +53,7 @@ export function TaskSheet({ task, onClose }: { task: Task; onClose: () => void }
                     <div key={id} className="row">
                       <Avatar member={m} size={26} />
                       <b style={{ fontSize: 14, flex: 1 }}>{m.name}</b>
-                      <span className={`pill ${amount > 0 ? 'pill-good' : 'pill-danger'}`}>
+                      <span className="pill pill-good">
                         {formatBalance(amount)}
                       </span>
                     </div>
@@ -136,7 +136,7 @@ export function TaskSheet({ task, onClose }: { task: Task; onClose: () => void }
                     const m = state.members.find((x) => x.id === id)
                     if (!m) return null
                     return (
-                      <span key={id} className={`pill ${amount > 0 ? 'pill-good' : 'pill-danger'}`}>
+                      <span key={id} className="pill pill-good">
                         {m.name} {formatBalance(amount)}
                       </span>
                     )

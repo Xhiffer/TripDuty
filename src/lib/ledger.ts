@@ -39,17 +39,19 @@ export function shareOfGroup(served: number, groupSize: number): number {
 
 /**
  * Construit la ligne de compte d'une tache faite.
- * Ceux qui la font sont credites, ceux pour qui elle est faite sont debites.
- * Celui qui fait la tache est en general aussi beneficiaire, comme celui
- * qui paie le restaurant y mange aussi.
  *
- * Le total est fixe par la courbe ci-dessus, puis reparti : ce que gagnent
- * ceux qui font est exactement ce que doivent ceux pour qui c'est fait, donc
- * la somme reste nulle et se faire a manger pour soi seul ne rapporte rien.
+ * Les points ne font que monter : seuls ceux qui font la tache en gagnent, et
+ * personne n'est jamais debite. Un compteur qui descend transforme un sejour
+ * en ardoise, et l'ardoise fache.
  *
- * Le revers assume : servir peu de monde coute un peu plus cher par tete, de
- * la meme facon qu'un repas prepare pour deux revient plus cher qu'un repas
- * prepare pour dix.
+ * Ce qui remplace le debit, c'est le comptage des servis : on ne compte que
+ * les gens servis **autres que ceux qui ont fait la tache**. Se faire a manger
+ * pour soi seul ne rapporte donc toujours rien, et cuisiner pour le groupe
+ * entier rapporte presque tout, puisqu'on mange aussi.
+ *
+ * Le revers assume : servir peu de monde rapporte moins, mais pas au prorata,
+ * de la meme facon qu'un repas prepare pour deux demande presque autant de
+ * travail qu'un repas prepare pour dix.
  */
 export function completionAmounts(
   points: number,
@@ -61,59 +63,35 @@ export function completionAmounts(
   const amounts: Record<string, number> = {}
   if (doerIds.length === 0 || beneficiaryIds.length === 0) return amounts
 
-  const total = Math.round(points * CENTI * shareOfGroup(beneficiaryIds.length, groupSize))
+  const servis = beneficiaryIds.filter((id) => !doerIds.includes(id)).length
+  const total = Math.round(points * CENTI * shareOfGroup(servis, groupSize))
 
   const credits = splitExact(total, doerIds.length)
   doerIds.forEach((id, i) => {
     amounts[id] = (amounts[id] ?? 0) + credits[i]
   })
 
-  const debits = splitExact(total, beneficiaryIds.length)
-  beneficiaryIds.forEach((id, i) => {
-    amounts[id] = (amounts[id] ?? 0) - debits[i]
-  })
-
   return amounts
 }
 
 /**
- * Malus : la personne qui s'etait engagee perd des points, et ceux qu'elle a
- * laisses tomber les recuperent. La somme reste a zero.
+ * Malus : la personne qui s'etait engagee perd une partie de ce qu'elle avait
+ * gagne. Rien n'est redistribue, et le solde ne descend pas sous zero : on ne
+ * peut pas devoir au groupe, seulement en avoir moins fait que les autres.
  */
-export function penaltyAmounts(penalty: number, culpritId: string, beneficiaryIds: string[]) {
-  const total = Math.round(penalty * CENTI)
-  const amounts: Record<string, number> = { [culpritId]: -total }
-  const targets = beneficiaryIds.filter((id) => id !== culpritId)
-  if (targets.length === 0) return { [culpritId]: 0 }
-  const shares = splitExact(total, targets.length)
-  targets.forEach((id, i) => {
-    amounts[id] = (amounts[id] ?? 0) + shares[i]
-  })
-  return amounts
+export function penaltyAmounts(penalty: number, culpritId: string) {
+  return { [culpritId]: -Math.round(penalty * CENTI) }
 }
 
 export interface Balance {
   member: Person
-  /** Solde en centiemes. Positif : la personne a donne plus qu'elle n'a recu. */
+  /** Total en centiemes. Il ne descend jamais sous zero. */
   centi: number
-  /** Ce que la personne a reellement apporte aux autres, sa propre part deduite. */
+  /** Ce que la personne a apporte aux autres. Egal au total, hors malus. */
   givenCenti: number
   tasksDone: number
   lastActiveAt: string | null
   rank: number
-}
-
-/**
- * Ce que chaque beneficiaire a paye sur une ligne. Le prix par tete est le
- * meme pour tous, il se relit donc sur n'importe quel beneficiaire qui n'a
- * pas fait la tache. Quand la tache ne profite qu'a ceux qui l'ont faite,
- * personne n'a rien recu : il n'y a rien a compter.
- */
-function debitPerHead(entry: Entry): number {
-  const outside = entry.beneficiaryIds.filter((id) => !entry.doerIds.includes(id))
-  if (outside.length === 0) return 0
-  const paid = outside.reduce((sum, id) => sum + (entry.amounts[id] ?? 0), 0)
-  return Math.round(-paid / outside.length)
 }
 
 export function balances(state: GroupView): Balance[] {
@@ -128,14 +106,13 @@ export function balances(state: GroupView): Balance[] {
       if (amount !== undefined) centi += amount
       if (entry.kind === 'completion' && entry.doerIds.includes(member.id)) {
         tasksDone += 1
-        // Le solde de la ligne est deja net de sa propre part. Ce qu'on veut
-        // afficher ici, c'est le brut : ce qu'elle a apporte aux autres.
-        const own = entry.beneficiaryIds.includes(member.id) ? debitPerHead(entry) : 0
-        givenCenti += Math.max(0, (amount ?? 0) + own)
+        givenCenti += Math.max(0, amount ?? 0)
         if (!lastActiveAt || entry.at > lastActiveAt) lastActiveAt = entry.at
       }
     }
-    return { member, centi, givenCenti, tasksDone, lastActiveAt, rank: 0 }
+    // Un malus peut manger plus que ce qu'on avait : le compteur s'arrete a
+    // zero plutot que de passer dans le rouge.
+    return { member, centi: Math.max(0, centi), givenCenti, tasksDone, lastActiveAt, rank: 0 }
   })
 
   rows.sort((a, b) => {
@@ -157,49 +134,9 @@ export function toPoints(centi: number): number {
   return Math.round(centi / CENTI)
 }
 
+/** Un total ne porte pas de signe : il ne peut plus etre negatif. */
 export function formatBalance(centi: number): string {
-  const points = toPoints(centi)
-  return points > 0 ? `+${points}` : `${points}`
-}
-
-/**
- * L'ecart a rattraper, d'une personne a l'autre.
- *
- * Ce n'est pas une dette et l'application ne le presente pas comme telle :
- * personne ne « doit une tache » a personne, on montre seulement le plus court
- * chemin qui ramenerait tout le monde a l'equilibre. On part des soldes, jamais
- * d'un suivi deux a deux, pour la meme raison qu'un Tricount : moins
- * d'echanges, et aucun historique de reproches.
- */
-export interface Transfer {
-  fromId: string
-  toId: string
-  centi: number
-}
-
-export function settlements(rows: Balance[]): Transfer[] {
-  const debtors = rows
-    .filter((r) => r.centi < 0)
-    .map((r) => ({ id: r.member.id, left: -r.centi }))
-    .sort((a, b) => b.left - a.left)
-  const creditors = rows
-    .filter((r) => r.centi > 0)
-    .map((r) => ({ id: r.member.id, left: r.centi }))
-    .sort((a, b) => b.left - a.left)
-
-  const transfers: Transfer[] = []
-  let i = 0
-  let j = 0
-  while (i < debtors.length && j < creditors.length) {
-    const amount = Math.min(debtors[i].left, creditors[j].left)
-    // On n'affiche pas les miettes : en dessous d'un point, c'est du bruit.
-    if (amount >= CENTI) transfers.push({ fromId: debtors[i].id, toId: creditors[j].id, centi: amount })
-    debtors[i].left -= amount
-    creditors[j].left -= amount
-    if (debtors[i].left <= 0) i += 1
-    if (creditors[j].left <= 0) j += 1
-  }
-  return transfers
+  return String(toPoints(centi))
 }
 
 export function entriesForTask(state: GroupView, taskId: string): Entry | undefined {

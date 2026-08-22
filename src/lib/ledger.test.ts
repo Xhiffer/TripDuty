@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Entry, Group, GroupView, Person, Task } from '../types'
-import { CENTI, balances, beneficiariesOf, completionAmounts, penaltyAmounts, settlements, splitExact } from './ledger'
+import { CENTI, balances, beneficiariesOf, completionAmounts, penaltyAmounts, splitExact } from './ledger'
 
 const sum = (amounts: Record<string, number>) => Object.values(amounts).reduce((a, b) => a + b, 0)
 
@@ -96,61 +96,54 @@ describe('beneficiariesOf', () => {
 })
 
 describe('completionAmounts', () => {
-  it('la somme des montants est toujours nulle', () => {
-    expect(sum(completionAmounts(10, ['p1'], ['p1', 'p2', 'p3']))).toBe(0)
+  it('seuls ceux qui font la tache gagnent des points', () => {
+    const amounts = completionAmounts(10, ['p1'], ['p1', 'p2', 'p3'])
+    expect(Object.keys(amounts)).toEqual(['p1'])
+    expect(amounts.p1).toBeGreaterThan(0)
   })
 
-  it('celui qui fait la tache et en profite reste crediteur net', () => {
+  it('personne n est jamais debite', () => {
     const amounts = completionAmounts(30, ['p1'], ['p1', 'p2', 'p3'])
-    expect(amounts.p1).toBe(30 * CENTI - 10 * CENTI)
-    expect(amounts.p2).toBe(-10 * CENTI)
-    expect(sum(amounts)).toBe(0)
+    expect(Object.values(amounts).every((a) => a >= 0)).toBe(true)
   })
 
   it('partage le credit entre plusieurs personnes qui font la tache', () => {
     const amounts = completionAmounts(10, ['p1', 'p2'], ['p3', 'p4'])
     expect(amounts.p1).toBe(500)
     expect(amounts.p2).toBe(500)
-    expect(sum(amounts)).toBe(0)
+    expect(sum(amounts)).toBe(10 * CENTI)
   })
 
   it('ne perd pas un centieme sur une division qui ne tombe pas juste', () => {
-    expect(sum(completionAmounts(10, ['p1', 'p2', 'p3'], ['p4', 'p5', 'p6', 'p7']))).toBe(0)
+    expect(sum(completionAmounts(10, ['p1', 'p2', 'p3'], ['p4', 'p5', 'p6', 'p7']))).toBe(10 * CENTI)
   })
 
   it('se faire son sandwich tout seul ne rapporte rien', () => {
     expect(completionAmounts(15, ['p1'], ['p1'])).toEqual({ p1: 0 })
   })
 
-  it('servir moins de monde coute un peu plus cher par tete', () => {
-    const cinq = completionAmounts(30, ['p1'], ['p1', 'p2', 'p3', 'p4', 'p5'], 10)
-    const dix = completionAmounts(30, ['p1'], ['p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7', 'p8', 'p9', 'p10'], 10)
-    // Un repas prepare pour cinq revient plus cher par tete qu'un repas
-    // prepare pour dix : c'est le revers de la courbe.
-    expect(dix.p2).toBe(-3 * CENTI)
-    expect(cinq.p2).toBe(-396)
-    expect(cinq.p2).toBeLessThan(dix.p2)
-  })
-
-  it('cuisiner pour dix rapporte moins du double de cuisiner pour cinq', () => {
-    const cinq = completionAmounts(30, ['p1'], ['p1', 'p2', 'p3', 'p4', 'p5'], 10)
-    const dix = completionAmounts(30, ['p1'], ['p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7', 'p8', 'p9', 'p10'], 10)
-    // La division stricte donnait exactement le double, ce qui punissait trop
-    // celui qui cuisine pour la moitie du groupe.
-    expect(dix.p1).toBeLessThan(2 * cinq.p1)
-    expect(dix.p1).toBeGreaterThan(cinq.p1)
-    expect(sum(cinq)).toBe(0)
-    expect(sum(dix)).toBe(0)
-  })
-
-  it('servir tout le groupe vaut le bareme entier', () => {
-    const amounts = completionAmounts(30, ['p1'], ['p1', 'p2', 'p3', 'p4', 'p5'], 5)
-    expect(sum(amounts)).toBe(0)
-    expect(amounts.p2).toBe(-6 * CENTI)
-  })
-
   it('se cuisiner pour soi seul dans un groupe de dix ne rapporte toujours rien', () => {
     expect(completionAmounts(35, ['p1'], ['p1'], 10)).toEqual({ p1: 0 })
+  })
+
+  it('servir tout le groupe sans en profiter vaut le bareme entier', () => {
+    const amounts = completionAmounts(30, ['p1'], ['p2', 'p3', 'p4', 'p5', 'p6'], 5)
+    expect(amounts.p1).toBe(30 * CENTI)
+  })
+
+  it('cuisiner en faisant partie des convives rapporte presque tout', () => {
+    const amounts = completionAmounts(30, ['p1'], ['p1', 'p2', 'p3', 'p4', 'p5'], 5)
+    expect(amounts.p1).toBeLessThan(30 * CENTI)
+    expect(amounts.p1).toBeGreaterThan(25 * CENTI)
+  })
+
+  it('servir la moitie du groupe rapporte plus que la moitie', () => {
+    const cinq = completionAmounts(30, ['p1'], ['p1', 'p2', 'p3', 'p4', 'p5'], 10)
+    const dix = completionAmounts(30, ['p1'], ['p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7', 'p8', 'p9', 'p10'], 10)
+    // La division stricte punissait trop celui qui cuisine pour la moitie du
+    // groupe : la courbe lui laisse plus que la moitie de la valeur.
+    expect(cinq.p1).toBeGreaterThan(dix.p1 / 2)
+    expect(cinq.p1).toBeLessThan(dix.p1)
   })
 
   it('sans taille de groupe, la tache est reputee profiter a tout le monde', () => {
@@ -161,26 +154,15 @@ describe('completionAmounts', () => {
 })
 
 describe('penaltyAmounts', () => {
-  it('la somme des montants est toujours nulle', () => {
-    expect(sum(penaltyAmounts(30, 'p1', ['p1', 'p2', 'p3']))).toBe(0)
-  })
-
-  it('le fautif perd la totalite du malus et les autres se le partagent', () => {
-    const amounts = penaltyAmounts(30, 'p1', ['p1', 'p2', 'p3'])
-    expect(amounts.p1).toBe(-3000)
-    expect(amounts.p2).toBe(1500)
-    expect(amounts.p3).toBe(1500)
-  })
-
-  it('sans autre beneficiaire, personne n est penalise', () => {
-    expect(penaltyAmounts(30, 'p1', ['p1'])).toEqual({ p1: 0 })
+  it('le fautif perd le malus, et personne ne le recupere', () => {
+    expect(penaltyAmounts(30, 'p1')).toEqual({ p1: -3000 })
   })
 })
 
 describe('balances', () => {
   const members = [person('p1', 'host'), person('p2'), person('p3')]
 
-  it('classe du plus crediteur au plus debiteur', () => {
+  it('classe du plus fourni au moins fourni', () => {
     const rows = balances(
       viewWith(
         [
@@ -198,7 +180,19 @@ describe('balances', () => {
     expect(rows.map((r) => r.member.id)).toEqual(['p1', 'p2', 'p3'])
     expect(rows[0].rank).toBe(1)
     expect(rows[0].tasksDone).toBe(1)
-    expect(rows.reduce((acc, r) => acc + r.centi, 0)).toBe(0)
+    expect(rows[1].centi).toBe(0)
+    expect(rows[2].centi).toBe(0)
+  })
+
+  it('un malus ne fait jamais descendre sous zero', () => {
+    const rows = balances(
+      viewWith(
+        [entry({ id: 'e1', taskId: 't1', kind: 'penalty', doerIds: [], amounts: penaltyAmounts(30, 'p2') })],
+        members,
+      ),
+    )
+    expect(rows.every((r) => r.centi >= 0)).toBe(true)
+    expect(rows.find((r) => r.member.id === 'p2')?.centi).toBe(0)
   })
 
   it('a egalite, celui qui n a rien fait depuis le plus longtemps passe derriere', () => {
@@ -232,57 +226,5 @@ describe('balances', () => {
   it('sans aucune ligne de compte, tout le monde est a zero', () => {
     const rows = balances(viewWith([], members))
     expect(rows.every((r) => r.centi === 0 && r.tasksDone === 0)).toBe(true)
-  })
-})
-
-describe('settlements', () => {
-  const members = [person('p1'), person('p2'), person('p3'), person('p4')]
-
-  it('ramene tous les soldes a zero', () => {
-    const rows = balances(
-      viewWith(
-        [
-          entry({
-            id: 'e1',
-            taskId: 't1',
-            doerIds: ['p1'],
-            beneficiaryIds: ['p1', 'p2', 'p3', 'p4'],
-            amounts: completionAmounts(40, ['p1'], ['p1', 'p2', 'p3', 'p4']),
-          }),
-        ],
-        members,
-      ),
-    )
-    const transfers = settlements(rows)
-    expect(transfers.length).toBeGreaterThan(0)
-
-    const after = new Map(rows.map((r) => [r.member.id, r.centi]))
-    for (const tr of transfers) {
-      after.set(tr.fromId, (after.get(tr.fromId) ?? 0) + tr.centi)
-      after.set(tr.toId, (after.get(tr.toId) ?? 0) - tr.centi)
-    }
-    expect([...after.values()].every((v) => v === 0)).toBe(true)
-  })
-
-  it('n affiche pas les miettes en dessous d un point', () => {
-    const rows = balances(
-      viewWith(
-        [
-          entry({
-            id: 'e1',
-            taskId: 't1',
-            doerIds: ['p1'],
-            beneficiaryIds: ['p1', 'p2'],
-            amounts: { p1: 50, p2: -50 },
-          }),
-        ],
-        members,
-      ),
-    )
-    expect(settlements(rows)).toEqual([])
-  })
-
-  it('ne propose aucun echange quand tout le monde est a zero', () => {
-    expect(settlements(balances(viewWith([], members)))).toEqual([])
   })
 })

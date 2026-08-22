@@ -17,7 +17,9 @@ export function Closing() {
   const matches = useMemo(() => matchClosing(state, rows), [state, rows])
   const closingTasks = state.tasks.filter((task) => task.isClosing)
   const mine = rows.find((r) => r.member.id === me?.id)
-  const creditors = rows.filter((r) => r.centi > 0)
+  // Ceux qui ont fait plus que la moyenne : ce sont eux qui ont porte le groupe.
+  const moyenne = rows.length > 0 ? rows.reduce((sum, r) => sum + r.centi, 0) / rows.length : 0
+  const creditors = rows.filter((r) => r.centi > moyenne)
 
   if (creating) return <NewTask closing onClose={() => setCreating(false)} />
 
@@ -119,7 +121,7 @@ export function Closing() {
             </>
           )}
 
-          {mine && mine.centi >= 0 && <div className="banner" style={{ marginTop: 14 }}>{t('nothingOwed')}</div>}
+          {mine && mine.centi >= moyenne && <div className="banner" style={{ marginTop: 14 }}>{t('nothingOwed')}</div>}
 
           {isChef && (
             <button
