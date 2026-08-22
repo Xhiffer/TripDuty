@@ -189,6 +189,14 @@ describe('taches et lignes de compte', () => {
     expect(reopened.entries).toHaveLength(0)
   })
 
+  it('supprimer une tache deja validee reprend les points qu elle avait donnes', () => {
+    const done = applyMutation(baseData(), { type: 'settleTask', taskId: 't1', status: 'done', entry: entry('t1') })
+    expect(done.entries).toHaveLength(1)
+    const deleted = applyMutation(done, { type: 'deleteTask', taskId: 't1' })
+    expect(deleted.tasks).toHaveLength(0)
+    expect(deleted.entries).toHaveLength(0)
+  })
+
   it('valider une tache supprimee entre-temps n ecrit pas de ligne orpheline', () => {
     const deleted = applyMutation(baseData(), { type: 'deleteTask', taskId: 't1' })
     const after = applyMutation(deleted, { type: 'settleTask', taskId: 't1', status: 'done', entry: entry('t1') })

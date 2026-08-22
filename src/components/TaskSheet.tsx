@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { Task } from '../types'
 import { useGroup } from '../state'
 import { beneficiariesOf, completionAmounts, formatBalance } from '../lib/ledger'
+import { Trash2 } from 'lucide-react'
 import { Avatar, Segmented, Sheet } from './ui'
 import { taskTitle } from './TaskRow'
 import { formatDay } from '../lib/i18n'
@@ -61,9 +62,21 @@ export function TaskSheet({ task, onClose }: { task: Task; onClose: () => void }
             </div>
           </div>
           {isChef ? (
-            <button type="button" className="btn btn-danger btn-block" onClick={() => { reopenTask(task.id); onClose() }}>
-              {t('cancelValidation')}
-            </button>
+            <div className="stack">
+              <button type="button" className="btn btn-block" onClick={() => { reopenTask(task.id); onClose() }}>
+                {t('cancelValidation')}
+              </button>
+              {/* Supprimer efface aussi les points qu'elle avait donnes : les
+                  soldes reviennent exactement ou ils etaient avant. */}
+              <button
+                type="button"
+                className="btn btn-danger btn-block"
+                onClick={() => { deleteTask(task.id); onClose() }}
+              >
+                <Trash2 size={17} />
+                {t('deleteTask')}
+              </button>
+            </div>
           ) : (
             <p className="sheet-sub">{t('onlyChef')}</p>
           )}
@@ -169,8 +182,13 @@ export function TaskSheet({ task, onClose }: { task: Task; onClose: () => void }
             )}
 
             {isChef && (
-              <button type="button" className="btn btn-block" onClick={() => { deleteTask(task.id); onClose() }}>
-                🗑️
+              <button
+                type="button"
+                className="btn btn-danger btn-block"
+                onClick={() => { deleteTask(task.id); onClose() }}
+              >
+                <Trash2 size={17} />
+                {t('deleteTask')}
               </button>
             )}
           </div>
